@@ -112,6 +112,8 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 	case CC_WaitForItemGroup:
 	case CC_WaitForNotItemGroup:
 	case CC_WaitForArrayEntry:
+	case CC_WaitForEntityType:
+	case CC_WaitForNotEntityType:
 		return true;
 	default:
 		return false;

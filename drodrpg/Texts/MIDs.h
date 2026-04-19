@@ -1811,6 +1811,8 @@ enum MID_CONSTANT {
   MID_WaitForArrayEntry = 2108,
   MID_CountArrayEntries = 2109,
   MID_RemoveTransparentLayer = 2112,
+  MID_WaitForEntityType = 2168,
+  MID_WaitWhileEntityType = 2169,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

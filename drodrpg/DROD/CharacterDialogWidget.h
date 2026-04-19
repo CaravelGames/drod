@@ -134,6 +134,7 @@ private:
 	void  PopulateCommandDescriptions(CListBoxWidget *pCommandList, COMMANDPTR_VECTOR& commands);
 	void  PopulateCommandListBox();
 	void  PopulateEventListBox();
+	void  PopulateEntityList(CListBoxWidget* pListBox);
 	void  PopulateGotoLabelList(const COMMANDPTR_VECTOR& commands);
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
@@ -198,6 +199,7 @@ private:
 	CListBoxWidget *pEquipmentTypesListBox, *pCustomNPCListBox, *pEquipTransListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
+	CListBoxWidget* pEntityListBox;
 	CTextBoxWidget* pSpeechText;
 	CListBoxWidget *pStatListBox;
 	CListBoxWidget *pMovementTypeListBox;

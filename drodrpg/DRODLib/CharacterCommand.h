@@ -388,6 +388,8 @@ public:
 		CC_GoToWorldMap,        //Takes player to world map X.
 		CC_WaitForArrayEntry,   //Wait until array X has entry satisfying comparison Y expression.
 		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
+		CC_WaitForEntityType,   //Wait until an entity type in flags is in rect (x,y,w,h).
+		CC_WaitForNotEntityType,//Wait until an entity type in flags is not in rect (x,y,w,h).
 		CC_Count
 	};
 

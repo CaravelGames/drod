@@ -153,6 +153,7 @@ public:
 	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
 	virtual bool   IsEggSpawner() const { return this->bSpawnEggs; }
 	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	bool           IsEntityTypeAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	virtual bool   IsExplosiveSafe() const { return bExplosiveSafe; }
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->bGhostImage;}

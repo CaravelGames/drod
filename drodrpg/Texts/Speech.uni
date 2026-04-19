@@ -1831,3 +1831,11 @@ Count array entries
 [MID_RemoveTransparentLayer]
 [eng]
 Remove transparent layer object
+
+[MID_WaitForEntityType]
+[eng]
+Wait for entity type
+
+[MID_WaitWhileEntityType]
+[eng]
+Wait while entity type

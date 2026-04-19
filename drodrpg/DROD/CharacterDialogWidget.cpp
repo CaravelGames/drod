@@ -173,6 +173,7 @@ const UINT TAG_X_COORD = 877;
 const UINT TAG_Y_COORD = 876;
 const UINT TAG_X_COORD_LABEL = 875;
 const UINT TAG_Y_COORD_LABEL = 874;
+const UINT TAG_ENTITY_LISTBOX = 873;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -411,7 +412,8 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	const int nSetX, const int nSetY)         //    constructor.
 	: CDialogWidget(dwSetTagNo, nSetX, nSetY, CX_DIALOG, CY_DIALOG)
 	, queryX(0), queryY(0), queryW(0), queryH(0)
-	, pGraphicListBox(NULL), pCommandsListBox(NULL), pDefaultScriptCommandsListBox(NULL)
+	, pGraphicListBox(NULL), pPlayerGraphicListBox(NULL)
+	, pCommandsListBox(NULL), pDefaultScriptCommandsListBox(NULL)
 	, pAddCommandDialog(NULL), pAddCharacterDialog(NULL), pScriptDialog(NULL)
 	, pCharOptionsDialog(NULL)
 	, pActionListBox(NULL), pEventListBox(NULL)
@@ -424,7 +426,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL), pItemGroupListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pEquipmentTypesListBox(NULL), pCustomNPCListBox(NULL), pEquipTransListBox(NULL)
-	, pCharNameText(NULL), pCharListBox(NULL)
+	, pCharNameText(NULL), pCharListBox(NULL), pEntityListBox(NULL)
 	, pSpeechText(NULL)
 	, pStatListBox(NULL)
 	, pMovementTypeListBox(NULL)
@@ -1774,6 +1776,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pPlayerGraphicListBox->SetHotkeyItemSelection(true);
 	this->pPlayerGraphicListBox->SortAlphabetically(true);
 	this->pAddCommandDialog->AddWidget(this->pPlayerGraphicListBox);
+
+	this->pEntityListBox = new CListBoxWidget(TAG_ENTITY_LISTBOX,
+		X_GRAPHICLISTBOX2, Y_GRAPHICLISTBOX2, CX_GRAPHICLISTBOX2, CY_GRAPHICLISTBOX2, true);
+	this->pEntityListBox->SetHotkeyItemSelection(true);
+	this->pEntityListBox->SortAlphabetically(true);
+	this->pAddCommandDialog->AddWidget(this->pEntityListBox);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_CUTSCENELABEL, X_CUTSCENELABEL,
 			Y_CUTSCENELABEL, CX_CUTSCENELABEL, CY_CUTSCENELABEL, F_Small,
@@ -3489,6 +3497,27 @@ const
 			wstr += _itoW(command.y + command.h, temp, 10);
 			wstr += wszRightParen;
 		break;
+		case CCharacterCommand::CC_WaitForEntityType:
+		case CCharacterCommand::CC_WaitForNotEntityType:
+		{
+			WSTRING charName = this->pEntityListBox->GetTextForKey(command.flags);
+			wstr += charName.length() ? charName : wszQuestionMark;
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		}
+		break;
 		case CCharacterCommand::CC_WaitForDoorTo:
 			wstr += this->pOpenCloseListBox->GetTextForKey(command.w);
 			wstr += wszSpace;
@@ -4648,6 +4677,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForDefeat, g_pTheDB->GetMessageText(MID_WaitForDefeat));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForDoorTo, g_pTheDB->GetMessageText(MID_WaitForDoorTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRect, g_pTheDB->GetMessageText(MID_WaitForEntity));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForEntityType, g_pTheDB->GetMessageText(MID_WaitForEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItemGroup, g_pTheDB->GetMessageText(MID_WaitForItemGroup));
@@ -4664,6 +4694,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForExpression, g_pTheDB->GetMessageText(MID_WaitForExpression));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotEntityType, g_pTheDB->GetMessageText(MID_WaitWhileEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, g_pTheDB->GetMessageText(MID_LogicalWaitAnd));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, g_pTheDB->GetMessageText(MID_LogicalWaitOr));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, g_pTheDB->GetMessageText(MID_LogicalWaitXOR));
@@ -4758,6 +4789,19 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_Dig, g_pTheDB->GetMessageText(MID_Dig));
 	this->pEventListBox->SelectLine(0);
 	this->pEventListBox->SetAllowFiltering(true);
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::PopulateEntityList(CListBoxWidget* pListBox)
+//Add all monsters that script can wait for to list.
+{
+	PopulateGraphicListBox(pListBox);
+
+	//Add multi-tile monsters
+	pListBox->AddItem(M_SERPENT, g_pTheDB->GetMessageText(MID_Serpent));
+	pListBox->AddItem(M_SERPENTB, g_pTheDB->GetMessageText(MID_BlueSerpent));
+	pListBox->AddItem(M_SERPENTG, g_pTheDB->GetMessageText(MID_GreenSerpent));
+	pListBox->AddItem(M_ROCKGIANT, g_pTheDB->GetMessageText(MID_Splitter));
 }
 
 //*****************************************************************************
@@ -5130,6 +5174,12 @@ void CCharacterDialogWidget::PopulateMainGraphicList()
 	PopulateCharacterList(this->pPlayerGraphicListBox);
 	this->pPlayerGraphicListBox->SelectItem(M_BEETHRO);
 
+	ASSERT(this->pEntityListBox);
+	this->pEntityListBox->Clear();
+	PopulateEntityList(this->pEntityListBox);
+	PopulateCharacterList(this->pEntityListBox);
+	this->pEntityListBox->SelectItem(M_BEETHRO);
+
 	RefreshCustomCharacterList(this->pCustomNPCListBox);
 	RefreshCustomCharacterList(this->pCharListBox);
 
@@ -5138,6 +5188,7 @@ void CCharacterDialogWidget::PopulateMainGraphicList()
 
 	this->pGraphicListBox->SetAllowFiltering(true);
 	this->pPlayerGraphicListBox->SetAllowFiltering(true);
+	this->pEntityListBox->SetAllowFiltering(true);
 	this->pSpeakerListBox->SetAllowFiltering(true);
 }
 
@@ -5522,7 +5573,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 51;
+	static const UINT NUM_WIDGETS = 52;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5538,7 +5589,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT,
 		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
 		TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX, TAG_COLOR_LISTBOX,
-		TAG_ICONDISPLAY, TAG_IMAGEDISPLAY, TAG_X_COORD, TAG_Y_COORD
+		TAG_ICONDISPLAY, TAG_IMAGEDISPLAY, TAG_X_COORD, TAG_Y_COORD, TAG_ENTITY_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -5582,6 +5633,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT WORLD_MAP_ICON[] = { TAG_GRAPHICLISTBOX2, TAG_ICONDISPLAY, TAG_X_COORD, TAG_Y_COORD, 0 };
 	static const UINT WORLD_MAP_IMAGE[] = { TAG_IMAGEDISPLAY, TAG_X_COORD, TAG_Y_COORD, 0 };
 	static const UINT ARRAYVARQUERY[] = { TAG_ARRAYVARLIST, TAG_VARCOMPLIST2, TAG_VARVALUE, 0 };
+	static const UINT ENTITY_LIST[] = { TAG_ENTITY_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5683,6 +5735,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_GoToWorldMap
 		ARRAYVARQUERY,      //CC_WaitForArrayEntry
 		ARRAYVARQUERY,      //CC_CountArrayEntries
+		ENTITY_LIST,        //CC_WaitForEntityType
+		ENTITY_LIST,        //CC_WaitForNotEntityType
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -5827,6 +5881,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_GoToWorldMap
 		EXPRESSION_L,       //CC_WaitForArrayEntry
 		EXPRESSION_L,       //CC_CountArrayEntries
+		NO_LABELS,          //CC_WaitForEntityType
+		NO_LABELS,          //CC_WaitForNotEntityType
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6294,6 +6350,12 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			QueryRect();
 		}
 		break;
+		case CCharacterCommand::CC_WaitForEntityType:
+		case CCharacterCommand::CC_WaitForNotEntityType:
+			this->pCommand->flags = this->pEntityListBox->GetSelectedItem();
+			QueryRect();
+		break;
+
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
 			this->pCommand->flags = this->pBuildItemsListBox->GetSelectedItem();
@@ -7272,6 +7334,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_WaitForNotRect:
 			SetBitFlags();
 		break;
+		case CCharacterCommand::CC_WaitForEntityType:
+		case CCharacterCommand::CC_WaitForNotEntityType:
+			this->pEntityListBox->SelectItem(this->pCommand->flags);
+		break;
 
 		case CCharacterCommand::CC_VarSet:
 		case CCharacterCommand::CC_VarSetAt:
@@ -7943,6 +8009,20 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
 		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
 	break;
+
+	case CCharacterCommand::CC_WaitForEntityType:
+	case CCharacterCommand::CC_WaitForNotEntityType:
+		parseMandatoryOption(pCommand->flags, this->pEntityListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+		break;
 
 	case CCharacterCommand::CC_AmbientSoundAt:
 		skipLeftParen;
@@ -8770,6 +8850,19 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.y);
 		concatNumWithComma(c.x + c.w);
 		concatNum(c.y + c.h);
+	break;
+
+	case CCharacterCommand::CC_WaitForEntityType:
+	case CCharacterCommand::CC_WaitForNotEntityType:
+	{
+		WSTRING charName = this->pEntityListBox->GetTextForKey(c.flags);
+		wstr += charName.length() ? charName : wszQuestionMark;
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	}
 	break;
 
 	case CCharacterCommand::CC_AmbientSoundAt:

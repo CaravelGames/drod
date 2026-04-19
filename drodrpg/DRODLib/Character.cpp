@@ -467,6 +467,11 @@ void CCharacter::ChangeHoldForCommands(
 					SyncEntranceID(info, c.w);
 				break;
 
+				case CCharacterCommand::CC_WaitForEntityType:
+				case CCharacterCommand::CC_WaitForNotEntityType:
+					SyncCustomCharacterData(c.flags, pOldHold, pNewHold, info);
+				break;
+
 				default: break;
 			}
 		}
@@ -1083,6 +1088,8 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotItemGroup:
 			case CCharacterCommand::CC_SetDarkness:
 			case CCharacterCommand::CC_SetCeilingLight:
+			case CCharacterCommand::CC_WaitForEntityType:
+			case CCharacterCommand::CC_WaitForNotEntityType:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -1144,6 +1151,8 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotItemGroup:
 			case CCharacterCommand::CC_SetDarkness:
 			case CCharacterCommand::CC_SetCeilingLight:
+			case CCharacterCommand::CC_WaitForEntityType:
+			case CCharacterCommand::CC_WaitForNotEntityType:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -1208,6 +1217,8 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotItemGroup:
 			case CCharacterCommand::CC_SetDarkness:
 			case CCharacterCommand::CC_SetCeilingLight:
+			case CCharacterCommand::CC_WaitForEntityType:
+			case CCharacterCommand::CC_WaitForNotEntityType:
 				//SW corner of rectangle will become the new NW corner after rotation.
 				wNewX = (pRoom->wRoomRows-1) - (command->y + command->h);
 				command->y = command->x;
@@ -2563,6 +2574,31 @@ void CCharacter::Process(
 				if (!IsValidEntityWait(command, room))
 					STOP_COMMAND;
 				if (IsEntityAt(command, room, player))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_WaitForEntityType:
+			{
+				//Wait until a specified entity type is in rect (x,y,w,h).
+				//Note that width and height are zero-indexed.
+				if (!IsValidEntityWait(command, room))
+					STOP_COMMAND;
+				if (!IsEntityTypeAt(command, room, player))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotEntityType:
+			{
+				//Wait until NO specified entity type is in rect (x,y,w,h).
+				//Note that width and height are zero-indexed.
+				if (!IsValidEntityWait(command, room))
+					STOP_COMMAND;
+				if (IsEntityTypeAt(command, room, player))
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
@@ -4335,6 +4371,29 @@ bool CCharacter::IsEntityAt(
 }
 
 //*****************************************************************************
+//Returns: whether the specified game entity type (flags) is in rect (x,y,w,h).
+bool CCharacter::IsEntityTypeAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (player.wIdentity == pflags)
+	{
+		if (player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+	}
+	if (room.IsMonsterInRectOfType(px, py, px + pw, py + ph, pflags, true))
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
 // Returns: if the tile at (x,y) has the given door state (w)
 bool CCharacter::IsDoorStateAt(
 	const CCharacterCommand& command, const CDbRoom& room
@@ -4955,6 +5014,16 @@ bool CCharacter::EvaluateConditionalCommand(
 			return DoesArrayVarSatisfy(command, pGame);
 		}
 		break;
+		case CCharacterCommand::CC_WaitForEntityType:
+		{
+			return (IsValidEntityWait(command, room)
+				&& IsEntityTypeAt(command, room, *pGame->pPlayer));
+		}
+		case CCharacterCommand::CC_WaitForNotEntityType:
+		{
+			return (IsValidEntityWait(command, room)
+				&& !IsEntityTypeAt(command, room, *pGame->pPlayer));
+		}
 		default:
 		{
 			ASSERT(!"Bad Conditional Command");
