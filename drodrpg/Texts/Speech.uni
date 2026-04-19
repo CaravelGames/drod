@@ -1839,3 +1839,15 @@ Wait for entity type
 [MID_WaitWhileEntityType]
 [eng]
 Wait while entity type
+
+[MID_CountEntityType]
+[eng]
+Count entity type
+
+[MID_CountItem]
+[eng]
+Count item
+
+[MID_CountItemGroup]
+[eng]
+Count item group
