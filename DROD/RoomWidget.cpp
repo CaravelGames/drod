@@ -805,6 +805,12 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 		}
 	}
 
+	//Make sure the speaker is not deleted if it dies
+	CMonster* pMonster = dynamic_cast<CMonster*>(pCoord);
+	if (pMonster) {
+		pMonster->bSafeToDelete = false;
+	}
+
 	//Speaker text effect.
 	CSubtitleEffect *pSubtitle = new CSubtitleEffect(this, pCoord,
 			wStr.c_str(), Black, color, dwDuration);
