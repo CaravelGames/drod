@@ -759,6 +759,8 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 94: val = UINT(this->scoreShovels); break;
 			case 95: val = this->itemShovelMult; break;
 
+			case 106: val = this->scriptReturnX; break;
+
 			default:
 				ASSERT(!"Not a global var index");
 				val = UINT(0); //should not be written
@@ -848,6 +850,8 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 93: this->shovels = int(val); break;
 			case 94: this->scoreShovels = int(val); break;
 			case 95: this->itemShovelMult = val; break;
+
+			case 106: this->scriptReturnX = val; break;
 
 			default: ASSERT(!"Bad var"); break;
 		}
