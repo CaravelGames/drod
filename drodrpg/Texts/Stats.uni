@@ -405,3 +405,7 @@ _MySaturation
 [MID_VarReturnX]
 [eng]
 _ReturnX
+
+[MID_VarReturnY]
+[eng]
+_ReturnY
