@@ -623,19 +623,63 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 //Returns: true if index corresponds to a case that is used in Pack/Unpack below
 bool PlayerStats::IsGlobalStatIndex(UINT i)
 {
-	return
-		i < 10 ||
-		(i >= 15 && i <= 20) ||
-		i == 22 ||
-		i == 29 ||
-		(i >= 31 && i <= 37) ||
-		(i >= 43 && i <= 48) ||
-		(i >= 73 && i <= 76) ||
-		(i >= 79 && i <= 87) ||
-		(i >= 93 && i <= 95) ||
-		i == 97 || i == 98 ||
-		(i >= 101 && i <= 103)
-		;
+	//Convert index to the enumeration value.
+	Predefined var = Predefined(-(i + 1));
+
+	switch (var) {
+		case P_HP: //player stas
+		case P_ATK:
+		case P_DEF:
+		case P_GOLD:
+		case P_XP:
+		case P_YKEY: //keys/shovels
+		case P_GKEY:
+		case P_BKEY:
+		case P_SKEY:
+		case P_SHOVEL:
+		case P_SWORD: //equipment
+		case P_SHIELD:
+		case P_ACCESSORY:
+		case P_SCORE_HP: //score values
+		case P_SCORE_ATK:
+		case P_SCORE_DEF:
+		case P_SCORE_GOLD:
+		case P_SCORE_XP:
+		case P_SCORE_YKEY:
+		case P_SCORE_GKEY:
+		case P_SCORE_BKEY:
+		case P_SCORE_SKEY:
+		case P_SCORE_SHOVEL:
+		case P_HOTTILE: //damage values
+		case P_EXPLOSION:
+		case P_BEAM:
+		case P_FIRETRAP:
+		case P_MONSTER_HP_MULT: //global monster stat multipliers
+		case P_MONSTER_ATK_MULT:
+		case P_MONSTER_DEF_MULT:
+		case P_MONSTER_GOLD_MULT:
+		case P_MONSTER_XP_MULT:
+		case P_ITEM_MULT: //global item multipliers
+		case P_ITEM_HP_MULT:
+		case P_ITEM_ATK_MULT:
+		case P_ITEM_DEF_MULT:
+		case P_ITEM_GR_MULT:
+		case P_ITEM_SHOVEL_MULT:
+		case P_MUD_SPAWN: //spawn overrides
+		case P_TAR_SPAWN:
+		case P_GEL_SPAWN:
+		case P_QUEEN_SPAWN:
+		case P_MUD_SWAP:
+		case P_TAR_SWAP:
+		case P_GEL_SWAP:
+		case P_PRIOR_ROOMID: //previous local information
+		case P_PRIOR_X:
+		case P_PRIOR_Y:
+		case P_PRIOR_O:
+		case P_RETURN_X: //globally accessible script return var
+			return true;
+		default: return false;
+	}
 }
 
 //***************************************************************************************
