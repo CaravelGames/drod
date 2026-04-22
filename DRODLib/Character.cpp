@@ -8377,6 +8377,7 @@ void CCharacter::ReplaceWithDefault(
 
 	//New character neeeds to be flagged and given a new id
 	pNewCharacter->bIsFirstTurn = true;
+	pNewCharacter->bNoTurnZeroProcess = true; // Prevent from double processing on 0th turn
 	pNewCharacter->bNewEntity = true;
 	pNewCharacter->bIsDefaultScript = true;
 	pNewCharacter->dwScriptID = this->pCurrentGame->pHold->GetNewScriptID();
