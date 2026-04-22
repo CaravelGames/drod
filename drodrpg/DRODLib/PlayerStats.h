@@ -162,7 +162,8 @@ namespace ScriptVars
 		P_MONSTER_HUE = -105,
 		P_MONSTER_SATURATION = -106,
 		P_RETURN_X = -107,
-		FirstPredefinedVar = P_RETURN_X, //set this to the last var in the enumeration
+		P_RETURN_Y = -108,
+		FirstPredefinedVar = P_RETURN_Y, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -276,7 +277,7 @@ public:
 		priorRoomID = priorX = priorY = priorO = 0;
 		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = mudSwapID = tarSwapID = gelSwapID = UINT(-1); //negative indicates default
 		scoreHP = scoreATK = scoreDEF = scoreYellowKeys = scoreGreenKeys = scoreBlueKeys = scoreSkeletonKeys = scoreGOLD = scoreXP = scoreShovels = 0;
-		scriptReturnX = 0;
+		scriptReturnX = scriptReturnY = 0;
 	}
 
 	UINT getVar(const WSTRING& wstr) const
@@ -311,7 +312,7 @@ public:
 	int mudSpawnID, tarSpawnID, gelSpawnID, queenSpawnID, mudSwapID, tarSwapID, gelSwapID;
 	int scoreHP, scoreATK, scoreDEF, scoreYellowKeys, scoreGreenKeys, scoreBlueKeys, scoreSkeletonKeys, scoreGOLD, scoreXP, scoreShovels;
 
-	int scriptReturnX;
+	int scriptReturnX, scriptReturnY;
 };
 
 //More stats used for various tally operations.

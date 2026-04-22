@@ -50,7 +50,7 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 	"", "",
 	"_MudSwap", "_TarSwap", "_GelSwap",
 	"", "",
-	"_ReturnX"
+	"_ReturnX", "_ReturnY"
 };
 
 //Message texts corresponding to the above short var texts.
@@ -87,7 +87,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarTotalAtk, MID_VarTotalDef,
 	MID_VarMudSwap, MID_VarTarSwap, MID_VarGelSwap,
 	MID_VarMonsterHue, MID_VarMonsterSaturation,
-	MID_VarReturnX
+	MID_VarReturnX, MID_VarReturnY
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -544,6 +544,7 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_SCORE_SHOVEL: return this->scoreShovels;
 
 		case ScriptVars::P_RETURN_X: return this->scriptReturnX;
+		case ScriptVars::P_RETURN_Y: return this->scriptReturnY;
 
 		case P_NoVar:
 		default: return 0;
@@ -613,6 +614,7 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_SCORE_SHOVEL: this->scoreShovels = int(val); break;
 
 		case P_RETURN_X: this->scriptReturnX = int(val); break;
+		case P_RETURN_Y: this->scriptReturnY = int(val); break;
 
 		case P_NoVar:
 		default: break;
@@ -677,7 +679,8 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		case P_PRIOR_X:
 		case P_PRIOR_Y:
 		case P_PRIOR_O:
-		case P_RETURN_X: //globally accessible script return var
+		case P_RETURN_X: //globally accessible script return vars
+		case P_RETURN_Y:
 			return true;
 		default: return false;
 	}
@@ -761,6 +764,7 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 95: val = this->itemShovelMult; break;
 
 			case 106: val = this->scriptReturnX; break;
+			case 107: val = this->scriptReturnY; break;
 
 			default:
 				ASSERT(!"Not a global var index");
@@ -853,6 +857,7 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 95: this->itemShovelMult = val; break;
 
 			case 106: this->scriptReturnX = val; break;
+			case 107: this->scriptReturnY = val; break;
 
 			default: ASSERT(!"Bad var"); break;
 		}
