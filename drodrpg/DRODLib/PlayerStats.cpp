@@ -632,6 +632,7 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		case P_DEF:
 		case P_GOLD:
 		case P_XP:
+		case P_SPEED:
 		case P_YKEY: //keys/shovels
 		case P_GKEY:
 		case P_BKEY:
