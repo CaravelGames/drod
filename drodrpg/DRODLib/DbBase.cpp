@@ -852,6 +852,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_CountItem: strText = "Count item"; break;
 		case MID_CountItemGroup: strText = "Count item group"; break;
 		case MID_VarReturnY: strText = "_ReturnY"; break;
+		case MID_PushToArrayVar: strText = "Push to array var"; break;
+		case MID_PopFromArrayVar: strText = "Pop from array var"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

@@ -393,6 +393,8 @@ public:
 		CC_CountEntityType,     //Count how many entities of a specific type in flag are in rect (x,y,w,h)
 		CC_CountItem,           //Count number of game element (flags) that exist in rect (x,y,w,h).
 		CC_CountItemGroup,      //Count number of game elements from group (flags) that exist in rect (x,y,w,h).
+		CC_PushToArrayVar,      //Set array var W starting from the index after the highest set index.
+		CC_PopFromArrayVar,     //Set _ReturnX to the highest set value from array var W, then unset that array entry.
 		CC_Count
 	};
 

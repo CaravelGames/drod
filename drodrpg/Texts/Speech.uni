@@ -1851,3 +1851,11 @@ Count item
 [MID_CountItemGroup]
 [eng]
 Count item group
+
+[MID_PushToArrayVar]
+[eng]
+Push to array var
+
+[MID_PopFromArrayVar]
+[eng]
+Pop from array var
