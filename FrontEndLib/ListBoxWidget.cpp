@@ -1183,7 +1183,11 @@ void CListBoxWidget::HandleKeyDown(
 			break;
 
 		default:
-			if (this->bAllowFiltering && !(KeyboardEvent.keysym.mod & KMOD_SHIFT)) {
+			if (
+				this->bAllowFiltering
+				&& !(KeyboardEvent.keysym.mod & KMOD_SHIFT)
+				&& !(KeyboardEvent.keysym.mod & KMOD_CTRL)
+			) {
 				const WCHAR character = KeyboardEvent.keysym.sym == SDLK_SPACE ? We(' ') : TranslateUnicodeKeysym(KeyboardEvent.keysym);
 
 				if (IsValidFilterCharacter(character)) {
@@ -1199,7 +1203,7 @@ void CListBoxWidget::HandleKeyDown(
 				if (KeyboardEvent.keysym.mod & KMOD_CTRL)
 				{
 					const WCHAR wc = TranslateUnicodeKeysym(KeyboardEvent.keysym);
-					if (SelectLineStartingWith(wc))
+					if (wc != 0 && SelectLineStartingWith(wc))
 						wNewCursorLine = this->wCursorLine;
 				}
 			}
