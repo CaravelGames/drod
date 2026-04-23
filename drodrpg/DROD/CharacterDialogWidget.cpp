@@ -4053,6 +4053,20 @@ const
 			wstr += command.label;
 		}
 		break;
+		case CCharacterCommand::CC_PushToArrayVar:
+		{
+			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.w);
+			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+			wstr += wszSpace;
+			wstr += command.label;
+		}
+		break;
+		case CCharacterCommand::CC_PopFromArrayVar:
+		{
+			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.w);
+			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+		}
+		break;
 		case CCharacterCommand::CC_ClearArrayVar:
 		{
 			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.x);
@@ -4446,6 +4460,10 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_WorldMapIcon:
 		case CCharacterCommand::CC_WorldMapImage:
 		case CCharacterCommand::CC_GoToWorldMap:
+		case CCharacterCommand::CC_CountEntityType:
+		case CCharacterCommand::CC_CountItem:
+		case CCharacterCommand::CC_CountItemGroup:
+		case CCharacterCommand::CC_PopFromArrayVar:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -4500,6 +4518,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		}
 		break;
 		case CCharacterCommand::CC_ArrayVarSet:
+		case CCharacterCommand::CC_PushToArrayVar:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 			//no break
@@ -4670,6 +4689,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, g_pTheDB->GetMessageText(MID_VarSetAt));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSet, g_pTheDB->GetMessageText(MID_ArrayVarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSetAt, g_pTheDB->GetMessageText(MID_ArrayVarSetAt));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_PushToArrayVar, g_pTheDB->GetMessageText(MID_PushToArrayVar));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_PopFromArrayVar, g_pTheDB->GetMessageText(MID_PopFromArrayVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ClearArrayVar, g_pTheDB->GetMessageText(MID_ClearArrayVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TurnIntoMonster, g_pTheDB->GetMessageText(MID_TurnIntoMonster));
@@ -5641,6 +5662,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT WORLD_MAP_IMAGE[] = { TAG_IMAGEDISPLAY, TAG_X_COORD, TAG_Y_COORD, 0 };
 	static const UINT ARRAYVARQUERY[] = { TAG_ARRAYVARLIST, TAG_VARCOMPLIST2, TAG_VARVALUE, 0 };
 	static const UINT ENTITY_LIST[] = { TAG_ENTITY_LISTBOX, 0 };
+	static const UINT ARRAYVARPUSH[] = { TAG_GOTOLABELTEXT, TAG_VARADD, TAG_ARRAYVAR_REMOVE, TAG_ARRAYVARLIST, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5747,6 +5769,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ENTITY_LIST,        //CC_CountEntityType
 		ITEMS,              //CC_CountItem
 		WAITFORITEMGROUP,   //CC_CountItemGroup
+		ARRAYVARPUSH,       //CC_PushToArrayVar
+		CLEARARRAYVAR,      //CC_PopFromArrayVar
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -5790,6 +5814,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT ARRAYSET_L[] =               { TAG_ARRAYINDEX_LABEL, TAG_ARRAYVAR_TEXTLABEL, 0 };
 	static const UINT OPENTILE_L[] =               { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
 	static const UINT ATTACKTILE_L[] =             { TAG_NO_DEF_LABEL, 0 };
+	static const UINT ARRAYPUSH_L[] =              { TAG_ARRAYVAR_TEXTLABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,
@@ -5896,6 +5921,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_CountEntityType
 		NO_LABELS,          //CC_CountItem
 		NO_LABELS,          //CC_CountItemType
+		ARRAYPUSH_L,        //CC_PushToArrayVar
+		NO_LABELS,          //CC_PopFromArrayVar
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6853,6 +6880,23 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_PushToArrayVar:
+		{
+			this->pCommand->w = this->pArrayVarListBox->GetSelectedItem();
+			CTextBoxWidget* pVarText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
+			ASSERT(pVarText);
+			this->pCommand->label = pVarText->GetText();
+			AddCommand();
+		}
+		break;
+		case CCharacterCommand::CC_PopFromArrayVar:
+		{
+			this->pCommand->w = this->pArrayVarListBox->GetSelectedItem();
+			AddCommand();
+		}
+		break;
+
 		case CCharacterCommand::CC_ClearArrayVar:
 		{
 			this->pCommand->x = this->pArrayVarListBox->GetSelectedItem();
@@ -7423,6 +7467,20 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			ASSERT(pVarText);
 			pVarOperand->SetText(_itoW(this->pCommand->flags, temp, 10));
 			pVarText->SetText(this->pCommand->label.c_str());
+		}
+		break;
+		case CCharacterCommand::CC_PushToArrayVar:
+		{
+			this->pArrayVarListBox->SelectItem(this->pCommand->w);
+			CTextBoxWidget* pVarText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
+			ASSERT(pVarText);
+			pVarText->SetText(this->pCommand->label.c_str());
+		}
+		break;
+		case CCharacterCommand::CC_PopFromArrayVar:
+		{
+			this->pArrayVarListBox->SelectItem(this->pCommand->w);
 		}
 		break;
 		case CCharacterCommand::CC_ClearArrayVar:
@@ -8422,6 +8480,57 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	break;
 
+	case CCharacterCommand::CC_PushToArrayVar:
+	{
+		parseChar('"');
+		WSTRING varName;
+		const bool bRes = getTextToLastQuote(pText, pos, varName);
+		if (!bRes)
+		{
+			delete pCommand;
+			return NULL;
+		}
+
+		UINT tempIndex = 0;
+		pCommand->w = findTextMatch(this->pArrayVarListBox, varName.c_str(), tempIndex, bFound);
+		if (!bFound)
+		{
+			pCommand->w = AddVar(varName.c_str());
+			if (!pCommand->w)
+			{
+				delete pCommand;
+				return NULL;
+			}
+		}
+		skipWhitespace;
+		pCommand->label = pText + pos;
+	}
+	break;
+	case CCharacterCommand::CC_PopFromArrayVar:
+	{
+		parseChar('"');
+		WSTRING varName;
+		const bool bRes = getTextToLastQuote(pText, pos, varName);
+		if (!bRes)
+		{
+			delete pCommand;
+			return NULL;
+		}
+
+		UINT tempIndex = 0;
+		pCommand->w = findTextMatch(this->pArrayVarListBox, varName.c_str(), tempIndex, bFound);
+		if (!bFound)
+		{
+			pCommand->w = AddVar(varName.c_str());
+			if (!pCommand->w)
+			{
+				delete pCommand;
+				return NULL;
+			}
+		}
+	}
+	break;
+
 	case CCharacterCommand::CC_ClearArrayVar:
 	{
 		parseChar('"');
@@ -9176,6 +9285,27 @@ WSTRING CCharacterDialogWidget::toText(
 		}
 		wstr += wszSpace;
 		wstr += c.label;
+	}
+	break;
+
+	case CCharacterCommand::CC_PushToArrayVar:
+	{
+		UINT varId = c.w;
+		const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(varId);
+		wstr += wszQuote;
+		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+		wstr += wszQuote;
+		wstr += wszSpace;
+		wstr += c.label;
+	}
+	break;
+	case CCharacterCommand::CC_PopFromArrayVar:
+	{
+		UINT varId = c.w;
+		const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(varId);
+		wstr += wszQuote;
+		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+		wstr += wszQuote;
 	}
 	break;
 

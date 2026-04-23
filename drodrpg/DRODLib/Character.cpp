@@ -3582,6 +3582,28 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_PushToArrayVar:
+			{
+				PushToArrayVar(command, pGame, CueEvents);
+
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_PopFromArrayVar:
+			{
+				int value = PopFromArrayVar(command, pGame);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_X, value);
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_WaitForArrayEntry:
 			{
 				if (!DoesArrayVarSatisfy(command, pGame))
@@ -4221,6 +4243,71 @@ void CCharacter::SetArrayVariable(
 		scriptArrays[varIndex][arrayIndex] = x;
 		++arrayIndex;
 	}
+}
+
+//*****************************************************************************
+void CCharacter::PushToArrayVar(
+	const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
+{
+	int arrayIndex = 0;
+	UINT varIndex = command.w;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varIndex))
+		return; //Don't set normal var as an array var
+
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+	const ScriptArrayMap::iterator& finder = scriptArrays.find(varIndex);
+
+	//Array vars are stored as ordered maps, so the value with the highest key
+	//can always be found with the reverse iterator.
+	if (finder != scriptArrays.end()) {
+		map<int, int>& array = finder->second;
+		if (!array.empty()) {
+			int finalIndex = array.rbegin()->first;
+			arrayIndex = finalIndex + 1;
+		}
+	}
+
+	vector<WSTRING> expressions = WCSExplode(command.label, *wszSemicolon);
+	for (vector<WSTRING>::const_iterator expression = expressions.begin();
+		expression != expressions.end(); ++expression) {
+		if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
+			break;
+		}
+
+		UINT index = 0;
+		int operand = parseExpression(expression->c_str(), index, pGame, this);
+		scriptArrays[varIndex][arrayIndex] = operand;
+		++arrayIndex;
+	}
+}
+
+//*****************************************************************************
+int CCharacter::PopFromArrayVar(
+	const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	UINT varId = command.w;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
+		return 0;
+
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+	const ScriptArrayMap::iterator& finder = scriptArrays.find(varId);
+
+	if (finder == scriptArrays.end()) {
+		return 0;
+	}
+
+	map<int, int>& array = finder->second;
+	if (array.empty()) {
+		return 0;
+	}
+
+	//Array vars are stored as ordered maps, so the value with the highest key
+	//can always be found with the reverse iterator.
+	map<int, int>::const_reverse_iterator iter = array.rbegin();
+	int value = iter->second;
+	array.erase(iter->first);
+
+	return value;
 }
 
 //*****************************************************************************

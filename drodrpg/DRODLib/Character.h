@@ -277,6 +277,9 @@ private:
 
 	void PackExtraVars(const bool bSaveScript);
 
+	void PushToArrayVar(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
+	int  PopFromArrayVar(const CCharacterCommand& command, CCurrentGame* pGame);
+
 	void SetDefaultMovementType();
 	bool setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);

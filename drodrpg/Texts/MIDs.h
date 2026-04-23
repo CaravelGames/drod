@@ -1816,6 +1816,8 @@ enum MID_CONSTANT {
   MID_CountEntityType = 2170,
   MID_CountItem = 2171,
   MID_CountItemGroup = 2172,
+  MID_PushToArrayVar = 2174,
+  MID_PopFromArrayVar = 2175,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
