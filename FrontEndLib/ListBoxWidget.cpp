@@ -1291,6 +1291,9 @@ void CListBoxWidget::UpdateFilter(WSTRING wstrFilter)
 			CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
 			if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
 		}
+	} else if (this->bFilterDispatchOnEmpty) {
+		CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
+		if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
 	}
 
 }
