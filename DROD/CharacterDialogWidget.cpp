@@ -5164,6 +5164,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
+	this->pActionListBox->SetFilterDispatchOnEmpty(true);
 }
 
 //*****************************************************************************
