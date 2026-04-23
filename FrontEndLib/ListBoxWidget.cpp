@@ -79,6 +79,7 @@ CListBoxWidget::CListBoxWidget(
 	, wDraggingLineNo(UINT(-1))
 	, bRearranged(false)
 	, bAllowFiltering(false)
+	, bFilterDispatchOnEmpty(false)
 	, wstrActiveFilter(wszEmpty)
 {
 	if (CListBoxWidget::wstrFilterWord.size() == 0)
