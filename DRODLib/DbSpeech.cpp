@@ -284,7 +284,6 @@ bool CDbSpeech::UpdateNew()
 	//Save new sound clip, if set.
 	if (this->pSound)
 	{
-		ASSERT(!this->dwDataID);   //no sound data should be associated with this speech object yet
 		ASSERT(this->bDirtySound); //dirty bit for sound should be set
 		if (this->pSound->Update())
 			this->dwDataID = this->pSound->dwDataID;
@@ -378,7 +377,7 @@ MESSAGE_ID CDbSpeech::SetProperty(
 
 //*****************************************************************************
 MESSAGE_ID CDbSpeech::SetProperty(
-//Used during XML data import.                      
+//Used during XML data import.
 //According to pType, convert string to proper datatype and member
 //
 //Returns: whether operation was successful
