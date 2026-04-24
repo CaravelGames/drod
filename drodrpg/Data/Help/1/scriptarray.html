@@ -31,8 +31,19 @@
         As with other variable commands, an expression can be used in place of a constant value.</li>
         <li><a name="count-entries"><b>Count array entries</b></a> - Counts the number of values in the array that satisfies the given comparison to a given value.
         The result is stored in <b>_ReturnX</b>.</li>
+    </ul></p>
+    <p>Additionally, the <a name="array-range"><b>Get array var range</b></a> command can be used to find an array's highest and lowest index. The highest index among set
+    values is stored in <b>_ReturnX</b>, and the lowest index among set values is stored in <b>_ReturnY</b>. If this command is used on an empty array, <b>_ReturnX</b> will be set to -1,
+    and <b>_ReturnY</b> to 1.</p>
+
+    <p><u>Pushing and popping</u></p>
+    <p>Two commands support dynamic reading and writing to an array, rather than requiring the use of set or cacluated indices:</p>
+    <ul>
+        <li><a name="push-to"><b>Push to array var</b></a> - This command works similarly to <b>Set array var</b>, except it does not use an index argument or operator. Instead, it assigns values starting
+        from the index after the current highest-index entry. If no values in the array are set, it will begin from zero.</li>
+        <li><a name="pop-from"><b>Pop from array var</b></a> - This command will set <b>_ReturnX</b> to the value in the current highest-index entry. Then, it will clear that entry, returning it to an unset state.
+        Popping a value from an empty array will set <b>_ReturnX</b> to zero.</li>
     </ul>
-    </p>
 
     <p><u>Examples of valid array expressions</u></p>
     <ul>
@@ -43,7 +54,7 @@
     </ul>
 
     <p><u>Clearing arrays</u></p>
-    <p>The <b>Clear array var</b> command can be used to reset all values in an array variable to zero.</p>
+    <p>The <b>Clear array var</b> command can be used to clear all entries in an array variable.</p>
 <hr />
 <a href="script.html">Command list</a><br />
 <a href="character.html">Character Scripting</a><br />
