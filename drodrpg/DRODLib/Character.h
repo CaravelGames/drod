@@ -262,6 +262,7 @@ public:
 private:
 	bool BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);
 	void Disappear();
+	std::pair<int, int> GetArrayRange(const CCharacterCommand& command, CCurrentGame* pGame) const;
 	int  GetIndexOfCommandWithLabel(const int label) const;
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;

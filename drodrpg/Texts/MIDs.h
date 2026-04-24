@@ -1818,6 +1818,7 @@ enum MID_CONSTANT {
   MID_CountItemGroup = 2172,
   MID_PushToArrayVar = 2174,
   MID_PopFromArrayVar = 2175,
+  MID_ArrayVarRange = 2176,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
