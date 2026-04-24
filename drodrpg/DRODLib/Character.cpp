@@ -3618,6 +3618,18 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_ArrayVarRange:
+			{
+				std::pair<int, int> range = GetArrayRange(command, pGame);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_X, range.first);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_Y, range.second);
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
@@ -5177,6 +5189,37 @@ int CCharacter::CountArrayVarEntries(const CCharacterCommand& command, CCurrentG
 	}
 
 	return count;
+}
+
+//*****************************************************************************
+//Returns: highest and lower indices in an array var. If the array is empty or
+//not initialized, return otherwise impossible (-1, 1) pair.
+std::pair<int, int> CCharacter::GetArrayRange(
+	const CCharacterCommand& command, CCurrentGame* pGame) const
+{
+	std::pair<int, int> range = std::make_pair<int, int>(-1, 1);
+
+	const UINT varId = command.w;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
+		return range; //Not for non-arrays, but we have to return something
+
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+	ScriptArrayMap::const_iterator finder = scriptArrays.find(varId);
+	if (finder == scriptArrays.end()) {
+		return range;
+	}
+
+	const map<int, int>& array = finder->second;
+	if (array.empty()) {
+		return range;
+	}
+
+	//As array vars are stored as ordered maps, we can use iterator and reverse
+	//iterator to end the first and last indices.
+	range.first = array.rbegin()->first;
+	range.second = array.begin()->first;
+
+	return range;
 }
 
 //*****************************************************************************

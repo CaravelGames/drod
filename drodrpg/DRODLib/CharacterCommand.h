@@ -395,6 +395,7 @@ public:
 		CC_CountItemGroup,      //Count number of game elements from group (flags) that exist in rect (x,y,w,h).
 		CC_PushToArrayVar,      //Set array var W starting from the index after the highest set index.
 		CC_PopFromArrayVar,     //Set _ReturnX to the highest set value from array var W, then unset that array entry.
+		CC_ArrayVarRange,       //Set _ReturnX and _ReturnY to the highest and lowest index of array var W
 		CC_Count
 	};
 

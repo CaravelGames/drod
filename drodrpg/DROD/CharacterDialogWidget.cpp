@@ -4062,6 +4062,7 @@ const
 		}
 		break;
 		case CCharacterCommand::CC_PopFromArrayVar:
+		case CCharacterCommand::CC_ArrayVarRange:
 		{
 			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.w);
 			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
@@ -4464,6 +4465,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_CountItem:
 		case CCharacterCommand::CC_CountItemGroup:
 		case CCharacterCommand::CC_PopFromArrayVar:
+		case CCharacterCommand::CC_ArrayVarRange:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -4728,6 +4730,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_CountEntityType, g_pTheDB->GetMessageText(MID_CountEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_CountItem, g_pTheDB->GetMessageText(MID_CountItem));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_CountItemGroup, g_pTheDB->GetMessageText(MID_CountItemGroup));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarRange, g_pTheDB->GetMessageText(MID_ArrayVarRange));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, g_pTheDB->GetMessageText(MID_SetDarkness));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, g_pTheDB->GetMessageText(MID_SetCeilingLight));
@@ -5771,6 +5774,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WAITFORITEMGROUP,   //CC_CountItemGroup
 		ARRAYVARPUSH,       //CC_PushToArrayVar
 		CLEARARRAYVAR,      //CC_PopFromArrayVar
+		CLEARARRAYVAR,      //CC_ArrayVarRange
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -5923,6 +5927,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_CountItemType
 		ARRAYPUSH_L,        //CC_PushToArrayVar
 		NO_LABELS,          //CC_PopFromArrayVar
+		NO_LABELS,          //CC_ArrayVarRange
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6891,6 +6896,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 		case CCharacterCommand::CC_PopFromArrayVar:
+		case CCharacterCommand::CC_ArrayVarRange:
 		{
 			this->pCommand->w = this->pArrayVarListBox->GetSelectedItem();
 			AddCommand();
@@ -7479,6 +7485,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		}
 		break;
 		case CCharacterCommand::CC_PopFromArrayVar:
+		case CCharacterCommand::CC_ArrayVarRange:
 		{
 			this->pArrayVarListBox->SelectItem(this->pCommand->w);
 		}
@@ -8507,6 +8514,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	break;
 	case CCharacterCommand::CC_PopFromArrayVar:
+	case CCharacterCommand::CC_ArrayVarRange:
 	{
 		parseChar('"');
 		WSTRING varName;
@@ -9300,6 +9308,7 @@ WSTRING CCharacterDialogWidget::toText(
 	}
 	break;
 	case CCharacterCommand::CC_PopFromArrayVar:
+	case CCharacterCommand::CC_ArrayVarRange:
 	{
 		UINT varId = c.w;
 		const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(varId);

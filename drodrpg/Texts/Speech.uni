@@ -1859,3 +1859,7 @@ Push to array var
 [MID_PopFromArrayVar]
 [eng]
 Pop from array var
+
+[MID_ArrayVarRange]
+[eng]
+Get array var range
