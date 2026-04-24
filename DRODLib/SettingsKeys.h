@@ -37,6 +37,9 @@ namespace INIKey
 	DEF(Style);
 	DEF(ValidateSavesOnImport);
 	DEF(Windib);
+	/// By default deleting Speech also deletes the sound data attached to it.
+	/// With this enabled the sound data will be kept and has to be deleted manually.
+	DEF(KeepSoundsFromDeletedSpeech);
 }
 
 namespace Settings

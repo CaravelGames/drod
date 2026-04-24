@@ -45,13 +45,18 @@ protected:
 	friend class CDb;
 
 	CDbSpeeches()
-		: CDbVDInterface<CDbSpeech>(V_Speech, p_SpeechID)
+		: CDbVDInterface<CDbSpeech>(V_Speech, p_SpeechID),
+		bKeepSoundsFromDeletedSpeech(false)
 	{}
 
 public:
 	void              Delete(const UINT dwSpeechID);
 	virtual bool      ExportText(const UINT dwSpeechID, CDbRefs &dbRefs, CStretchyBuffer &str);
 	virtual void      ExportXML(const UINT dwSpeechID, CDbRefs &dbRefs, string &str, const bool bRef=false);
+
+	/// By default deleting speech deletes associated sound data. With this set
+	/// to true the data is kept and has to be managed manually.
+	bool              bKeepSoundsFromDeletedSpeech;
 };
 
 //*****************************************************************************

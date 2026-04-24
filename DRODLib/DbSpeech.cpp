@@ -53,9 +53,11 @@ void CDbSpeeches::Delete(
 	const UINT dwTextMID = (UINT) (p_MessageID(row));
 	if (dwTextMID)
 		DeleteMessage(static_cast<MESSAGE_ID>(dwTextMID));
-	const UINT dwDataID = (UINT) (p_DataID(row));
-	if (dwDataID)
-		g_pTheDB->Data.Delete(dwDataID);
+	if (!this->bKeepSoundsFromDeletedSpeech) {
+		const UINT dwDataID = (UINT) (p_DataID(row));
+		if (dwDataID)
+			g_pTheDB->Data.Delete(dwDataID);
+	}
 
 	SpeechView.RemoveAt(dwSpeechRowI);
 
