@@ -32,9 +32,9 @@
         <li><a name="count-entries"><b>Count array entries</b></a> - Counts the number of values in the array that satisfies the given comparison to a given value.
         The result is stored in <b>_ReturnX</b>.</li>
     </ul></p>
-    <p>Additionally, the <a name="array-range"><b>Get array var range</b></a> command can be used to find an array's highest and lowest index. The highest index among set
-    values is stored in <b>_ReturnX</b>, and the lowest index among set values is stored in <b>_ReturnY</b>. If this command is used on an empty array, <b>_ReturnX</b> will be set to -1,
-    and <b>_ReturnY</b> to 1.</p>
+    <p>Additionally, the <a name="array-range"><b>Get array var range</b></a> command can be used to find an array's highest and lowest index. The lowest index among set
+    values is stored in <b>_ReturnX</b>, and the highest index among set values is stored in <b>_ReturnY</b>. If this command is used on an empty array, <b>_ReturnX</b> will be set to 1,
+    and <b>_ReturnY</b> to -1, which is not a possible outcome for non-empty arrays.</p>
 
     <p><u>Pushing and popping</u></p>
     <p>Two commands support dynamic reading and writing to an array, rather than requiring the use of set or cacluated indices:</p>

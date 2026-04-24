@@ -5193,11 +5193,11 @@ int CCharacter::CountArrayVarEntries(const CCharacterCommand& command, CCurrentG
 
 //*****************************************************************************
 //Returns: highest and lower indices in an array var. If the array is empty or
-//not initialized, return otherwise impossible (-1, 1) pair.
+//not initialized, return otherwise impossible (1, -1) pair.
 std::pair<int, int> CCharacter::GetArrayRange(
 	const CCharacterCommand& command, CCurrentGame* pGame) const
 {
-	std::pair<int, int> range = std::make_pair<int, int>(-1, 1);
+	std::pair<int, int> range = std::make_pair<int, int>(1, -1);
 
 	const UINT varId = command.w;
 	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
@@ -5216,8 +5216,8 @@ std::pair<int, int> CCharacter::GetArrayRange(
 
 	//As array vars are stored as ordered maps, we can use iterator and reverse
 	//iterator to end the first and last indices.
-	range.first = array.rbegin()->first;
-	range.second = array.begin()->first;
+	range.first = array.begin()->first;
+	range.second = array.rbegin()->first;
 
 	return range;
 }
