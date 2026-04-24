@@ -4554,7 +4554,7 @@ int CCharacter::CountEntityType(
 			}
 
 			if (pMonster->wType == pflags) {
-				if (pMonster->IsPiece()) {
+				if (pMonster->IsPiece() || pMonster->IsLongMonster()) {
 					pMonster = pMonster->GetOwningMonsterConst();
 					if (seenHeads.count(pMonster)) {
 						continue;
