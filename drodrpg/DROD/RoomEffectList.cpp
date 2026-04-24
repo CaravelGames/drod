@@ -180,14 +180,14 @@ void CRoomEffectList::RemoveOverlayEffectsInGroup(
 	list<CEffect*>::const_iterator iSeek = this->Effects.begin();
 	while (iSeek != this->Effects.end())
 	{
-		if ((*iSeek)->GetEffectType() == EIMAGEOVERLAY)
+		CEffect* pDelete = *iSeek;
+		++iSeek;
+		if (pDelete->GetEffectType() == EIMAGEOVERLAY)
 		{
 			//Remove from list.
-			CEffect* pDelete = *iSeek;
 			ASSERT(pDelete);
 			if (pDelete->RequestsRetainOnClear() && !bForceClearAll)
 			{
-				++iSeek;
 				continue;
 			}
 
@@ -195,12 +195,9 @@ void CRoomEffectList::RemoveOverlayEffectsInGroup(
 
 			if (pDeleteOverlay->getGroup() == clearGroup) {
 				DirtyTilesForRects(pDelete->dirtyRects);  //touch up area before deleting
-				++iSeek;
 				this->Effects.remove(pDelete);
 				delete pDelete;
 			}
 		}
-		else
-			++iSeek;
 	}
 }
