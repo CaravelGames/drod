@@ -284,7 +284,6 @@ bool CDbSpeech::UpdateNew()
 	//Save new sound clip, if set.
 	if (this->pSound)
 	{
-		ASSERT(!this->dwDataID);   //no sound data should be associated with this speech object yet
 		ASSERT(this->bDirtySound); //dirty bit for sound should be set
 		if (this->pSound->Update())
 			this->dwDataID = this->pSound->dwDataID;
