@@ -93,6 +93,7 @@ CImageOverlayEffect::CImageOverlayEffect(
 	, alpha(255), drawAlpha(255)
 	, angle(0), scale(ORIGINAL_SCALE)
 	, jitter(0)
+	, lastJitterX(0), lastJitterY(0)
 	, xTile(0), yTile(0)
 	, repetitions(0), xRepeatOffset(0), yRepeatOffset(0)
 	, index(UINT(-1))
@@ -166,7 +167,13 @@ int CImageOverlayEffect::getGroup() const
 	return ImageOverlayCommand::DEFAULT_GROUP;
 }
 
-bool CImageOverlayEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
+bool CImageOverlayEffect::Update(
+	// Advances the animation by specified amount of time
+	// Return: false if the effect has finished and should be removed
+	//
+	// Params:
+	const UINT wDeltaTime,      //(in) Time, in ms, by which to advance the effect
+	const Uint32 dwTimeElapsed) //(in) Total duration, in ms, of the effect so far
 {
 	if (!this->pImageSurface)
 		return false;
@@ -186,15 +193,25 @@ bool CImageOverlayEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 		this->bPrepareAlteredImage = false;
 	}
 
-	PrepareDrawProperties();
+	// Only recalculate jitter in Update() so that it stays consistent
+	// between redraws
+	if (this->jitter) {
+		this->lastJitterX = ROUND(fRAND_MID(this->jitter));
+		this->lastJitterY = ROUND(fRAND_MID(this->jitter));
+	}
+	else {
+		this->lastJitterX = 0;
+		this->lastJitterY = 0;
+	}
 
 	return true;
 }
 
 void CImageOverlayEffect::PrepareDrawProperties()
+// Prepare all the necessary variables for drawing
 {
-	this->drawX = this->x;
-	this->drawY = this->y;
+	this->drawX = this->x + this->lastJitterX;
+	this->drawY = this->y + this->lastJitterY;
 
 	if (this->jitter) {
 		this->drawX += ROUND(fRAND_MID(this->jitter));
@@ -242,6 +259,8 @@ void CImageOverlayEffect::PrepareDrawProperties()
 
 void CImageOverlayEffect::Draw(SDL_Surface& destSurface)
 {
+	PrepareDrawProperties();
+
 	SDL_Surface* pSrcSurface;
 
 	if (this->pTiledSurface)

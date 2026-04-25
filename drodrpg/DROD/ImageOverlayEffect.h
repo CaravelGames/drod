@@ -127,6 +127,7 @@ private:
 
 	// Properties used for the drawing
 	int drawX, drawY; // Position to draw image after applying any active effects
+	int lastJitterX, lastJitterY; // Store the jitter to make it consistent across redraws without time advancing
 	Uint8 drawAlpha;
 	SDL_Rect drawSourceRect;
 	SDL_Rect drawDestinationRect;
