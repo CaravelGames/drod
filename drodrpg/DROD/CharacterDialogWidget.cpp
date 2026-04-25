@@ -2275,7 +2275,6 @@ void CCharacterDialogWidget::OnClick(
 			} else {
 				//Command addition was canceled.
 				//Clear any data generated for the command.
-				ASSERT(!this->pSound || !this->pSound->dwDataID);	//should be fresh (not added to DB yet)
 				delete this->pSound;
 				this->pSound = NULL;
 			}
