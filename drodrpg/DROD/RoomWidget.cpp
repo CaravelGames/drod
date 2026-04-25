@@ -2647,6 +2647,11 @@ bool CRoomWidget::LoadFromCurrentGame(
 //True if successful, false if not.
 {
 	ASSERT(pSetCurrentGame);
+	if (this->pCurrentGame == pSetCurrentGame) {
+		// Otherwise if we open settings in-game or leave to main menu and
+		// continue the effects will be unloaded
+		RetainImageOverlay(true);
+	}
 	this->pCurrentGame = pSetCurrentGame;
 	return LoadFromRoom(pSetCurrentGame->pRoom, bLoad);
 }
@@ -4669,6 +4674,39 @@ void CRoomWidget::RerenderRoomCeilingLight(CCueEvents& CueEvents)
 		this->ceilingLightChanges.removeAfter(currentTurn);
 		this->bCeilingLightsRendered = false;
 		ProcessLightmap();
+	}
+}
+
+//*****************************************************************************
+void CRoomWidget::RetainImageOverlay(const bool bVal)
+//Mark image overlays to be retained - usen when undoing a move or when
+//reactivating a game screen, ensures overlays are retained between the
+//changes
+{
+	RetainImageOverlay(this->pOLayerEffects, bVal);
+	RetainImageOverlay(this->pTLayerEffects, bVal);
+	RetainImageOverlay(this->pMLayerEffects, bVal);
+	RetainImageOverlay(this->pLastLayerEffects, bVal);
+}
+
+void CRoomWidget::RetainImageOverlay(CRoomEffectList* pEffectList, const bool bVal)
+{
+	ASSERT(pEffectList);
+	const UINT currentTurn = this->pCurrentGame ? this->pCurrentGame->wTurnNo : 0;
+
+	list<CEffect*>& effects = pEffectList->Effects;
+	for (list<CEffect*>::iterator it = effects.begin(); it != effects.end(); ++it)
+	{
+		CEffect* pEffect = *it;
+		if (pEffect->GetEffectType() == EIMAGEOVERLAY) {
+			bool thisVal = bVal;
+			if (thisVal) {
+				CImageOverlayEffect* pImageEffect = DYN_CAST(CImageOverlayEffect*, CEffect*, pEffect);
+				UINT startTurn = pImageEffect->getStartTurn();
+				thisVal = startTurn <= currentTurn;
+			}
+			pEffect->RequestRetainOnClear(thisVal);
+		}
 	}
 }
 

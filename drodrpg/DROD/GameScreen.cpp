@@ -9120,6 +9120,7 @@ void CGameScreen::UpdateUIAfterMoveUndo(bool bReloadEntireMap) //[default=false]
 
 	StopAmbientSounds();
 	ClearSpeech(false);  //retain speech that started before the previous turn
+	this->pRoomWidget->RetainImageOverlay(true);
 
 	this->pRoomWidget->ClearEffects();
 	this->pRoomWidget->RenderRoomLighting();
@@ -9137,6 +9138,7 @@ void CGameScreen::UpdateUIAfterMoveUndo(bool bReloadEntireMap) //[default=false]
 	DrawCurrentTurn();
 
 	RetainSubtitleCleanup();
+	this->pRoomWidget->RetainImageOverlay(false);
 }
 
 //*****************************************************************************
