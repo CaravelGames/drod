@@ -288,7 +288,7 @@ public:
 	void setVar(const ScriptVars::Predefined var, const UINT val);
 
 	static bool IsGlobalStatIndex(UINT i);
-	void Pack(CDbPackedVars& stats);
+	void Pack(CDbPackedVars& stats) const;
 	void Unpack(CDbPackedVars& stats);
 
 //protected:
