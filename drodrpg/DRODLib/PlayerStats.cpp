@@ -639,7 +639,7 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 }
 
 //***************************************************************************************
-void PlayerStats::Pack(CDbPackedVars& stats)
+void PlayerStats::Pack(CDbPackedVars& stats) const
 //Writes player (and global) RPG stats to the stats buffer.
 {
 	for (UINT i=PredefinedVarCount; i--; )
