@@ -86,13 +86,12 @@ public:
 	static bool    FreezingTimeStamps() {return bFreezeTimeStamps;}
 	static void    FreezeTimeStamps(const bool bFlag) {bFreezeTimeStamps = bFlag;}
 
-	bool        ValidateSavedGame(const UINT savedGameID, WSTRING& scoreCheckpointName,
-			PlayerStats& ps);
+	bool        ValidateSavedGame(const UINT savedGameID, std::vector<ScoreCheckpointData>& scoresData);
 	bool        ValidateMoveSequence(const UINT holdID, const CStretchyBuffer& moves,
-			WSTRING& scoreCheckpointName, PlayerStats& ps);
+			 std::vector<ScoreCheckpointData>& scoresData);
 	bool        ValidateMoveSequenceCheckCueEvents(
 			CCueEvents& CueEvents, CCurrentGame* pGame, const UINT command,
-			bool& bGood, WSTRING& scoreCheckpointName, PlayerStats& ps) const;
+			bool& bGood, std::vector<ScoreCheckpointData>& scoresData) const;
 
 	//Use these members to access data directly.  Requires more knowledge of
 	//the database.

@@ -3341,13 +3341,15 @@ void CCharacter::Process(
 					if (bNotFrozen ||  //when playing back commands, don't do this stuff
 						this->pCurrentGame->IsValidatingPlayback()) //unless we're validating
 					{
-						CDbMessageText* pScoreIDText = new CDbMessageText();
-						*pScoreIDText = command.label.c_str();
-						CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
+						PlayerStats stats = player.st;
+						stats.ATK = pGame->getPlayerATK();
+						stats.DEF = pGame->getPlayerDEF();
+						ScoreCheckpointData* pScoreData = new ScoreCheckpointData(stats, command.label);
+						CueEvents.Add(CID_ScoreCheckpoint, pScoreData, true);
 						//Score save and local highscore data will be created at end of turn process
-						//Creating a score during turn processing can cause problems with validation, as it
-						//will only check the end state of a turn. We also don't know if this turn will finish
-						//yet - it might have to be rewound due to blocked or stalled combat.
+						//Creating a score during turn processing can cause problems with validation, as
+						//we don't know if this turn will finish yet - it might have to be rewound due to
+						//blocked or stalled combat. (or the player might die)
 					}
 				}
 				bProcessNextCommand = true;
