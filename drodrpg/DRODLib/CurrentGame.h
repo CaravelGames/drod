@@ -189,6 +189,16 @@ struct TarstuffStab {
 	CMonster* pTarstuffMonster;
 };
 
+//*******************************************************************************
+class ScoreCheckpointData : public CAttachableObject {
+public:
+	ScoreCheckpointData(PlayerStats ps, WSTRING name)
+		: stats(ps), scorepointName(name) {}
+	~ScoreCheckpointData() {}
+	PlayerStats stats;
+	WSTRING scorepointName;
+};
+
 typedef pair<ScriptVars::MapIcon, ScriptVars::MapIconState> MapIconPair;
 
 //*******************************************************************************
@@ -384,8 +394,8 @@ public:
 	bool     UseAccessory(CCueEvents &CueEvents);
 	bool     WalkDownStairs();
 //	UINT     WriteCurrentRoomDieDemo();
-	UINT     WriteLocalHighScore(const WSTRING& name);
-	UINT     WriteScoreCheckpointSave(const WSTRING& name);
+	UINT     WriteLocalHighScore(const ScoreCheckpointData& scoreData);
+	UINT     WriteScoreCheckpointSave(const ScoreCheckpointData& scoreData);
 
 	bool     PrepTempGameForRoomDisplay(const UINT roomID);
 

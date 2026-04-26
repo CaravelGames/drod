@@ -198,7 +198,7 @@ enum CUEEVENT_ID
 
 	//A score checkpoint is triggered.
 	//
-	//Private data: CDbMessageText *pScoreIDText (one)
+	//Private data: ScoreCheckpointData *pScoreData (one)
 	CID_ScoreCheckpoint,
 
 	//If any calls to CDbRoom::Plot() were made in the current room, this event will
