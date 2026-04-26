@@ -183,7 +183,7 @@ private:
 	bool           ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand);
 	void           ReattachRetainedSubtitles();
 	void           RestartRoom(int nCommand, CCueEvents& CueEvents);
-	void           ScoreCheckpoint(const WCHAR* pScoreIDText);
+	void           ScoreCheckpoint(const ScoreCheckpointData& scoreData);
 	WSTRING        GetScoreCheckpointLine(const MID_CONSTANT statName, const UINT statAMount, const int scoreMultiplier, const UINT statScore);
 	void           SendAchievement(const char* achievement, const UINT dwScore=0);
 	void           ShowBigMap();

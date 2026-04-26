@@ -265,8 +265,7 @@ bool CDb::ValidateSavedGame(
 //
 //Params:
 	const UINT savedGameID,
-	WSTRING& scoreCheckpointName, //(out) name of last score checkpoint encountered
-	PlayerStats& ps) //(out) player stats when last checkpoint is encountered
+	std::vector<ScoreCheckpointData>& scoresData) //(out) scorepoints when last checkpoint is encountered
 {
 	CDbSavedGame *pSavedGame = this->SavedGames.GetByID(savedGameID);
 	if (!pSavedGame)
@@ -291,7 +290,7 @@ bool CDb::ValidateSavedGame(
 	const CStretchyBuffer& moveSequence = pSavedGameMoves->getMoves();
 
 	const UINT holdID = this->SavedGames.GetHoldIDofSavedGame(savedGameID);
-	const bool bGood = ValidateMoveSequence(holdID, moveSequence, scoreCheckpointName, ps);
+	const bool bGood = ValidateMoveSequence(holdID, moveSequence, scoresData);
 
 	delete pSavedGameMoves;
 	delete pSavedGame;
@@ -308,8 +307,7 @@ bool CDb::ValidateMoveSequence(
 //Params:
 	const UINT holdID,
 	const CStretchyBuffer& moves, //full move sequence
-	WSTRING& scoreCheckpointName, //(out) name of last score checkpoint encountered
-	PlayerStats& ps) //(out) player stats when last checkpoint is encountered
+	std::vector<ScoreCheckpointData>& scoresData) //(out) scorepoints when last checkpoint is encountered
 {
 	const UINT bufSize = moves.Size();
 
@@ -338,7 +336,7 @@ bool CDb::ValidateMoveSequence(
 			break;
 		}
 
-		if (!ValidateMoveSequenceCheckCueEvents(CueEvents, pGame, command, bGood, scoreCheckpointName, ps))
+		if (!ValidateMoveSequenceCheckCueEvents(CueEvents, pGame, command, bGood, scoresData))
 			break;
 
 		if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom))
@@ -430,7 +428,7 @@ bool CDb::ValidateMoveSequence(
 	{
 		CueEvents.Clear();
 		pGame->ProcessCommand(CMD_ADVANCE_COMBAT, CueEvents);
-		if (!ValidateMoveSequenceCheckCueEvents(CueEvents, pGame, CMD_ADVANCE_COMBAT, bGood, scoreCheckpointName, ps))
+		if (!ValidateMoveSequenceCheckCueEvents(CueEvents, pGame, CMD_ADVANCE_COMBAT, bGood, scoresData))
 			break;
 	}
 
@@ -442,7 +440,7 @@ bool CDb::ValidateMoveSequence(
 //Returns: true if play continues, false if ended
 bool CDb::ValidateMoveSequenceCheckCueEvents(
 	CCueEvents& CueEvents, CCurrentGame* pGame, const UINT command,
-	bool& bGood, WSTRING& scoreCheckpointName, PlayerStats& ps) //(out)
+	bool& bGood, std::vector<ScoreCheckpointData>& scoresData) //(out)
 const
 {
 	const bool bPlayerDied = CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
@@ -455,16 +453,16 @@ const
 	//Check for a score checkpoint.
 	if (CueEvents.HasOccurred(CID_ScoreCheckpoint))
 	{
-		//Output name of score checkpoint and player stats at that checkpoint.
-		const CDbMessageText *pScoreIDText = DYN_CAST(const CDbMessageText*, const CAttachableObject*,
-			CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint));
-		ASSERT((const WCHAR*)(*pScoreIDText));
-		scoreCheckpointName = (const WCHAR*)(*pScoreIDText);
-		ps = pGame->pPlayer->st;
-
-		//Alter stats to match how they are scored.
-		ps.ATK = pGame->getPlayerATK();
-		ps.DEF = pGame->getPlayerDEF();
+		//Clear any data from previous turns
+		scoresData.clear();
+		for (const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData()) {
+			//Output name of score checkpoint and player stats at that checkpoint.
+			const ScoreCheckpointData *pScoreData = DYN_CAST(const ScoreCheckpointData*, const CAttachableObject*,
+				pObj);
+			ASSERT(pScoreData);
+			scoresData.push_back(*pScoreData);
+		}
 	}
 
 	//Was room exited?
