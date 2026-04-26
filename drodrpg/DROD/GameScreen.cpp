@@ -4758,14 +4758,12 @@ void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration, CCueEven
 }
 
 //*****************************************************************************
-void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
+void CGameScreen::ScoreCheckpoint(const ScoreCheckpointData& scoreData)
 //Displays score checkpoint stats and uploads the score.
 {
 	//Stats involved in score tallying.
 	ASSERT(this->pCurrentGame);
-	ASSERT(this->pCurrentGame->pPlayer);
-	const PlayerStats& st = this->pCurrentGame->pPlayer->st;
-	UINT dwTotalScore = this->pCurrentGame->GetScore();
+	UINT dwTotalScore = this->pCurrentGame->GetScore(scoreData.stats);
 
 /*
 	wstrLevelStats += wszCRLF;
@@ -4774,10 +4772,10 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 		this->pRoomWidget, wstrLevelStats.c_str(), F_Stats, 5000, 8000, true));
 */
 
-	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwTotalScore);
+	SendAchievement(UnicodeToUTF8(scoreData.scorepointName).c_str(), dwTotalScore);
 
 	//Display.
-	ShowScoreDialog(pScoreIDText, st);
+	ShowScoreDialog(scoreData.scorepointName, scoreData.stats);
 }
 
 void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
@@ -7094,11 +7092,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 		for (pObj = CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint);
 				pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 		{
-			const CDbMessageText *pScoreIDText = DYN_CAST(const CDbMessageText*, const CAttachableObject*, pObj);
-			ASSERT((const WCHAR*)(*pScoreIDText));
+			const ScoreCheckpointData* pScoreData = DYN_CAST(const ScoreCheckpointData*, const CAttachableObject*, pObj);
+			ASSERT(pScoreData);
 			if (!g_pTheSound->IsSoundEffectPlaying(SEID_LEVELCOMPLETE))
 				g_pTheSound->PlaySoundEffect(SEID_LEVELCOMPLETE); //SEID_AREACLEAR is jarring over other music
-			ScoreCheckpoint((const WCHAR*)(*pScoreIDText));
+			ScoreCheckpoint(*pScoreData);
 		}
 	}
 

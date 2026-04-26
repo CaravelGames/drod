@@ -3326,11 +3326,10 @@ void CCurrentGame::ProcessCommand(
 		for (const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 		{
-			const CDbMessageText* pScoreIDText = DYN_CAST(const CDbMessageText*, const CAttachableObject*, pObj);
-			ASSERT((const WCHAR*)(*pScoreIDText));
-			const WSTRING wstrScoreIDText((WSTRING)(*pScoreIDText));
-			this->WriteScoreCheckpointSave(wstrScoreIDText);
-			this->WriteLocalHighScore(wstrScoreIDText);
+			const ScoreCheckpointData* pScoreData = DYN_CAST(const ScoreCheckpointData*, const CAttachableObject*, pObj);
+			ASSERT(pScoreData);
+			this->WriteScoreCheckpointSave(*pScoreData);
+			this->WriteLocalHighScore(*pScoreData);
 		}
 	}
 }
@@ -8513,7 +8512,7 @@ UINT CCurrentGame::WriteCurrentRoomConquerDemo()
 */
 
 //***************************************************************************************
-UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
+UINT CCurrentGame::WriteLocalHighScore(const ScoreCheckpointData& scoreData)
 //Creates or updates a high score record for the given scorepoint.
 //
 //Returns:
@@ -8521,10 +8520,6 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 {
 	if (this->bNoSaves)
 		return 0; //playing a dummy game session -- don't save scores
-
-	PlayerStats st = this->pPlayer->st; //temp copy
-	st.ATK = getPlayerATK();
-	st.DEF = getPlayerDEF();
 
 	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
 	ASSERT(pPlayer);
@@ -8536,19 +8531,19 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 	}
 
 	CDbLocalHighScore* pHighScore = NULL;
-	int score = GetScore(st);
+	int score = GetScore(scoreData.stats);
 	CDb db;
 	UINT holdID = this->pHold->dwHoldID;
 	UINT playerID = pPlayer->dwPlayerID;
 	CDbPackedVars stats;
-	st.Pack(stats);
+	scoreData.stats.Pack(stats);
 
 	db.HighScores.FilterByHold(holdID);
 	db.HighScores.FilterByPlayer(playerID);
 
-	if (db.HighScores.HasScorepoint(name)) {
+	if (db.HighScores.HasScorepoint(scoreData.scorepointName)) {
 		//Update existing score if a new best has been achieved
-		UINT id = db.HighScores.GetIDForScorepoint(name);
+		UINT id = db.HighScores.GetIDForScorepoint(scoreData.scorepointName);
 		ASSERT(id);
 		pHighScore = db.HighScores.GetByID(id);
 		ASSERT(pHighScore);
@@ -8574,7 +8569,7 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 		pHighScore->dwHoldID = holdID;
 		pHighScore->dwPlayerID = playerID;
 		pHighScore->score = score;
-		pHighScore->scorepointName = name;
+		pHighScore->scorepointName = scoreData.scorepointName;
 		pHighScore->stats = stats;
 		pHighScore->Update();
 
@@ -8589,7 +8584,7 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 }
 
 //***************************************************************************************
-UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
+UINT CCurrentGame::WriteScoreCheckpointSave(const ScoreCheckpointData& scoreData)
 //Writes a saved game record containing the saved game's stats info for upload.
 //
 //Returns:
@@ -8603,12 +8598,11 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 
 	//Insert the current ATK/DEF levels for the record made for score upload.
 	PlayerStats st = this->pPlayer->st; //temp copy
-	this->pPlayer->st.ATK = getPlayerATK();
-	this->pPlayer->st.DEF = getPlayerDEF();
+	this->pPlayer->st = scoreData.stats;
 
 	PackData(this->stats); //data must be packed at current stat values in order to upload
 			//score values correctly, since room move sequence will not be replayed on the server
-	SaveGame(ST_ScoreCheckpoint, name);
+	SaveGame(ST_ScoreCheckpoint, scoreData.scorepointName);
 	this->pPlayer->st = st; //revert
 	this->stats = tempStats;
 
@@ -8632,7 +8626,7 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 			{
 				//Uploads are to be handled by front end to avoid delay here.
 				CCurrentGame::scoresForUpload.push(new SCORE_UPLOAD(text, GetScore(),
-						name, this->dwSavedGameID));
+					scoreData.scorepointName, this->dwSavedGameID));
 			}
 		}
 	} else {
