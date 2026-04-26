@@ -37,6 +37,7 @@ namespace INIKey
 	DEF(Style);
 	DEF(ValidateSavesOnImport);
 	DEF(Windib);
+	DEF(KeepSoundsFromDeletedSpeech);
 }
 
 namespace Settings

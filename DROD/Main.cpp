@@ -701,6 +701,10 @@ MESSAGE_ID Init(
 				CScreen::eFullScreenMode = SCREENLIB::FULLSCREENMODE(mode);
 			}
 		}
+
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::KeepSoundsFromDeletedSpeech, strIniValue) && atoi(strIniValue.c_str()) == 1) {
+			g_pTheDB->Speech.bKeepSoundsFromDeletedSpeech = true;
+		}
 	}
 
 	//Init the internet interface.
@@ -1924,6 +1928,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Customizing, INIKey::RoomTransitionSpeed, "500");
 	AddIfMissing(INISection::Customizing, INIKey::ValidateSavesOnImport, "1");
 	AddIfMissing(INISection::Customizing, INIKey::Windib, "1");
+	AddIfMissing(INISection::Customizing, INIKey::KeepSoundsFromDeletedSpeech, "0");
 
 	AddIfMissing(INISection::Graphics, "Clock", "Clock");
 	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");

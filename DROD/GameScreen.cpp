@@ -3327,6 +3327,9 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 			bWasCutScene = this->pCurrentGame->dwCutScene != 0;
 			this->pCurrentGame->ProcessCommand(nCommand, this->sCueEvents);
+			// If player left the room then pRoomWidget will have a reference
+			// to a deleted room, sync them to fix it
+			this->pRoomWidget->SynchRoomToCurrentGame();
 
 			bLeftRoom = this->sCueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom);
 			if (bLeftRoom)

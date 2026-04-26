@@ -3620,7 +3620,11 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForOpenMove:
 				getCommandX(command, px);
 
-				if (!this->IsOpenMove(nGetOX(px), nGetOY(px)))
+				if (
+					px != NO_ORIENTATION
+					&& IsValidOrientation(px)
+					&& !this->IsOpenMove(nGetOX(px), nGetOY(px))
+				)
 					STOP_COMMAND;
 				bProcessNextCommand = true;
 			break;
@@ -3748,7 +3752,13 @@ void CCharacter::Process(
 				} else {
 					CMonster* pMonster = pGame->pRoom->GetMonsterAtSquare(px, py);
 					if (pMonster != NULL){
-						wOrientation = pMonster->wO;
+						if (pMonster->IsPiece()) {
+							if (!bIsSerpentOrGentryii(pMonster->GetIdentity())) {
+								wOrientation = pMonster->GetOwningMonster()->wO;
+							}
+						} else {
+							wOrientation = pMonster->wO;
+						}
 					}
 				}
 
@@ -4828,7 +4838,7 @@ int CCharacter::CountEntityType(
 			}
 
 			if (pMonster->wType == pflags) {
-				if (pMonster->IsPiece()) {
+				if (pMonster->IsPiece() || pMonster->IsLongMonster()) {
 					pMonster = pMonster->GetOwningMonsterConst();
 					if (seenHeads.count(pMonster)) {
 						continue;
@@ -5859,12 +5869,7 @@ void CCharacter::SetArrayVariable(
 			default: break;
 		}
 
-		if (x == 0) {
-			//Save memory by clearing value
-			scriptArrays[varIndex].erase(arrayIndex);
-		} else {
-			scriptArrays[varIndex][arrayIndex] = x;
-		}
+		scriptArrays[varIndex][arrayIndex] = x;
 		++arrayIndex;
 	}
 }
@@ -8372,6 +8377,7 @@ void CCharacter::ReplaceWithDefault(
 
 	//New character neeeds to be flagged and given a new id
 	pNewCharacter->bIsFirstTurn = true;
+	pNewCharacter->bNoTurnZeroProcess = true; // Prevent from double processing on 0th turn
 	pNewCharacter->bNewEntity = true;
 	pNewCharacter->bIsDefaultScript = true;
 	pNewCharacter->dwScriptID = this->pCurrentGame->pHold->GetNewScriptID();

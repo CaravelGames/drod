@@ -79,6 +79,7 @@ CListBoxWidget::CListBoxWidget(
 	, wDraggingLineNo(UINT(-1))
 	, bRearranged(false)
 	, bAllowFiltering(false)
+	, bFilterDispatchOnEmpty(false)
 	, wstrActiveFilter(wszEmpty)
 {
 	if (CListBoxWidget::wstrFilterWord.size() == 0)
@@ -659,6 +660,8 @@ bool CListBoxWidget::RemoveItem(const void* pKey)
 			//Update set of selected lines to their new list positions.
 			CIDSet remainingSelectedKeys = GetSelectedItems();
 			this->Items.erase(iSeek);
+			// Must rerun the filter before `SelectItems()` as it uses the filtered list
+			UpdateFilter(this->wstrActiveFilter);
 			SelectItems(remainingSelectedKeys);
 
 			if (!this->Items.empty())
@@ -675,8 +678,6 @@ bool CListBoxWidget::RemoveItem(const void* pKey)
 			break;
 		}
 	}
-
-	UpdateFilter(this->wstrActiveFilter);
 
 	//Recalc areas of widget since they may have changed.
 	CalcAreas();
@@ -818,10 +819,10 @@ bool CListBoxWidget::SelectLineStartingWith(const WCHAR wc)
 	UINT wLineNo;
 	for (wLineNo = 0; wLineNo < this->filteredItems.size(); ++wLineNo)
 	{
-		const WCHAR line_wc = this->bIgnoreLeadingArticlesInSort ? 
+		const WCHAR line_wc = this->bIgnoreLeadingArticlesInSort ?
 			towlower(StripLeadingArticle(this->filteredItems[wLineNo]->text)[0]) :
 			towlower(this->filteredItems[wLineNo]->text[0]);
-		
+
 		if (line_wc == wc)
 			break; //found one
 		if (this->bSortAlphabetically &&
@@ -939,7 +940,7 @@ void CListBoxWidget::Paint(
 		drawY = this->y + TEXT_DRAW_Y_OFFSET + this->h - CY_LBOX_ITEM - 1;
 
 		const SURFACECOLOR FilterSeparatorColor = GetSurfaceColor(GetDestSurface(), 102, 102, 102);
-		
+
 		WSTRING message = this->wstrFilterWord;
 		message += wszColon;
 		message += wszSpace;
@@ -1183,7 +1184,11 @@ void CListBoxWidget::HandleKeyDown(
 			break;
 
 		default:
-			if (this->bAllowFiltering && !(KeyboardEvent.keysym.mod & KMOD_SHIFT)) {
+			if (
+				this->bAllowFiltering
+				&& !(KeyboardEvent.keysym.mod & KMOD_SHIFT)
+				&& !(KeyboardEvent.keysym.mod & KMOD_CTRL)
+			) {
 				const WCHAR character = KeyboardEvent.keysym.sym == SDLK_SPACE ? We(' ') : TranslateUnicodeKeysym(KeyboardEvent.keysym);
 
 				if (IsValidFilterCharacter(character)) {
@@ -1199,7 +1204,7 @@ void CListBoxWidget::HandleKeyDown(
 				if (KeyboardEvent.keysym.mod & KMOD_CTRL)
 				{
 					const WCHAR wc = TranslateUnicodeKeysym(KeyboardEvent.keysym);
-					if (SelectLineStartingWith(wc))
+					if (wc != 0 && SelectLineStartingWith(wc))
 						wNewCursorLine = this->wCursorLine;
 				}
 			}
@@ -1291,6 +1296,9 @@ void CListBoxWidget::UpdateFilter(WSTRING wstrFilter)
 			CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
 			if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
 		}
+	} else if (this->bFilterDispatchOnEmpty) {
+		CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
+		if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
 	}
 
 }

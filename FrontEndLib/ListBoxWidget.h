@@ -121,6 +121,7 @@ public:
 	bool           SelectLineWithText(const WCHAR* pText);
 	void           SelectMultipleItems(const bool bVal);
 	void           SetAllowFiltering(const bool bVal) { this->bAllowFiltering = bVal; }
+	void           SetFilterDispatchOnEmpty(const bool bVal) { this->bFilterDispatchOnEmpty = bVal; }
 	void           SetHotkeyItemSelection(const bool bVal=true) {this->bHotkeyItemSelection = bVal;}
 	void           SetItemColor(const UINT dwKey, const SDL_Color& color);
 	void           SetItemColorAtLine(const UINT index, const SDL_Color& color);
@@ -172,6 +173,8 @@ protected:
 	UINT           wDraggingLineNo;  //this line # is being moved in the list
 	bool           bRearranged;      //choices were rearranged on mouse drag
 	bool           bAllowFiltering;  //Allow filtering by typing text
+	/// Dispatch change event when filtering and the list becomes empty
+	bool           bFilterDispatchOnEmpty;
 	WSTRING        wstrActiveFilter;
 
 private:

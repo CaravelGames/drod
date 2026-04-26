@@ -2467,7 +2467,6 @@ void CCharacterDialogWidget::OnClick(
 			} else {
 				//Command addition was canceled.
 				//Clear any data generated for the command.
-				ASSERT(!this->pSound || !this->pSound->dwDataID);	//should be fresh (not added to DB yet)
 				delete this->pSound;
 				this->pSound = NULL;
 			}
@@ -5164,6 +5163,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
+	this->pActionListBox->SetFilterDispatchOnEmpty(true);
 }
 
 //*****************************************************************************
