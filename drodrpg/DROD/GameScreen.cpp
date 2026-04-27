@@ -2688,9 +2688,14 @@ void CGameScreen::OnKeyDown(
 		break;
 
 		case CMD_SCORE_KEY:
+		{
 			ASSERT(this->pCurrentGame);
 			ASSERT(this->pCurrentGame->pPlayer);
-			ShowScoreDialog(g_pTheDB->GetMessageText(MID_Score), this->pCurrentGame->pPlayer->st);
+			PlayerStats st = this->pCurrentGame->pPlayer->st; //temp copy for display
+			st.ATK = this->pCurrentGame->getPlayerATK();
+			st.DEF = this->pCurrentGame->getPlayerDEF();
+			ShowScoreDialog(g_pTheDB->GetMessageText(MID_Score), st);
+		}
 		break;
 
 		case CMD_EXTRA_SAVE_GAME:
@@ -4789,8 +4794,8 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	//Stats involved in score tallying.
 	ASSERT(this->pCurrentGame);
 	dwHP = st.HP;
-	dwATK = this->pCurrentGame->getPlayerATK();
-	dwDEF = this->pCurrentGame->getPlayerDEF();
+	dwATK = st.ATK;
+	dwDEF = st.DEF;
 	dwYKeys = st.yellowKeys;
 	dwGKeys = st.greenKeys;
 	dwBKeys = st.blueKeys;
@@ -4809,7 +4814,7 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	dwBKeysScore = CCurrentGame::CalculateStatScore(dwBKeys, st.scoreBlueKeys);
 	dwSKeysScore = CCurrentGame::CalculateStatScore(dwSKeys, st.scoreSkeletonKeys);
 	dwShovelsScore = CCurrentGame::CalculateStatScore(dwShovels, st.scoreShovels);
-	dwTotalScore = this->pCurrentGame->GetScore();
+	dwTotalScore = this->pCurrentGame->GetScore(st);
 
 	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETILES));
 	pTilesWidget->ClearTiles();
