@@ -192,7 +192,7 @@ struct TarstuffStab {
 //*******************************************************************************
 class ScoreCheckpointData : public CAttachableObject {
 public:
-	ScoreCheckpointData(PlayerStats ps, WSTRING name)
+	ScoreCheckpointData(const PlayerStats& ps, const WSTRING& name)
 		: stats(ps), scorepointName(name) {}
 	~ScoreCheckpointData() {}
 	PlayerStats stats;
