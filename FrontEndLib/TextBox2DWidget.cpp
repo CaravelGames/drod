@@ -110,13 +110,15 @@ void CTextBox2DWidget::HandleKeyDown(
 			break;
 		case SDLK_HOME:
 		case SDLK_KP_7:
-			MoveCursorToLineStart();
+			if (bCtrl) MoveCursorToTextStart();
+			else MoveCursorToLineStart();
 			if (bShift) SetSelection(wOldCursorPos, wOldCursorX, wOldCursorY);
 			else ClearSelection();
 			break;
 		case SDLK_END:
 		case SDLK_KP_1:
-			MoveCursorToLineEnd();
+			if (bCtrl) MoveCursorToTextEnd();
+			else MoveCursorToLineEnd();
 			if (bShift) SetSelection(wOldCursorPos, wOldCursorX, wOldCursorY);
 			else ClearSelection();
 			break;
@@ -312,6 +314,30 @@ bool CTextBox2DWidget::MoveCursorToLineEnd()
 }
 
 //******************************************************************************
+bool CTextBox2DWidget::MoveCursorToTextStart()
+//Moves cursor to start of all text.
+//Returns: true
+{
+	// +1 is technically unnecessary but is kept
+	// for consistency with MoveCursorToTextEnd
+	MoveCursorUp(this->lineIndices.size() + 1);
+
+	return true;
+}
+
+//******************************************************************************
+bool CTextBox2DWidget::MoveCursorToTextEnd()
+//Moves cursor to end of all text.
+//Returns: true
+{
+	// +1 is required to put it at the end of the last line if
+	// started on the first
+	MoveCursorDown(this->lineIndices.size() + 1);
+
+	return true;
+}
+
+//******************************************************************************
 bool CTextBox2DWidget::MoveCursorUpPage()
 //Moves cursor down one page (widget height) and moves view with it.
 //Returns: Whether or not the operation was successful (possible)
@@ -332,7 +358,7 @@ bool CTextBox2DWidget::MoveCursorUpPage()
 
 //******************************************************************************
 bool CTextBox2DWidget::MoveCursorDownPage()
-//Moves cursor up one page (widget height) and moves view with it.
+//Moves cursor down one page (widget height) and moves view with it.
 //Returns: Whether or not the operation was successful (possible)
 {
 	ASSERT(this->wCursorIndex <= this->text.size());
@@ -354,27 +380,8 @@ void CTextBox2DWidget::SelectAllText()
 {
 	CTextBoxWidget::SelectAllText();
 
-	// Calculating the selection area on the screen is a bit complicated because
-	// vertical scroll values are baked-into the selection's Y coordinates
-
-	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(this->fontType);
-
-	// Calculate selection start Y - can be negative
-	const int wCurrentLineIndex = getLineContainingIndex(this->wTextDisplayIndex);
-
-	// Calculate selection end X - for good visuals must be the width of the
-	// last line of text
-	const UINT wLastCharacter = this->text.length();
-	const UINT wLastLineStartIndex = getIndexAtStartOfLine(this->lineIndices.size());
-
-	UINT wLastLineWidth, wHIgnored;
-	const WSTRING wStr = this->text.substr(wLastLineStartIndex, wLastCharacter - wLastLineStartIndex);
-	g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wLastLineWidth, wHIgnored);
-
-	this->nSelectStartX = 0;
-	this->nSelectStartY = -wCurrentLineIndex * wLineHeight;
-	this->nSelectEndX = wLastLineWidth;
-	this->nSelectEndY = g_pTheFM->GetFontLineHeight(this->fontType) * this->lineIndices.size() + this->nSelectStartY;
+	this->getPositionAtIndex(0, this->nSelectStartX, this->nSelectStartY);
+	this->getPositionAtIndex(this->text.size(), this->nSelectEndX, this->nSelectEndY);
 }
 
 //******************************************************************************
@@ -531,6 +538,20 @@ UINT CTextBox2DWidget::GetViewableTextLinesInWidget() const
 }
 
 //******************************************************************************
+UINT CTextBox2DWidget::GetMaxScrollInLines() const
+// Return the maximum number of lines the widget can be scrolled down
+{
+	const UINT wViewableLines = GetViewableTextLinesInWidget();
+	const UINT wTotalLines = this->lineIndices.size();
+
+	if (wTotalLines < wViewableLines) {
+		return 0;
+	} else {
+		return wTotalLines - wViewableLines + 1;
+	}
+}
+
+//******************************************************************************
 void CTextBox2DWidget::ScrollDownOnePage()
 //Scroll view down one page of text, if possible.
 {
@@ -665,10 +686,8 @@ void CTextBox2DWidget::SetSelection(const UINT wStart,
 	const UINT wCursorStartX, const UINT wCursorStartY)
 {
 	CTextBoxWidget::SetSelection(wStart);
-	if (this->nSelectStartX == -1)
-	{
-		this->nSelectStartX = wCursorStartX;
-		this->nSelectStartY = wCursorStartY;
+	if (this->nSelectStartX == -1) {
+		this->getPositionAtIndex(wStart, this->nSelectStartX, this->nSelectStartY);
 	}
 	this->nSelectEndX = this->wCursorX;
 	this->nSelectEndY = this->wCursorY;
@@ -1080,15 +1099,48 @@ const
 }
 
 //******************************************************************************
+void CTextBox2DWidget::getPositionAtIndex(
+//Given an index returns the relative position of the character's top-left corner
+//to the current view. This takes into account scrolls and can produce negative
+//Y positions. Most useful to fill nSelect variables
+	const UINT index, // IN: Index of the character
+	int &wX, int &wY) // OUT: Calculated position
+const {
+	if (index > this->text.size()) {
+		wX = 0;
+		wY = 0;
+		return;
+	}
+
+	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(this->fontType);
+	const int wCurrentLineIndex = getLineContainingIndex(this->wTextDisplayIndex);
+	const int wLine = getLineContainingIndex(index);
+	const int wLineFirstCharacterIndex = getIndexAtStartOfLine(wLine);
+
+	UINT wLineWidthTillCharacter, wHIgnored;
+	const WSTRING wStr = this->text.substr(
+		wLineFirstCharacterIndex,
+		index - wLineFirstCharacterIndex
+	);
+	g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wLineWidthTillCharacter, wHIgnored);
+
+	wX = wLineWidthTillCharacter;
+	wY = (wLine - wCurrentLineIndex) * wLineHeight;
+}
+
+//******************************************************************************
 UINT CTextBox2DWidget::MoveViewDown(const UINT wNumLines)   //[default=1]
 //Move viewing area down a line.
 //Returns: Number of lines actually moved down
 {
 	UINT numMoved = 0;
 	UINT wIndex = this->wTextDisplayIndex;
+	UINT wStartingLine = getLineContainingIndex(wIndex);
 	const UINT wLength = this->text.size();
+	const UINT wMaxLines = GetMaxScrollInLines();
 	for (UINT line = 0; line < wNumLines; ++line)
 	{
+		if (wStartingLine + line >= wMaxLines) break;
 		if (wIndex >= wLength) break;
 		if (!getLineStartIndexFollowingIndex(wIndex))
 			break; //already at bottom line

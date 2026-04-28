@@ -69,6 +69,8 @@ protected:
 	bool           MoveCursorDown(UINT wNumLines = 1);
 	bool           MoveCursorToLineStart();
 	bool           MoveCursorToLineEnd();
+	bool           MoveCursorToTextStart();
+	bool           MoveCursorToTextEnd();
 	bool           MoveCursorUpPage();
 	bool           MoveCursorDownPage();
 
@@ -86,10 +88,12 @@ private:
 
 	UINT           GetTextLineDisplayWidth(const int nOffsetX) const;
 	UINT           GetViewableTextLinesInWidget() const;
+	UINT           GetMaxScrollInLines() const;
 
 	UINT           getIndexAtStartOfLine(const UINT lineNo) const;
 	UINT           getLineContainingIndex(const UINT index) const;
 	bool           getLineStartIndexFollowingIndex(UINT& index) const;
+	void           getPositionAtIndex(const UINT index, int &wX, int &wY) const;
 
 	UINT           MoveViewDown(const UINT wNumLines = 1);
 	UINT           MoveViewUp(const UINT wNumLines = 1);
