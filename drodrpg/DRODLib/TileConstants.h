@@ -424,7 +424,14 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define TV_SHIELD9     ((UINT)-39)
 #define TV_REMOVE_OVERHEAD_IMAGE (UINT(-40))
 #define TV_REMOVE_TRANSPARENT (UINT(-41))
-static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_REMOVE_TRANSPARENT;}
+#define TV_TOKEN_ROTATE_ARROWS_CW (UINT(-42))
+#define TV_TOKEN_ROTATE_ARROWS_CCW (UINT(-43))
+#define TV_TOKEN_SWITCH_TAR_MUD (UINT(-44))
+#define TV_TOKEN_SWITCH_TAR_GEL (UINT(-45))
+#define TV_TOKEN_SWITCH_GEL_MUD (UINT(-46))
+#define TV_TOKEN_VISION (UINT(-47))
+#define TV_TOKEN_DISARM (UINT(-48))
+static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_TOKEN_DISARM;}
 
 //Virtual tiles: enumerate after TOTAL_TILE_COUNT
 #define T_SWORDSMAN           (TOTAL_TILE_COUNT + 0)  //for placing the level entrance

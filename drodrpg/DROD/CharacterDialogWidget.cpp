@@ -5023,6 +5023,13 @@ void CCharacterDialogWidget::PopulateItemListBox(
 	pListBox->AddItem(T_POWDER_KEG, g_pTheDB->GetMessageText(MID_PowderKeg));
 	pListBox->AddItem(T_MIST, g_pTheDB->GetMessageText(MID_Mist));
 	pListBox->AddItem(T_MISTVENT, g_pTheDB->GetMessageText(MID_MistVent));
+	pListBox->AddItem(TV_TOKEN_ROTATE_ARROWS_CW, g_pTheDB->GetMessageText(MID_Token));
+	pListBox->AddItem(TV_TOKEN_ROTATE_ARROWS_CCW, g_pTheDB->GetMessageText(MID_TokenRotateCCW));
+	pListBox->AddItem(TV_TOKEN_SWITCH_TAR_MUD, g_pTheDB->GetMessageText(MID_TokenTarMud));
+	pListBox->AddItem(TV_TOKEN_SWITCH_TAR_GEL, g_pTheDB->GetMessageText(MID_TokenTarGel));
+	pListBox->AddItem(TV_TOKEN_SWITCH_GEL_MUD, g_pTheDB->GetMessageText(MID_TokenGelMud));
+	pListBox->AddItem(TV_TOKEN_VISION, g_pTheDB->GetMessageText(MID_TokenTranslucentTar));
+	pListBox->AddItem(TV_TOKEN_DISARM, g_pTheDB->GetMessageText(MID_TokenSwordDisarm));
 	pListBox->AddItem(T_HEALTH_HUGE, g_pTheDB->GetMessageText(MID_HugeHealth));
 	pListBox->AddItem(T_HEALTH_BIG, g_pTheDB->GetMessageText(MID_LargeHealth));
 	pListBox->AddItem(T_HEALTH_MED, g_pTheDB->GetMessageText(MID_MediumHealth));

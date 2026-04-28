@@ -2753,6 +2753,11 @@ bool CDbRoom::DoesSquareContainTile(
 			case TV_ACCESSORY9: case TV_ACCESSORY10: case TV_ACCESSORY11: case TV_ACCESSORY12:
 				realTile = T_ACCESSORY;
 				break;
+			case TV_TOKEN_ROTATE_ARROWS_CW: case TV_TOKEN_ROTATE_ARROWS_CCW:
+			case TV_TOKEN_SWITCH_TAR_MUD: case TV_TOKEN_SWITCH_TAR_GEL: case TV_TOKEN_SWITCH_GEL_MUD:
+			case TV_TOKEN_VISION: case TV_TOKEN_DISARM:
+				realTile = T_TOKEN;
+				break;
 			default: break;
 		}
 		if (realTile != GetTSquare(wX, wY))
@@ -2799,6 +2804,13 @@ bool CDbRoom::DoesSquareContainTile(
 			case TV_ACCESSORY10: param = WallWalking; break;
 			case TV_ACCESSORY11: param = XPDoubler; break;
 			case TV_ACCESSORY12: param = AccessorySlot; break;
+			case TV_TOKEN_ROTATE_ARROWS_CW: param = RotateArrowsCW; break;
+			case TV_TOKEN_ROTATE_ARROWS_CCW: param = RotateArrowsCCW; break;
+			case TV_TOKEN_SWITCH_TAR_MUD: param = SwitchTarMud; break;
+			case TV_TOKEN_SWITCH_TAR_GEL: param = SwitchTarGel; break;
+			case TV_TOKEN_SWITCH_GEL_MUD: param = SwitchGelMud; break;
+			case TV_TOKEN_VISION: param = TarTranslucent; break;
+			case TV_TOKEN_DISARM: param = SwordDisarm; break;
 			default: break; //nothing else to do here
 		}
 		if (param == GetTParam(wX, wY))
