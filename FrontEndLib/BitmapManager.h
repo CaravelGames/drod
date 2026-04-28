@@ -110,7 +110,7 @@ public:
 		{BAndWRect(x,y,CX_TILE,CY_TILE,pDestSurface);}
 	void        BlitAlphaSurfaceWithTransparency(SDL_Rect src, SDL_Surface *pSrcSurface,
 			SDL_Rect dest, SDL_Surface *pDestSurface, const Uint8 opacity);
-	void        BlitRGBAtoRGBA(SDL_Surface *pSrcSurface, SDL_Rect *src, 
+	void        BlitRGBAtoRGBA(SDL_Surface *pSrcSurface, SDL_Rect *src,
 			SDL_Surface *pDestSurface, SDL_Rect *dest);
 	void        BlitSurface(SDL_Surface *pSrcSurface, SDL_Rect* src,
 			SDL_Surface *pDestSurface, SDL_Rect* dest,	const Uint8 nOpacity=255);
@@ -140,6 +140,7 @@ public:
 	void        BlitWrappingSurface(SDL_Surface *pSrcSurface, SDL_Rect src,
 			SDL_Surface *pDestSurface, SDL_Rect dest, const Uint8 nOpacity=255);
 
+	static void CropRect(SDL_Rect& cropped, const SDL_Rect& bounds);
 	static void ClipSrcAndDestToRect(SDL_Rect& src, SDL_Rect& dest,
 			const UINT W, const UINT H);
 	static SDL_Surface* ConvertSurface(SDL_Surface *pSurface);
