@@ -4245,8 +4245,13 @@ void CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents& CueEve
 	UINT px, py, pw, ph, pflags;  //command parameters
 	getCommandParams(command, px, py, pw, ph, pflags);
 
+	const bool bQuietObjectBuildEventsOld = BuildUtil::bQuietObjectBuildEvents;
+	bool bIsQuiet = command.label.compare(wszBuildCommandModifierQuiet) == 0;
+
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	BuildUtil::bQuietObjectBuildEvents = bIsQuiet;
 	BuildUtil::BuildTilesAt(room, pflags, px, py, pw, ph, false, CueEvents);
+	BuildUtil::bQuietObjectBuildEvents = bQuietObjectBuildEventsOld;
 }
 
 //*****************************************************************************

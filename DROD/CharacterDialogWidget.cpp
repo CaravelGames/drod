@@ -195,6 +195,9 @@ const UINT TAG_ENTITY_LISTBOX = 863;
 const UINT TAG_PLAYER_STATE_LISTBOX = 862;
 const UINT TAG_PLAYER_STATE_LISTBOX2 = 861;
 const UINT TAG_RESTRICTED_LABEL = 860;
+/// Playing sound effect for Build command
+const UINT TAG_BUILD_SOUNDLABEL = 859;
+const UINT TAG_BUILD_SOUNDLISTBOX = 858;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -467,6 +470,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pColorListBox(NULL)
 	, pOrbAgentListBox(NULL)
 	, pPlayerBehaviorListBox(NULL), pPlayerBehaviorStateListBox(NULL)
+	, pBuildSoundOnOffListBox(NULL)
 	, pCharacter(NULL)
 	, pCommand(NULL)
 	, pSound(NULL)
@@ -1263,6 +1267,17 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int Y_ITEMLISTBOX = Y_GRAPHICLISTBOX2;
 	static const UINT CX_ITEMLISTBOX = 420;
 	static const UINT CY_ITEMLISTBOX = CY_GRAPHICLISTBOX2;
+	static const UINT CY_BUILDITEMLISTBOX = 18*LIST_LINE_HEIGHT+4;
+
+	static const int X_BUILD_SOUNDLABEL = X_ITEMLISTBOX;
+	static const int Y_BUILD_SOUNDLABEL = Y_ITEMLISTBOX + CY_BUILDITEMLISTBOX + CY_SPACE/2;
+	static const UINT CX_BUILD_SOUNDLABEL = CX_DIRECTIONLISTBOX3;
+	static const UINT CY_BUILD_SOUNDLABEL = CY_WAITLABEL;
+
+	static const int X_BUILD_SOUNDLISTBOX = X_ITEMLISTBOX;
+	static const int Y_BUILD_SOUNDLISTBOX = Y_BUILD_SOUNDLABEL + CY_BUILD_SOUNDLABEL;
+	static const UINT CX_BUILD_SOUNDLISTBOX = 100;
+	static const UINT CY_BUILD_SOUNDLISTBOX = 53;
 
 	static const int X_CUTSCENELABEL = X_WAITLABEL;
 	static const int Y_CUTSCENELABEL = Y_WAITLABEL;
@@ -1711,7 +1726,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_IgnoreWeapons)));
 
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_BUILDITEMLISTBOX,
-		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
+		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_BUILDITEMLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pBuildItemsListBox);
 	this->pBuildItemsListBox->SortAlphabetically(true);
 	this->pBuildItemsListBox->SetHotkeyItemSelection(true);
@@ -1779,6 +1794,13 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pOnOffListBox2->AddItem(0, g_pTheDB->GetMessageText(MID_Off));
 	this->pOnOffListBox2->AddItem(1, g_pTheDB->GetMessageText(MID_On));
 	this->pOnOffListBox2->SelectLine(0);
+
+	this->pBuildSoundOnOffListBox = new CListBoxWidget(TAG_BUILD_SOUNDLISTBOX,
+			X_BUILD_SOUNDLISTBOX, Y_BUILD_SOUNDLISTBOX, CX_BUILD_SOUNDLISTBOX, CY_BUILD_SOUNDLISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pBuildSoundOnOffListBox);
+	this->pBuildSoundOnOffListBox->AddItem(0, g_pTheDB->GetMessageText(MID_Off));
+	this->pBuildSoundOnOffListBox->AddItem(1, g_pTheDB->GetMessageText(MID_On));
+	this->pBuildSoundOnOffListBox->SelectLine(1);
 
 	this->pImperativeListBox = new CListBoxWidget(TAG_IMPERATIVELISTBOX,
 			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_IMPERATIVELISTBOX);
@@ -2052,6 +2074,10 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_SOUNDEFFECTLABEL,
 			X_SOUNDEFFECTLABEL, Y_SOUNDEFFECTLABEL, CX_SOUNDEFFECTLABEL, CY_SOUNDEFFECTLABEL,
+			F_Small, g_pTheDB->GetMessageText(MID_SoundEffect)));
+
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_BUILD_SOUNDLABEL,
+			X_BUILD_SOUNDLABEL, Y_BUILD_SOUNDLABEL, CX_BUILD_SOUNDLABEL, CY_BUILD_SOUNDLABEL,
 			F_Small, g_pTheDB->GetMessageText(MID_SoundEffect)));
 
 	//Display filter list box.
@@ -3886,6 +3912,12 @@ const
 			wstr += wszComma;
 			wstr += _itoW(command.y + command.h, temp, 10);
 			wstr += wszRightParen;
+			if (command.label.compare(wszBuildCommandModifierQuiet) == 0) {
+				wstr += wszSpace;
+				wstr += wszLeftParen;
+				wstr += g_pTheDB->GetMessageText(MID_BuildModifierQuiet);
+				wstr += wszRightParen;
+			}
 		break;
 
 		case CCharacterCommand::CC_LinkOrb:
@@ -6002,7 +6034,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 67;
+	static const UINT NUM_WIDGETS = 68;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -6023,7 +6055,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2,
 		TAG_VARCOMPLIST2, TAG_ORBAGENTLIST, TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST,
 		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
-		TAG_ENTITY_LISTBOX, TAG_PLAYER_STATE_LISTBOX, TAG_PLAYER_STATE_LISTBOX2
+		TAG_ENTITY_LISTBOX, TAG_PLAYER_STATE_LISTBOX, TAG_PLAYER_STATE_LISTBOX2,
+		TAG_BUILD_SOUNDLISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -6048,7 +6081,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT IMPERATIVE[] =    {TAG_IMPERATIVELISTBOX, 0};
 	static const UINT BEHAVIOR[] =      {TAG_ONOFFLISTBOX3, TAG_BEHAVIOR_LISTBOX, 0};
 	static const UINT ANSWER[] =        {TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0};
-	static const UINT BUILD_ITEMS[] =   { TAG_BUILDITEMLISTBOX, 0 };
+	static const UINT BUILD_ITEMS[] =   { TAG_BUILDITEMLISTBOX, TAG_BUILD_SOUNDLISTBOX, 0 };
 	static const UINT BUILD_MARKER_ITEMS[] = { TAG_BUILDMARKERITEMLISTBOX, 0 };
 	static const UINT WAIT_FOR_ITEMS[] = {TAG_WAITFORITEMLISTBOX, 0};
 	static const UINT XY[] =            {TAG_X_COORD, TAG_Y_COORD, 0};
@@ -6210,7 +6243,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_IfElseIfNot
 	};
 
-	static const UINT NUM_LABELS = 35;
+	static const UINT NUM_LABELS = 36;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -6221,7 +6254,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_X_COORD_LABEL, TAG_Y_COORD_LABEL, TAG_COLOR_LABEL, TAG_INPUTLABEL,
 		TAG_IMAGEOVERLAY_LABEL, TAG_SINGLESTEP2, TAG_KEEPBEHAVIOR_LABEL,
 		TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, TAG_ARRAYINDEX_LABEL,
-		TAG_ARRAYVAR_TEXTLABEL, TAG_RESTRICTED_LABEL
+		TAG_ARRAYVAR_TEXTLABEL, TAG_RESTRICTED_LABEL, TAG_BUILD_SOUNDLABEL
 	};
 
 	static const UINT NO_LABELS[] =      {0};
@@ -6246,14 +6279,15 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT NEWENTITY_L[] =    {TAG_DIRECTIONLABEL2, 0};
 	static const UINT EFFECT_L[] =       {TAG_DIRECTIONLABEL, TAG_SOUNDEFFECTLABEL, 0};
 	static const UINT INPUT_L[] =        {TAG_INPUTLABEL, 0};
-	static const UINT IMAGE_OVERLAY_L[] = { TAG_IMAGEOVERLAY_LABEL, 0 };
+	static const UINT IMAGE_OVERLAY_L[] ={ TAG_IMAGEOVERLAY_LABEL, 0 };
 	static const UINT FACE_TOWARDS_L[] = { TAG_SINGLESTEP2, 0 };
 	static const UINT PUSH_TILE_L[] =    { TAG_DIRECTIONLABEL2, 0 };
 	static const UINT NPC_GRAPHIC_L[] =  { TAG_KEEPBEHAVIOR_LABEL, 0 };
 	static const UINT OPEN_TILE_L[] =    { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
-	static const UINT EXPRESSION_L[] =     { TAG_VARVALUELABEL, 0 };
+	static const UINT EXPRESSION_L[] =   { TAG_VARVALUELABEL, 0 };
 	static const UINT ARRAYSET_L[] =     { TAG_ARRAYINDEX_LABEL, TAG_ARRAYVAR_TEXTLABEL, 0 };
-	static const UINT RESTRICTED_L[] =     { TAG_RESTRICTED_LABEL, 0 };
+	static const UINT RESTRICTED_L[] =   { TAG_RESTRICTED_LABEL, 0 };
+	static const UINT BUILD_L[] =        { TAG_BUILD_SOUNDLABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,          //CC_Appear
@@ -6314,7 +6348,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TEXT_L,             //CC_RoomLocationText
 		TEXT_AND_COLOR_L,   //CC_FlashingText
 		NO_LABELS,          //CC_DisplayFilter
-		NO_LABELS,          //CC_Build
+		BUILD_L,            //CC_Build
 		MUSIC_L,            //CC_WorldMapMusic
 		XY_L,               //CC_WorldMapIcon
 		NO_LABELS,          //CC_WorldMapSelect
@@ -6850,6 +6884,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 
 		case CCharacterCommand::CC_Build:
 			this->pCommand->flags = this->pBuildItemsListBox->GetSelectedItem();
+			if (this->pBuildSoundOnOffListBox->GetSelectedItem() == 0) {
+				this->pCommand->label = wszBuildCommandModifierQuiet;
+			} else {
+				this->pCommand->label = wszEmpty;
+			}
 			QueryRect();
 		break;
 
@@ -7684,6 +7723,11 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 
 		case CCharacterCommand::CC_Build:
 			this->pBuildItemsListBox->SelectItem(this->pCommand->flags);
+			if (this->pCommand->label.compare(wszBuildCommandModifierQuiet) == 0) {
+				this->pBuildSoundOnOffListBox->SelectItem(0);
+			} else {
+				this->pBuildSoundOnOffListBox->SelectItem(1);
+			}
 			break;
 
 		case CCharacterCommand::CC_LinkOrb:
@@ -8701,6 +8745,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		break;
 
 	case CCharacterCommand::CC_Build:
+	{
 		parseMandatoryOption(pCommand->flags, this->pBuildItemsListBox, bFound);
 		skipComma;
 		skipLeftParen;
@@ -8711,7 +8756,13 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		skipLeftParen;
 		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
 		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+		skipComma;
+		if (WCSncmp(pText+pos, wszBuildCommandModifierQuiet, WCSlen(wszBuildCommandModifierQuiet)) == 0) {
+			pCommand->label = wszBuildCommandModifierQuiet;
+			pos += WCSlen(wszBuildCommandModifierQuiet);
+		}
 		break;
+	}
 
 	case CCharacterCommand::CC_LinkOrb:
 		parseMandatoryOption(pCommand->flags, this->pOrbAgentListBox, bFound);
@@ -9647,6 +9698,10 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.y);
 		concatNumWithComma(c.x + c.w);
 		concatNum(c.y + c.h);
+		if (c.label.size() > 0) {
+			wstr += wszComma;
+			wstr += c.label;
+		}
 		break;
 
 	case CCharacterCommand::CC_LinkOrb:

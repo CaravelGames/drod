@@ -616,5 +616,6 @@ typedef std::vector<CCharacterCommand*> COMMANDPTR_VECTOR;
 
 extern SPEAKER getSpeakerType(const MONSTERTYPE eType);
 extern UINT getSpeakerNameText(const UINT wSpeaker, std::string& color);
+extern const WCHAR wszBuildCommandModifierQuiet[];
 
 #endif

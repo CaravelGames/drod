@@ -200,6 +200,8 @@ static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 #define T_REMOVE_FLOOR_ITEM (UINT(-56))
 #define T_ORB_NORMAL (UINT(-57))
 #define T_REMOVE_TRANSPARENT (UINT(-58))
+/// Used by CID_ObjectBuilt to trigger event but signify no sound effect to be played
+#define T_SILENT_BUILD (UINT(-59))
 #define LAST_FAKE_TILE_INDEX (UINT(-58))
 
 static inline bool bIsFakeTokenType(const UINT t) { return t >= T_TOKEN_RESERVED_SPACE && t <= T_ACTIVETOKEN; }
@@ -867,7 +869,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Gentryii,     //M_GENTRYII      +41
 	MID_TemporalClone, //M_TEMPORALCLONE +42
 	MID_FluffBaby,    //M_FLUFFBABY     +43
-	
+
 	MID_Swordsman,    //T_SWORDSMAN     TOTAL+0
 	0,                //T_NOMONSTER     TOTAL+1
 	0                 //T_EMPTY_F       TOTAL+2

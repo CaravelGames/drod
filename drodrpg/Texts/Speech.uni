@@ -293,7 +293,7 @@ Enemy sneak attack
 [MID_HitObstacle]
 [eng]
 Player bumps obstacle
-	
+
 [MID_ItemUsed]
 [eng]
 Item used
@@ -1831,3 +1831,7 @@ Count array entries
 [MID_RemoveTransparentLayer]
 [eng]
 Remove transparent layer object
+
+[MID_BuildModifierQuiet]
+[eng]
+Build modifier Quiet
