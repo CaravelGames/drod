@@ -255,6 +255,11 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		case TV_ACCESSORY9: case TV_ACCESSORY10: case TV_ACCESSORY11: case TV_ACCESSORY12:
 			newTile = T_ACCESSORY;
 			break;
+		case TV_TOKEN_ROTATE_ARROWS_CW: case TV_TOKEN_ROTATE_ARROWS_CCW:
+		case TV_TOKEN_SWITCH_TAR_MUD: case TV_TOKEN_SWITCH_TAR_GEL: case TV_TOKEN_SWITCH_GEL_MUD:
+		case TV_TOKEN_VISION: case TV_TOKEN_DISARM:
+			newTile = T_TOKEN;
+			break;
 
 		case TV_EXPLOSION:
 		{
@@ -349,6 +354,13 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		case TV_ACCESSORY10: room.SetTParam(x, y, WallWalking); break;
 		case TV_ACCESSORY11: room.SetTParam(x, y, XPDoubler); break;
 		case TV_ACCESSORY12: room.SetTParam(x, y, AccessorySlot); break;
+		case TV_TOKEN_ROTATE_ARROWS_CW: room.SetTParam(x, y, RotateArrowsCW); break;
+		case TV_TOKEN_ROTATE_ARROWS_CCW: room.SetTParam(x, y, RotateArrowsCCW); break;
+		case TV_TOKEN_SWITCH_TAR_MUD: room.SetTParam(x, y, SwitchTarMud); break;
+		case TV_TOKEN_SWITCH_TAR_GEL: room.SetTParam(x, y, SwitchTarGel); break;
+		case TV_TOKEN_SWITCH_GEL_MUD: room.SetTParam(x, y, SwitchGelMud); break;
+		case TV_TOKEN_VISION: room.SetTParam(x, y, TarTranslucent); break;
+		case TV_TOKEN_DISARM: room.SetTParam(x, y, SwordDisarm); break;
 		default: break; //nothing else to do here
 	}
 
