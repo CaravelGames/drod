@@ -219,9 +219,12 @@ private:
 	CListBoxWidget *pAttackTileListBox;
 	CListBoxWidget *pMovementTypeListBox;
 	CListBoxWidget *pIgnoreFlagsListBox;
-	CListBoxWidget* pColorListBox;
-	CListBoxWidget* pOrbAgentListBox;
-	CListBoxWidget* pPlayerBehaviorListBox, * pPlayerBehaviorStateListBox;
+	CListBoxWidget *pColorListBox;
+	CListBoxWidget *pOrbAgentListBox;
+	CListBoxWidget *pPlayerBehaviorListBox, * pPlayerBehaviorStateListBox;
+
+	/// List box for playing build sound
+	CListBoxWidget *pBuildSoundOnOffListBox;
 
 	map<UINT, pair<UINT, UINT>> onOffListBox3Positions;
 

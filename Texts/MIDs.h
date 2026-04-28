@@ -1940,6 +1940,7 @@ enum MID_CONSTANT {
   MID_IfElseIfNot = 2171,
   MID_Explosives = 2172,
   MID_PushableObjects = 2173,
+  MID_BuildModifierQuiet = 2174,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

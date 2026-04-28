@@ -757,6 +757,7 @@ const WCHAR* CDbBase::GetMessageText(
 //		case MID_No: strText = "&No"; break;
 		case MID_Explosives: strText = "Explosives"; break;
 		case MID_PushableObjects: strText = "Pushable Objects"; break;
+		case MID_BuildModifierQuiet: strText = "Quietly"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

@@ -14,6 +14,8 @@ const int ImageOverlayCommand::NO_LAYERS = -3;
 const int ImageOverlayCommand::DEFAULT_GROUP = 0;
 const int ImageOverlayCommand::NO_GROUP = -1;
 
+const WCHAR wszBuildCommandModifierQuiet[] = { We('q'),We('u'), We('i'), We('e'), We('t'), We(0) };
+
 //*****************************************************************************
 CColorText::~CColorText() { delete pText; }
 

@@ -29,6 +29,8 @@
 #include "PlayerDouble.h"
 #include "OrbUtil.h"
 
+bool BuildUtil::bQuietObjectBuildEvents = false;
+
 //*****************************************************************************
 bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
 {
@@ -524,7 +526,11 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		room.ActivateOrb(x, y, CueEvents, OAT_PressurePlate);
 	}
 
-	CueEvents.Add(CID_ObjectBuilt, new CAttachableWrapper<UINT>(baseTile), true);
+	if (BuildUtil::bQuietObjectBuildEvents) {
+		CueEvents.Add(CID_ObjectBuilt, new CAttachableWrapper<UINT>(T_SILENT_BUILD), true);
+	} else {
+		CueEvents.Add(CID_ObjectBuilt, new CAttachableWrapper<UINT>(baseTile), true);
+	}
 
 	if (wLayer == LAYER_OPAQUE) {
 		// Building/removing tiles that (can) affect weapon sheathing should refresh it immediately
