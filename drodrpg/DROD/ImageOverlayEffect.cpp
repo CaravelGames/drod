@@ -384,18 +384,19 @@ bool CImageOverlayEffect::CanLoop() const
 	return this->maxLoops == ImageOverlayCommand::NO_LOOP_MAX || this->loopIteration < this->maxLoops;
 }
 
-bool CImageOverlayEffect::CanContinuePlayingEffect(const Uint32 dwRemainingTIme) const
+bool CImageOverlayEffect::CanContinuePlayingEffect(const Uint32 dwRemainingTime) const
 {
 	// There are no more effects to play, so AdvanceState() has to handle looping nopw
 	if (IsCommandQueueFinished())
 		return false;
 
 	// If there is any remaining time then continue playing commands
-	if (dwRemainingTIme > 0)
+	if (dwRemainingTime > 0)
 		return true;
 
-	// If it's a time based command we need to stop
-	return !IsTimeBasedCommand(this->commands[this->index].type);
+	// Cannot continue if it's a time-based command with time larger than 0
+	return !IsTimeBasedCommand(this->commands[this->index].type)
+		|| this->executionState.remainingTime == 0;
 }
 
 bool CImageOverlayEffect::IsCommandQueueFinished() const
