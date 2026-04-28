@@ -353,50 +353,28 @@ bool CTextBox2DWidget::MoveCursorDownPage()
 void CTextBox2DWidget::SelectAllText()
 {
 	CTextBoxWidget::SelectAllText();
-	CalculateHighlightedRegion();
-}
 
-void CTextBox2DWidget::CalculateHighlightedRegion()
-{
-	if (!HasSelection())
-		return;
+	// Calculating the selection area on the screen is a bit complicated because
+	// vertical scroll values are baked-into the selection's Y coordinates
 
-	const int nLineHeightPixels = g_pTheFM->GetFontLineHeight(this->fontType);
+	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(this->fontType);
 
-	//Calculate where to start highlighting.
-	const UINT wTopViewLine = getLineContainingIndex(this->wTextDisplayIndex);
-	if (this->wMarkStart <= this->wTextDisplayIndex) {
-		this->nSelectStartX = this->nSelectStartY = 0;
-	} else {
-		const UINT wStartLineIndex = getLineContainingIndex(this->wMarkStart);
-		ASSERT(wStartLineIndex >= wTopViewLine);
-		this->nSelectStartY = (wStartLineIndex - wTopViewLine) * nLineHeightPixels;
+	// Calculate selection start Y - can be negative
+	const int wCurrentLineIndex = getLineContainingIndex(this->wTextDisplayIndex);
 
-		const UINT wIndexAtStartOfHighlightStartLine = getIndexAtStartOfLine(wStartLineIndex);
-		UINT wW, wHIgnored;
-		const WSTRING wStr = this->text.substr(wIndexAtStartOfHighlightStartLine, this->wMarkStart);
-		g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wW, wHIgnored);
-		this->nSelectStartX = int(wW);
-	}
+	// Calculate selection end X - for good visuals must be the width of the
+	// last line of text
+	const UINT wLastCharacter = this->text.length();
+	const UINT wLastLineStartIndex = getIndexAtStartOfLine(this->lineIndices.size());
 
-	//Calculate where to end highlighting.
-	const UINT wEndLineIndex = getLineContainingIndex(this->wMarkEnd);
-	const UINT wViewableTextLinesInWidget = GetViewableTextLinesInWidget();
-	const UINT wHighlightedLines = wEndLineIndex - wTopViewLine;
+	UINT wLastLineWidth, wHIgnored;
+	const WSTRING wStr = this->text.substr(wLastLineStartIndex, wLastCharacter - wLastLineStartIndex);
+	g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wLastLineWidth, wHIgnored);
 
-	if (wHighlightedLines > wViewableTextLinesInWidget) {
-		const int nOffsetX = 0; //!!TODO needed?
-		this->nSelectEndX = GetTextLineDisplayWidth(nOffsetX);
-		this->nSelectEndY = wViewableTextLinesInWidget * nLineHeightPixels - EDGE_OFFSET;
-	} else {
-		const UINT wIndexAtStartOfHighlightEndLine = getIndexAtStartOfLine(wEndLineIndex);
-		UINT wW, wHIgnored;
-		const WSTRING wStr = this->text.substr(wIndexAtStartOfHighlightEndLine, this->wMarkEnd);
-		g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wW, wHIgnored);
-		this->nSelectEndX = int(wW);
-
-		this->nSelectEndY = wHighlightedLines * nLineHeightPixels;
-	}
+	this->nSelectStartX = 0;
+	this->nSelectStartY = -wCurrentLineIndex * wLineHeight;
+	this->nSelectEndX = wLastLineWidth;
+	this->nSelectEndY = g_pTheFM->GetFontLineHeight(this->fontType) * this->lineIndices.size() + this->nSelectStartY;
 }
 
 //******************************************************************************
@@ -541,7 +519,6 @@ void CTextBox2DWidget::ScrollDownOneLine(const UINT wLines)   //[default=1]
 		MoveViewDown(lineDelta);
 		CalcAreas();
 		GetPixelLocationAt(this->wTextDisplayIndex, this->wCursorIndex, this->wCursorX, this->wCursorY);
-		CalculateHighlightedRegion();
 	}
 }
 
@@ -571,7 +548,6 @@ void CTextBox2DWidget::ScrollUpOneLine(const UINT wLines)   //[default=1]
 		MoveViewUp(wLines);
 		CalcAreas();
 		GetPixelLocationAt(this->wTextDisplayIndex, this->wCursorIndex, this->wCursorX, this->wCursorY);
-		CalculateHighlightedRegion();
 	}
 }
 
@@ -807,51 +783,103 @@ void CTextBox2DWidget::DrawText(
 		index = nextIndex;
 	}
 
-	if (!HasSelection() || !IsSelected()) //don't show selection when widget doesn't have focus
+	// Don't show selection when widget doesn't have focus or selection is
+	// not calculated/visible
+	if (
+		!HasSelection() || !IsSelected()
+		|| this->nSelectStartX == -1 || this->nSelectStartY == -1
+		|| this->nSelectEndX == -1 || this->nSelectEndY == -1
+	) {
 		return;
+	}
 
 	//Highlight selected text.
 	const UINT wW = GetTextLineDisplayWidth(nOffsetX);
+	const UINT wViewableTextLinesInWidget = GetViewableTextLinesInWidget();
+	const int dItemsListH = this->ItemsRect.h - Y_KLUDGE * 2;
 
 	//Determine where to start and end highlighting.
 	int nStartX, nStartY, nEndX, nEndY;
-	if (this->nSelectStartY <= this->nSelectEndY)
-	{
-		nStartX = this->nSelectStartX;  nStartY = this->nSelectStartY;
-		nEndX = this->nSelectEndX;  nEndY = this->nSelectEndY;
+	if (this->nSelectStartY <= this->nSelectEndY) {
+		nStartX = this->nSelectStartX;
+		nStartY = this->nSelectStartY;
+		nEndX = this->nSelectEndX;
+		nEndY = this->nSelectEndY;
+
+		// For single line selections make sure start is smaller than end
+		// to simplify later calculations
+		if (this->nSelectStartY == this->nSelectEndY && nStartX > nEndX) {
+			std::swap(nStartX, nEndX);
+		}
+
 	} else {
-		nStartX = this->nSelectEndX;  nStartY = this->nSelectEndY;
-		nEndX = this->nSelectStartX;  nEndY = this->nSelectStartY;
+		nStartX = this->nSelectEndX;
+		nStartY = this->nSelectEndY;
+		nEndX = this->nSelectStartX;
+		nEndY = this->nSelectStartY;
 	}
-	nEndY += Y_KLUDGE + EDGE_OFFSET;
-	if (nEndY < 0) return;  //selected area out of view
-	if (nStartY < 0)
-	{	//Highlight begins above viewed area.  Start highlighting from beginning.
-		nStartX = nStartY = 0;
+	// Selection completely outside display, ignore
+	if (nEndY < 0 || nStartY > dItemsListH) {
+		return;
 	}
-	nStartY += Y_KLUDGE + EDGE_OFFSET;
 
 	//Highlight.
 	const int nLineHeight = g_pTheFM->GetFontLineHeight(this->fontType);
-	if (nStartY == nEndY)
-	{
-		if (nStartX == nEndX) return;
-		if (nStartX > nEndX) std::swap(nStartX, nEndX);
-		g_pTheBM->Invert(GetDestSurface(), wX + nStartX, wY + nStartY,
-				nEndX - nStartX, nLineHeight-1);
-	} else {
-		//Highlight multi-line region in three strips.
-		const int nMidRegionY = nEndY - (nStartY + nLineHeight);
-		g_pTheBM->Invert(GetDestSurface(), wX + nStartX, wY + nStartY,
-				wW - nStartX, nLineHeight);
-		if (nMidRegionY >= nLineHeight) {
-			g_pTheBM->Invert(GetDestSurface(), wX, wY + nStartY + nLineHeight,
-					wW, nMidRegionY);
-		} else if (nEndX>nStartX && nMidRegionY > 0) {
-			g_pTheBM->Invert(GetDestSurface(), wX+nStartX, wY + nStartY + nLineHeight,
-					nEndX-nStartX, nMidRegionY);
-		}
-		g_pTheBM->Invert(GetDestSurface(), wX, wY + nEndY, nEndX, nLineHeight-1);
+
+	nStartY += Y_KLUDGE + EDGE_OFFSET;
+	nEndY += Y_KLUDGE + EDGE_OFFSET + nLineHeight;
+
+	/*
+	 Highlight is constructed in three strips:
+	  - One for the top line of the selection which can have an indent
+	  - One for the bottom line of the selection which may take only some of the line
+	  - One for the middle section which takes full width of the line and
+	    fills the space between the two
+	 */
+
+	// STEP 1: Calculate strips' rects in relation to the widget without limitations
+	SDL_Rect StripTop    = MAKE_SDL_RECT(wX + nStartX, wY + nStartY, wW - nStartX, nLineHeight);
+	SDL_Rect StripMiddle = MAKE_SDL_RECT(wX, wY + nStartY + nLineHeight, wW, nEndY - nStartY - nLineHeight * 2);
+	SDL_Rect StripBottom = MAKE_SDL_RECT(wX, wY + nEndY - nLineHeight, nEndX, nLineHeight);
+
+	// STEP 2: Special case, if it's only a single-line selection adjust top strip width
+	if (nStartY + nLineHeight >= nEndY) {
+		StripTop.w = nEndX - nStartX;
+		StripMiddle.h = 0;
+		StripBottom.h = 0;
+	}
+
+	// STEP 3: Crop the strips against the visible space
+	SDL_Rect CropArea = this->ItemsRect;
+	CropArea.h -= EDGE_OFFSET; // to avoid drawing outside text box
+
+	CBitmapManager::CropRect(StripTop, CropArea);
+	CBitmapManager::CropRect(StripMiddle, CropArea);
+	CBitmapManager::CropRect(StripBottom, CropArea);
+
+	// STEP 4: Render each strip if possible
+	if (StripTop.w > 0 && StripTop.h > 0) {
+		g_pTheBM->Invert(
+			GetDestSurface(),
+			StripTop.x, StripTop.y,
+			StripTop.w, StripTop.h
+		);
+	}
+
+	if (StripMiddle.w > 0 && StripMiddle.h > 0) {
+		g_pTheBM->Invert(
+			GetDestSurface(),
+			StripMiddle.x, StripMiddle.y,
+			StripMiddle.w, StripMiddle.h
+		);
+	}
+
+	if (StripBottom.w > 0 && StripBottom.h > 0) {
+		g_pTheBM->Invert(
+			GetDestSurface(),
+			StripBottom.x, StripBottom.y,
+			StripBottom.w, StripBottom.h
+		);
 	}
 }
 

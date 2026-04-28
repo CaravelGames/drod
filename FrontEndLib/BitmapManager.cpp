@@ -385,11 +385,11 @@ void CBitmapManager::SetSurfaceAlpha(
 			}
 
 			pPixel += dwRowOffset;
-		}   
+		}
 
 		if (SDL_MUSTLOCK(pSurface))
 			SDL_UnlockSurface(pSurface);
-	}       
+	}
 }
 
 //**********************************************************************************
@@ -1688,6 +1688,23 @@ void CBitmapManager::NegativeRect(
 }
 
 //**********************************************************************************
+void CBitmapManager::CropRect(
+// Crop `rect` to the dimensions of `bounds`, modifying it in place.
+	SDL_Rect& rect,
+	const SDL_Rect& bounds
+) {
+    const int x1 = std::max(rect.x, bounds.x);
+    const int y1 = std::max(rect.y, bounds.y);
+    const int x2 = std::min(rect.x + rect.w, bounds.x + bounds.w);
+    const int y2 = std::min(rect.y + rect.h, bounds.y + bounds.h);
+
+    rect.x = x1;
+    rect.y = y1;
+    rect.w = std::max(x2 - x1, 0);
+    rect.h = std::max(y2 - y1, 0);
+}
+
+//**********************************************************************************
 void CBitmapManager::ClipSrcAndDestToRect(
 //Updates the dest rectangle to fit properly within the positive view area.
 //Translates src to match.
@@ -2677,7 +2694,7 @@ void CBitmapManager::HsvToRectWithTileMask(SDL_Surface* pDestSurface,
 				if (b < minc) {
 					minc = b;
 				}
-				
+
 				maxc /= 255.0f; //0..255 -> 0..1
 				minc /= 255.0f;
 				const float range = float(maxc - minc);
@@ -2710,7 +2727,7 @@ void CBitmapManager::HsvToRectWithTileMask(SDL_Surface* pDestSurface,
 				if (bSetV) {
 					v = v1;
 				}
-				
+
 				//hsv -> rgb
 				if (s == 0.0f) {
 					r = g = b = int(v * 255.0f);

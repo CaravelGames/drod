@@ -81,7 +81,6 @@ protected:
 private:
 	void           CalcCursorPosition(const UINT viewIndex, const UINT wCursorIndex,
 			UINT &wCursorX, UINT &wCursorY) const;
-	void           CalculateHighlightedRegion();
 	void           GetPixelLocationAt(const UINT viewIndex, const UINT wIndex,
 			UINT &wPixelX, UINT &wPixelY) const;
 
@@ -99,6 +98,11 @@ private:
 	int            nSelectStartX, nSelectStartY; //highlighted region marker
 	int            nSelectEndX, nSelectEndY;
 
+	/**
+	 * Vector containing the index+1 of the last character displayed on that line.
+	 * Eg text "Hello\rOrb" will have values [6, 9] because "Hello\r" is 5
+	 * characters (so 5+1 = 6) and "Orb" is 3 characters (so 5 + 3 + 1).
+	 */
 	vector<UINT>   lineIndices; //text index located at the start of each text display line (after the first)
 	WSTRING        prevText;    //text used last time widget stats were calculated
 	UINT           wPosClickTopLine; //retain original location when dragging vert scroll bar
