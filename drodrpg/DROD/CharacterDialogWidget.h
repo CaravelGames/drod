@@ -138,7 +138,7 @@ private:
 	void  PopulateGotoLabelList(const COMMANDPTR_VECTOR& commands);
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
-	void  PopulateItemListBox(CListBoxWidget* pListBox);
+	void  PopulateItemListBox(CListBoxWidget* pListBox, bool bBuildItems);
 	void  PopulateItemGroupListBox(CListBoxWidget* pListBox);
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
@@ -194,7 +194,7 @@ private:
 	CListBoxWidget *pGotoLabelListBox;
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
-			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox, *pVarCompListBox2,
+			*pImperativeListBox, *pBuildItemsListBox, *pWaitForItemsListBox, *pBehaviorListBox, *pVarCompListBox2,
 			*pArrayVarListBox, *pArrayVarOpListBox, *pItemGroupListBox;
 	CListBoxWidget *pEquipmentTypesListBox, *pCustomNPCListBox, *pEquipTransListBox;
 	CTextBoxWidget *pCharNameText;
