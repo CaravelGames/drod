@@ -298,7 +298,7 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("center")] = ImageOverlayCommand::Center;
 		commandMap[string("display ")] = ImageOverlayCommand::DisplayDuration;
 		commandMap[string("displayms")] = ImageOverlayCommand::DisplayDuration; //deprecated
-		commandMap[string("displayrect")] = ImageOverlayCommand::DisplayRect;
+		commandMap[string("displayrect ")] = ImageOverlayCommand::DisplayRect;
 		commandMap[string("displayrectmodify")] = ImageOverlayCommand::DisplayRectModify;
 		commandMap[string("displaysize")] = ImageOverlayCommand::DisplaySize;
 		commandMap[string("displayturns")] = ImageOverlayCommand::TurnDuration;
