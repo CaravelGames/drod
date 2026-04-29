@@ -2598,7 +2598,7 @@ void CCharacterDialogWidget::OnKeyDown(
 				command != this->commandBuffer.end(); ++command)
 			{
 				CCharacterCommand *pCommand = *command;
-				if (pCommand->command == CCharacterCommand::CC_Label)
+				if (pCommand->IsActiveLabel())
 					this->pGotoLabelListBox->RemoveItem(pCommand->x);
 			}
 
@@ -2934,7 +2934,7 @@ void CCharacterDialogWidget::AddCommand()
 		nSelectedLine = pActiveCommandListBox->AddItemPointer(pCommand,
 				wszEmpty,	//real text added below
 				false, nSelectedLine+1);
-		SetCommandColor(pActiveCommandListBox, nSelectedLine, pCommand->command);
+		SetCommandColor(pActiveCommandListBox, nSelectedLine, *pCommand);
 	}
 
 	AddLabel(pCommand);
@@ -2951,7 +2951,7 @@ void CCharacterDialogWidget::AddLabel(CCharacterCommand* pCommand)
 //If command is a label, then adds the label ID+text to the label list.
 {
 	ASSERT(pCommand);
-	if (pCommand->command == CCharacterCommand::CC_Label)
+	if (pCommand->IsActiveLabel())
 	{
 		this->pGotoLabelListBox->AddItem(pCommand->x, pCommand->label.c_str());
 		if (!this->pGotoLabelListBox->ItemIsSelected())
@@ -3115,7 +3115,7 @@ void CCharacterDialogWidget::DeleteCommands(
 		COMMANDPTR_VECTOR::iterator iter = commands.begin() + wLine;
 		ASSERT(iter != commands.end());
 		commands.erase(iter);
-		if (pCommand->command == CCharacterCommand::CC_Label)
+		if (pCommand->IsActiveLabel())
 			this->pGotoLabelListBox->RemoveItem(pCommand->x);
 		if (pCommand->pSpeech)
 		{
@@ -4156,7 +4156,8 @@ const
 
 		case CCharacterCommand::CC_Label:
 			wstr += command.label;
-			wstr += wszColon;
+			if (command.IsActiveLabel())
+				wstr += wszColon;
 		break;
 		case CCharacterCommand::CC_ChallengeCompleted:
 			wstr += wszQuote;
@@ -4743,7 +4744,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
 			case CCharacterCommand::CC_Label:
-				bIsLabel = true;
+				if (pCommand->IsActiveLabel())
+					bIsLabel = true;
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
@@ -5533,7 +5535,7 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 		CCharacterCommand *pCommand = commands[wIndex];
 		const UINT insertedIndex = pCommandList->AddItemPointer(pCommand,
 				GetCommandDesc(commands, pCommand).c_str());
-		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
+		SetCommandColor(pCommandList, insertedIndex, *pCommand);
 	}
 
 	PrettyPrintCommands(pCommandList, commands);
@@ -5578,9 +5580,13 @@ void CCharacterDialogWidget::PopulateGotoLabelList(const COMMANDPTR_VECTOR& comm
 		CCharacterCommand *pCommand = commands[wIndex];
 		if (pCommand->command == CCharacterCommand::CC_Label)
 		{
-			this->pGotoLabelListBox->AddItem(pCommand->x, pCommand->label.c_str());
-			if (!this->pGotoLabelListBox->ItemIsSelected())
-				this->pGotoLabelListBox->SelectLine(0);
+			if (pCommand->IsActiveLabel()) {
+				this->pGotoLabelListBox->AddItem(pCommand->x, pCommand->label.c_str());
+				if (!this->pGotoLabelListBox->ItemIsSelected())
+					this->pGotoLabelListBox->SelectLine(0);
+			}
+			// Comment-labels still store an ID because they can easily be
+			// renamed to an active label and that must keep working.
 			if (pCommand->x > this->wIncrementedLabel)
 				this->wIncrementedLabel = pCommand->x;
 		}
@@ -5925,11 +5931,14 @@ void CCharacterDialogWidget::QueryXYWH()
 
 //*****************************************************************************
 void CCharacterDialogWidget::SetCommandColor(
-	CListBoxWidget* pListBox, int line, CCharacterCommand::CharCommand command)
+	CListBoxWidget* pListBox, int line, const CCharacterCommand& command)
 {
-	switch (command) {
+	switch (command.command) {
 		case CCharacterCommand::CC_Label:
-			pListBox->SetItemColorAtLine(line, DarkGreen);
+			if (command.IsCommentLabel())
+				pListBox->SetItemColorAtLine(line, MidDarkGray);
+			else
+				pListBox->SetItemColorAtLine(line, DarkGreen);
 		break;
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_GoSub:
@@ -6675,7 +6684,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 	if (this->bEditingCommand)
 	{
 		oldCommandType = this->pCommand->command;
-		if (oldCommandType == CCharacterCommand::CC_Label)
+		if (this->pCommand->IsActiveLabel())
 		{
 			this->pGotoLabelListBox->RemoveItem(this->pCommand->x);
 			bRemovedLabel = true;
