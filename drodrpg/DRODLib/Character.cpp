@@ -4696,6 +4696,7 @@ TileCheckFunc getItemGroupFunction(ScriptFlag::ItemGroup group)
 	case ScriptFlag::IG_Collectable: return bIsCollectable;
 	case ScriptFlag::IG_AnyToken: return [](UINT t) { return t == T_TOKEN; };
 	case ScriptFlag::IG_AnyTTile: return [](UINT t) { return t != 0; };
+	case ScriptFlag::IG_PressurePlate: return [](UINT t) { return t == T_PRESSPLATE; };
 	default: return bIsPlainFloor;
 	}
 }
@@ -4746,6 +4747,7 @@ UINT getItemGroupLayer(ScriptFlag::ItemGroup group)
 	case ScriptFlag::IG_Collectable: return LAYER_TRANSPARENT;
 	case ScriptFlag::IG_AnyToken: return LAYER_TRANSPARENT;
 	case ScriptFlag::IG_AnyTTile: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_PressurePlate: return LAYER_OPAQUE;
 	default: return LAYER_OPAQUE;
 	}
 }

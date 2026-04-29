@@ -5112,6 +5112,7 @@ void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(ScriptFlag::IG_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
 	pListBox->AddItem(ScriptFlag::IG_Firetrap, g_pTheDB->GetMessageText(MID_Firetrap));
 	pListBox->AddItem(ScriptFlag::IG_Platform, g_pTheDB->GetMessageText(MID_PlatformOrRaft));
+	pListBox->AddItem(ScriptFlag::IG_PressurePlate, g_pTheDB->GetMessageText(MID_AnyPressurePlate));
 	pListBox->AddItem(ScriptFlag::IG_OpenDoor, g_pTheDB->GetMessageText(MID_OpenDoor));
 	pListBox->AddItem(ScriptFlag::IG_ClosedDoor, g_pTheDB->GetMessageText(MID_ClosedDoor));
 	pListBox->AddItem(ScriptFlag::IG_YellowDoor, g_pTheDB->GetMessageText(MID_YellowDoor));
