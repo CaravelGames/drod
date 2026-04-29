@@ -4984,7 +4984,11 @@ void CCharacterDialogWidget::PopulateItemListBox(
 	pListBox->AddItem(T_WATER, g_pTheDB->GetMessageText(MID_Water));
 	pListBox->AddItem(T_BRIDGE, g_pTheDB->GetMessageText(MID_Bridge));
 	pListBox->AddItem(T_BRIDGE_H, g_pTheDB->GetMessageText(MID_Bridge_H));
-	pListBox->AddItem(T_BRIDGE_V, g_pTheDB->GetMessageText(MID_Bridge_V));
+	pListBox->AddItem(T_BRIDGE_H, g_pTheDB->GetMessageText(MID_Bridge_H));
+	if (!bBuildItems) {
+		pListBox->AddItem(T_PLATFORM_P, g_pTheDB->GetMessageText(MID_PlatformPit));
+		pListBox->AddItem(T_PLATFORM_W, g_pTheDB->GetMessageText(MID_PlatformWater));
+	}
 	pListBox->AddItem(T_TUNNEL_N, g_pTheDB->GetMessageText(MID_Tunnel_N));
 	pListBox->AddItem(T_TUNNEL_E, g_pTheDB->GetMessageText(MID_Tunnel_E));
 	pListBox->AddItem(T_TUNNEL_S, g_pTheDB->GetMessageText(MID_Tunnel_S));
