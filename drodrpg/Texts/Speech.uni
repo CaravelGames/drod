@@ -1871,3 +1871,7 @@ Any token
 [MID_AnyTLayer]
 [eng]
 Any T-layer object
+
+[MID_AnyPressurePlate]
+[eng]
+Any pressure plate

@@ -237,6 +237,7 @@ namespace ScriptFlag
 		IG_Collectable = 37, //Any item the player can pick up
 		IG_AnyToken = 38, //Any token
 		IG_AnyTTile = 39, //Any T-layer object
+		IG_PressurePlate = 40, //Any pressure plate
 		ItemGroupCount //Total number of defined groups
 	};
 
