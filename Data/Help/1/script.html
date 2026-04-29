@@ -332,7 +332,7 @@ the state of the room and wait indefinitely until certain events occur.</p>
       <b>Question</b> is executed as the condition for an <a href="#if">
       <b>If ...</b></a> command, the corresponding script block will execute if
       the user answers "Yes".</li>
-  <li><a name="select-square"></a><b>Select square</b> - Causes the next game move to become a position input, as if the player had stepped on a potion. The selected position is placed into the <b>_ReturnX</b> and <b>_ReturnY</b> variables. 
+  <li><a name="select-square"></a><b>Select square</b> - Causes the next game move to become a position input, as if the player had stepped on a potion. The selected position is placed into the <b>_ReturnX</b> and <b>_ReturnY</b> variables.
     The selection can be configured to allow any room tile to be chosen, or to use the same restriction as double potions. If the player has consumed a potion, this command will be delayed until the next full turn has processed.</li>
   <li><a name="wait"><b>Wait</b></a> - This tells the NPC to do nothing until
       the number of game turns you specify has passed.  <b>Wait 0</b> will stop
@@ -474,7 +474,11 @@ continue executing script commands from a different location in the script.</p>
       continue executing commands from (used in conjunction with
       <a href="#goto"><b>Go to</b></a> and <a href="#answer"><b>Answer option</b></a>
       commands).  Also, labels may be used to simply comment in normal language
-      on what the following script commands do.</li>
+      on what the following script commands do.<br />
+      Labels can also be used as comments if you prefix them with a double
+      slash. Eg: "// This is a comment" will display differently in the command
+      list and will not appear in any command that allows jumping to a label.
+    </li>
   <li><a name="goto"><b>Go to</b></a> - Select a label to continue executing
       commands from.  Hint: Use "Go to" to make a loop in the script that repeats a
       sequence of commands over and over. Use a <a href="#wait"><b>Wait 0</b></a>
@@ -545,9 +549,9 @@ continue executing script commands from a different location in the script.</p>
       this NPC won't harm the player.</li>
     <li><a name="impdeadly"><b>Deadly</b></a>: Allows the NPC to step on the
       player and kill him.  Also makes sword hits deadly to the player (default).</li>
-    <li><a name="imp-friendly"><b>Friendly</b></a>: Marks the NPC as "friendly". Killing it will not break stealth, and Stalwarts and Soldiers will avoid stabbing the NPC. 
+    <li><a name="imp-friendly"><b>Friendly</b></a>: Marks the NPC as "friendly". Killing it will not break stealth, and Stalwarts and Soldiers will avoid stabbing the NPC.
 	An NPC that is set as <a href="impsafe">Safe</a> is automatically set to be friendly.</li>
-    <li><a name="imp-unfriendly"><b>Unfriendly</b></a>:  Marks the NPC as "unfriendly". Killing it will break stealth, and Stalwarts and Soldiers may stab the NPC. 
+    <li><a name="imp-unfriendly"><b>Unfriendly</b></a>:  Marks the NPC as "unfriendly". Killing it will break stealth, and Stalwarts and Soldiers may stab the NPC.
 	An NPC that is set as <a href="impdeadly">Deadly</a> is automatically set to be unfriendly.</li>
     <li><a name="impdie"><b>Die</b></a>: Makes the NPC die with a blood splatter.</li>
     <li><a name="impdiespecial"><b>Die special</b></a>: Makes the NPC perform a
