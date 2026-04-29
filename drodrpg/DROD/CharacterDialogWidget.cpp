@@ -5123,6 +5123,7 @@ void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(ScriptFlag::IG_AnyArrow, g_pTheDB->GetMessageText(MID_AnyArrow));
 	pListBox->AddItem(ScriptFlag::IG_Tarstuff, g_pTheDB->GetMessageText(MID_TarstuffGroup));
 	pListBox->AddItem(ScriptFlag::IG_Briar, g_pTheDB->GetMessageText(MID_Briars));
+	pListBox->AddItem(ScriptFlag::IG_AnyToken, g_pTheDB->GetMessageText(MID_AnyToken));
 	pListBox->AddItem(ScriptFlag::IG_Health, g_pTheDB->GetMessageText(MID_HealthGroup));
 	pListBox->AddItem(ScriptFlag::IG_AttackUp, g_pTheDB->GetMessageText(MID_AttackUpGroup));
 	pListBox->AddItem(ScriptFlag::IG_DefenseUp, g_pTheDB->GetMessageText(MID_DefenseUpGroup));
@@ -5132,6 +5133,7 @@ void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(ScriptFlag::IG_Map, g_pTheDB->GetMessageText(MID_LevelMap));
 	pListBox->AddItem(ScriptFlag::IG_Collectable, g_pTheDB->GetMessageText(MID_CollectableGroup));
 	pListBox->AddItem(ScriptFlag::IG_Equipment, g_pTheDB->GetMessageText(MID_EquipmentGroup));
+	pListBox->AddItem(ScriptFlag::IG_AnyTTile, g_pTheDB->GetMessageText(MID_AnyTLayer));
 }
 
 //*****************************************************************************

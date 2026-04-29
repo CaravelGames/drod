@@ -855,6 +855,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_PushToArrayVar: strText = "Push to array var"; break;
 		case MID_PopFromArrayVar: strText = "Pop from array var"; break;
 		case MID_ArrayVarRange: strText = "Get array var range"; break;
+		case MID_AnyToken: strText = "Any token"; break;
+		case MID_AnyTLayer: strText = "Any T-layer object"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

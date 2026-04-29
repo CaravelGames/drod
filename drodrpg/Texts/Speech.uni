@@ -1863,3 +1863,11 @@ Pop from array var
 [MID_ArrayVarRange]
 [eng]
 Get array var range
+
+[MID_AnyToken]
+[eng]
+Any token
+
+[MID_AnyTLayer]
+[eng]
+Any T-layer object

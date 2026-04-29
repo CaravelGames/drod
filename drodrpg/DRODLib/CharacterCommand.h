@@ -235,6 +235,8 @@ namespace ScriptFlag
 		IG_Equipment = 35, //Any equipment slot
 		IG_Keys = 36, //Any key
 		IG_Collectable = 37, //Any item the player can pick up
+		IG_AnyToken = 38, //Any token
+		IG_AnyTTile, //Any T-layer object
 		ItemGroupCount //Total number of defined groups
 	};
 
