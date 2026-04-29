@@ -1779,6 +1779,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAddCommandDialog->AddWidget(this->pItemGroupListBox);
 	this->PopulateItemGroupListBox(this->pItemGroupListBox);
 	this->pItemGroupListBox->SelectLine(0);
+	this->pItemGroupListBox->SetAllowFiltering(true);
 
 	//Yes/No selection.
 	this->pOnOffListBox = new CListBoxWidget(TAG_ONOFFLISTBOX,
@@ -1902,6 +1903,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	this->pVarListBox = new CListBoxWidget(TAG_VARLIST,
 			X_VARLISTBOX, Y_VARLISTBOX, CX_VARLISTBOX, CY_VARLISTBOX, true);
+	this->pVarListBox->SetAllowFiltering(true);
 	this->pVarListBox->AddHotkey(SDLK_RETURN, TAG_OK);
 	this->pAddCommandDialog->AddWidget(this->pVarListBox);
 
