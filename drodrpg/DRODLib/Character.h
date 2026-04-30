@@ -356,6 +356,8 @@ private:
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;
 	bool bIfBlock;
+	bool bIfConditionFailed;
+	bool bIfNot; // should if result be inverted
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
 	int  eachVictoryLabelIndex; //if set, jump script execution here on each combat victory
 

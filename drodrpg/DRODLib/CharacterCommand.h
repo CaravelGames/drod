@@ -400,6 +400,8 @@ public:
 		CC_PopFromArrayVar,     //Set _ReturnX to the highest set value from array var W, then unset that array entry.
 		CC_ArrayVarRange,       //Set _ReturnX and _ReturnY to the highest and lowest index of array var W
 		CC_LogicalWaitNOR,      //Begins a logical wait block. Waits until all conditions are false.
+		CC_IfNot,               //Begin a conditional block if next command is not satisfied.
+		CC_IfElseIfNot,         //Else combined with if not to reduce code nesting
 		CC_Count
 	};
 
@@ -410,6 +412,15 @@ public:
 
 	static bool IsEachEventCommand(CharCommand command);
 	static bool IsRealEquipmentType(ScriptFlag::EquipmentType type);
+
+	bool isIfNotCommand() const {
+		return command == CC_IfNot || command == CC_IfElseIfNot;
+	}
+
+	bool isElseIfCommand() const {
+		return command == CC_IfElseIf || command == CC_IfElseIfNot;
+	}
+
 	bool IsLogicalWaitCommand() const {
 		switch (command) {
 			case CC_LogicalWaitAnd:

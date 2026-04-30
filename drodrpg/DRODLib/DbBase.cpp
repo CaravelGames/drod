@@ -859,6 +859,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_AnyTLayer: strText = "Any T-layer object"; break;
 		case MID_AnyPressurePlate: strText = "Any pressure plate"; break;
 		case MID_LogicalWaitNOR: strText = "Wait for None:"; break;
+		case MID_IfNot: strText = "If Not ..."; break;
+		case MID_IfElseIfNot: strText = "Else If Not"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
