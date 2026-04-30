@@ -83,7 +83,7 @@ void CDbHolds::Delete(
 	c4_View HoldsView;
 	const UINT dwHoldRowI = LookupRowByPrimaryKey(dwHoldID, V_Holds, HoldsView);
 	if (dwHoldRowI == ROW_NO_MATCH) {ASSERT(!"Bad hold ID."); return;}
-	
+
 	//Mark this hold as in process of being deleted (speed optimization).
 	ASSERT(!CDbHolds::deletingHoldID);
 	CDbHolds::deletingHoldID = dwHoldID;
@@ -726,7 +726,7 @@ void CDbHolds::ExportXML(
 		UINT dwSize = pHold->Entrances.size();
 		UINT dwIndex;
 		c4_View RoomsView;
-		for (dwIndex=0; dwIndex<dwSize; ++dwIndex) 
+		for (dwIndex=0; dwIndex<dwSize; ++dwIndex)
 		{
 			CEntranceData& entrance = *(pHold->Entrances[dwIndex]);
 			const UINT dwRoomI = LookupRowByPrimaryKey(entrance.dwRoomID, V_Rooms, RoomsView);
@@ -857,7 +857,7 @@ void CDbHolds::ExportXML(
 			CDbXML::PerformCallbackf(fBasePercentDone + (wCount/fItems) * fTotalRemainingPercent);
 			db.Data.ExportXML(*iter, dbRefs, str);
 		}
-		  
+
 		//Export all levels in hold.
 		for (iter = LevelIDs.begin(); iter != LevelIDs.end(); ++iter, ++wCount)
 		{
@@ -1784,7 +1784,7 @@ bool CDbHold::IsOfficialHold(HoldStatus holdstatus)
 		case GatEB:
 		case TSS:
 			return true;
-			
+
 		default: return false;
 	}
 }
@@ -3394,11 +3394,14 @@ MESSAGE_ID CDbHold::SetProperty(
 						this->dwHoldID = dwLocalHoldID;
 						bSaveRecord = false;
 					} else {
+						// Store this hold's ID to select it if the import fails or is cancelled
+						info.dwHoldNotImportedID = dwLocalHoldID;
+
 						//This hold is being imported.
 						if ((lastUpdated >= this->LastUpdated && !info.bAllowHoldDowngrade) ||
 								!info.bAllowHoldUpgrade)
 						{
-		               //Don't import this hold since it's an older version of an existing one
+							//Don't import this hold since it's an older version of an existing one
 							//or hold upgrading has been disabled.
 							bSaveRecord = false;
 							info.HoldIDMap[this->dwHoldID] = dwLocalHoldID;

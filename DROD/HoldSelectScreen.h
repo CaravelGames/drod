@@ -142,7 +142,7 @@ private:
 	void     RateHold();
 	void     RequestThumbnail(CNetMedia *pMedia);
 	void     SelectHold(const UINT dwHoldID);
-	void     SelectImportedHold(const CIDSet& importedHoldIDs);
+	void     SelectImportedHold(const CIDSet& importedHoldIDs, const bool bEvenOnFailedImport = false);
 	void     SetCNetHoldDesc(CNetMedia *pHoldData);
 	void     SetHoldDesc();
 	void     SetHoldNameText(UINT dwHoldID, const WSTRING& wStr);
