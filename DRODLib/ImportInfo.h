@@ -114,6 +114,9 @@ public:
 	string  headerInfo;     //optional info set for export
 
 	UINT dwPlayerImportedID, dwHoldImportedID, dwDemoImportedID, dwDataImportedID;
+	/// ID of the hold in metakit database that was attempted to be imported, was
+	/// matched with a record but either failed or was cancelled
+	UINT dwHoldNotImportedID;
 	CIDSet localHoldIDs;
 	std::set<WSTRING> roomStyles; //room style references encountered in import
 
