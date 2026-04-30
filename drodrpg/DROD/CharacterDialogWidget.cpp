@@ -6299,6 +6299,10 @@ void CCharacterDialogWidget::SetCommandColor(
 		break;
 	case CCharacterCommand::CC_VarSet:
 	case CCharacterCommand::CC_VarSetAt:
+	case CCharacterCommand::CC_ArrayVarSet:
+	case CCharacterCommand::CC_ArrayVarSetAt:
+	case CCharacterCommand::CC_PushToArrayVar:
+	case CCharacterCommand::CC_PopFromArrayVar:
 		pListBox->SetItemColorAtLine(line, FullRed);
 		break;
 	case CCharacterCommand::CC_Wait:
