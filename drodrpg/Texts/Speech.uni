@@ -1875,3 +1875,7 @@ Any T-layer object
 [MID_AnyPressurePlate]
 [eng]
 Any pressure plate
+
+[MID_LogicalWaitNOR]
+[eng]
+Wait for None:

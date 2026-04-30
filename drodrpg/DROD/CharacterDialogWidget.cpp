@@ -4271,6 +4271,7 @@ const
 		case CCharacterCommand::CC_LogicalWaitAnd:
 		case CCharacterCommand::CC_LogicalWaitOr:
 		case CCharacterCommand::CC_LogicalWaitXOR:
+		case CCharacterCommand::CC_LogicalWaitNOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_ResetOverrides:
 		break;
@@ -4408,6 +4409,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_LogicalWaitAnd:
 		case CCharacterCommand::CC_LogicalWaitOr:
 		case CCharacterCommand::CC_LogicalWaitXOR:
+		case CCharacterCommand::CC_LogicalWaitNOR:
 			++wLogicNestDepth; //indent inside of logic block
 			bUndoOneDepth = true;
 			break;
@@ -4736,6 +4738,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, g_pTheDB->GetMessageText(MID_LogicalWaitAnd));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, g_pTheDB->GetMessageText(MID_LogicalWaitOr));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, g_pTheDB->GetMessageText(MID_LogicalWaitXOR));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitNOR, g_pTheDB->GetMessageText(MID_LogicalWaitNOR));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, g_pTheDB->GetMessageText(MID_LogicalWaitEnd));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_CountArrayEntries, g_pTheDB->GetMessageText(MID_CountArrayEntries));
@@ -5810,6 +5813,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARPUSH,       //CC_PushToArrayVar
 		CLEARARRAYVAR,      //CC_PopFromArrayVar
 		CLEARARRAYVAR,      //CC_ArrayVarRange
+		NO_WIDGETS,         //CC_LogicalWaitNOR
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -5963,6 +5967,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYPUSH_L,        //CC_PushToArrayVar
 		NO_LABELS,          //CC_PopFromArrayVar
 		NO_LABELS,          //CC_ArrayVarRange
+		NO_LABELS,          //CC_LogicalWaitNOR
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6307,6 +6312,7 @@ void CCharacterDialogWidget::SetCommandColor(
 	case CCharacterCommand::CC_LogicalWaitAnd:
 	case CCharacterCommand::CC_LogicalWaitOr:
 	case CCharacterCommand::CC_LogicalWaitXOR:
+	case CCharacterCommand::CC_LogicalWaitNOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
 		pListBox->SetItemColorAtLine(line, MediumCyan);
 	break;
@@ -7177,6 +7183,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_LogicalWaitAnd:
 		case CCharacterCommand::CC_LogicalWaitOr:
 		case CCharacterCommand::CC_LogicalWaitXOR:
+		case CCharacterCommand::CC_LogicalWaitNOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_ResetOverrides:
 			AddCommand();
@@ -7688,6 +7695,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_LogicalWaitAnd:
 		case CCharacterCommand::CC_LogicalWaitOr:
 		case CCharacterCommand::CC_LogicalWaitXOR:
+		case CCharacterCommand::CC_LogicalWaitNOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_ResetOverrides:
 		case CCharacterCommand::CC_WaitForWeapon:
@@ -8002,6 +8010,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_LogicalWaitAnd:
 	case CCharacterCommand::CC_LogicalWaitOr:
 	case CCharacterCommand::CC_LogicalWaitXOR:
+	case CCharacterCommand::CC_LogicalWaitNOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
 	case CCharacterCommand::CC_ResetOverrides:
 	break;
@@ -8886,6 +8895,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_LogicalWaitAnd:
 	case CCharacterCommand::CC_LogicalWaitOr:
 	case CCharacterCommand::CC_LogicalWaitXOR:
+	case CCharacterCommand::CC_LogicalWaitNOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
 	case CCharacterCommand::CC_ResetOverrides:
 	break;
