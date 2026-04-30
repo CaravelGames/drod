@@ -1823,6 +1823,8 @@ enum MID_CONSTANT {
   MID_AnyTLayer = 2178,
   MID_AnyPressurePlate = 2179,
   MID_LogicalWaitNOR = 2180,
+  MID_IfNot = 2181,
+  MID_IfElseIfNot = 2182,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
