@@ -399,6 +399,7 @@ public:
 		CC_PushToArrayVar,      //Set array var W starting from the index after the highest set index.
 		CC_PopFromArrayVar,     //Set _ReturnX to the highest set value from array var W, then unset that array entry.
 		CC_ArrayVarRange,       //Set _ReturnX and _ReturnY to the highest and lowest index of array var W
+		CC_LogicalWaitNOR,      //Begins a logical wait block. Waits until all conditions are false.
 		CC_Count
 	};
 
@@ -414,6 +415,7 @@ public:
 			case CC_LogicalWaitAnd:
 			case CC_LogicalWaitOr:
 			case CC_LogicalWaitXOR:
+			case CC_LogicalWaitNOR:
 				return true;
 			default:
 				return false;
