@@ -100,7 +100,7 @@ UINT BuildUtil::BuildTilesAt(
 	if (baseTile >= TOTAL_EDIT_TILE_COUNT)
 		return builtTiles;
 
-	if (TILE_LAYER[baseTile] == LAYER_OPAQUE) {
+	if (getTileLayer(baseTile) == LAYER_OPAQUE) {
 		for (UINT y = py; y <= endY; ++y)
 			for (UINT x = px; x <= endX; ++x) {
 				//When o-layer changes, refresh bridge supports.
@@ -137,7 +137,7 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 	const UINT baseTile = bConvertFakeElement(tile);
 	if (IsValidTileNo(baseTile))
 	{
-		switch (TILE_LAYER[baseTile])
+		switch (getTileLayer(baseTile))
 		{
 			case LAYER_OPAQUE:
 				//Don't build if this element is already there.
@@ -328,7 +328,7 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 	if (baseTile == wOldOTile && !bAllowSame)
 		return false;
 
-	const UINT wLayer = TILE_LAYER[baseTile];
+	const UINT wLayer = getTileLayer(baseTile);
 	if (wLayer == LAYER_OPAQUE)
 	{
 		//Update room's trapdoor stats when a trapdoor is removed this special way.

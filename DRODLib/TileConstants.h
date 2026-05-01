@@ -202,7 +202,7 @@ static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 #define T_REMOVE_TRANSPARENT (UINT(-58))
 /// Used by CID_ObjectBuilt to trigger event but signify no sound effect to be played
 #define T_SILENT_BUILD (UINT(-59))
-#define LAST_FAKE_TILE_INDEX (UINT(-58))
+#define LAST_FAKE_TILE_INDEX (UINT(-59))
 
 static inline bool bIsFakeTokenType(const UINT t) { return t >= T_TOKEN_RESERVED_SPACE && t <= T_ACTIVETOKEN; }
 static inline bool bIsFakeOrbType(const UINT t) { return t == T_ORB_CRACKED || t == T_ORB_BROKEN || t == T_ORB_NORMAL; }
@@ -439,43 +439,6 @@ static inline BYTE calcLightRadius(const UINT val) {return (val & ((MAX_LIGHT_DI
 static inline BYTE calcLightType(const UINT val) {return val & (NUM_LIGHT_TYPES-1);}
 
 
-static inline UINT getBaseTile(const UINT wVirtualTile)
-{
-	switch (wVirtualTile)
-	{
-	case T_ACTIVETOKEN:
-	case T_TOKEN_ROTATECW:
-	case T_TOKEN_ROTATECCW:
-	case T_TOKEN_SWITCH_TARMUD:
-	case T_TOKEN_SWITCH_TARGEL:
-	case T_TOKEN_SWITCH_GELMUD:
-	case T_TOKEN_VISION:
-	case T_TOKEN_POWER:
-	case T_TOKEN_DISARM:
-	case T_TOKEN_PERSISTENTMOVE:
-	case T_TOKEN_CONQUER:
-	case T_TOKEN_WPSWORD:
-	case T_TOKEN_WPPICKAXE:
-	case T_TOKEN_WPSPEAR:
-	case T_TOKEN_WPSTAFF:
-	case T_TOKEN_WPDAGGER:
-	case T_TOKEN_WPCABER:
-	case T_TOKEN_TSPLIT:
-	case T_TOKEN_TSPLIT_USED:
-	case T_TOKEN_RESERVED_SPACE:
-		return T_TOKEN;
-	case T_ORB_CRACKED:
-	case T_ORB_BROKEN:
-		return T_ORB;
-	case T_PLATE_ONEUSE:
-	case T_PLATE_MULTI:
-	case T_PLATE_ON_OFF:
-		return T_PRESSPLATE;
-	default:
-		return wVirtualTile;
-	}
-}
-
 //Add to monster values so they don't overlap o- and t-layer values on a tile.
 //NOTE: Make sure list matches that in MonsterFactory.h.
 static const UINT M_OFFSET = TILE_COUNT;
@@ -544,8 +507,11 @@ enum TILELAYERS {
 	LAYER_FLOOR = 3
 };
 
-//Layer associated with each tile--0 is opaque layer, 1 is transparent layer,
-//    2 is monster layer, and 3 is the floor layer.
+/**
+ * Layer associated with each tile.
+ * Do not access directly, use `getTileLayer()` instead to ensure virtual
+ * or fake values don't cause invalid memory access.
+ */
 static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 {
 	LAYER_TRANSPARENT, //T_EMPTY         0
@@ -875,6 +841,11 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	0                 //T_EMPTY_F       TOTAL+2
 };
 
+/// Returns true if the given tile has a layer assigned to it
+static inline bool bIsTileWithLayer(const UINT wTile) {
+	return wTile < TOTAL_EDIT_TILE_COUNT;
+}
+
 static inline UINT getBuildMarkerTileMID(const UINT wTile){
 	switch(wTile){
 		case T_ORB_NORMAL: return MID_OrbWaitNormal;
@@ -932,12 +903,30 @@ static inline UINT bConvertFakeElement(const UINT t) {
 	if (bIsFakePressurePlateType(t)){
 		return T_PRESSPLATE;
 	}
-	if (t == T_REMOVE_FLOOR_ITEM){
-		return T_EMPTY_F;
+	switch (t) {
+		case T_REMOVE_FLOOR_ITEM: return T_EMPTY_F;
+		case T_REMOVE_TRANSPARENT: return T_EMPTY_TRANSPARENT;
+		case T_REMOVE_OVERHEAD_IMAGE: return T_OVERHEAD_IMAGE;
+		default: return t;
 	}
-	if (t == T_REMOVE_TRANSPARENT) {
-		return T_EMPTY_TRANSPARENT;
+}
+
+/**
+ * Return the layer used by a tile:
+ *  - Fake tiles are converted to their base tile and its layer is returned
+ *  - Invalid values or fake tiles without base tile return Opaque Layer (0)
+ */
+static inline UINT getTileLayer(const UINT wTile) {
+	if (bIsTileWithLayer(wTile)) {
+		return TILE_LAYER[wTile];
 	}
-	return t;
+
+	const UINT wBaseTile = bConvertFakeElement(wTile);
+
+	if (bIsTileWithLayer(wBaseTile)) {
+		return TILE_LAYER[wBaseTile];
+	}
+
+	return LAYER_OPAQUE;
 }
 #endif //...#ifndef TILECONSTANTS_H
