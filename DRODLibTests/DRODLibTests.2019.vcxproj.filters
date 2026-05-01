@@ -192,7 +192,7 @@
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstCaber.cpp">
       <Filter>Tests\Player\Bugs</Filter>
     </ClCompile>
-    <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp">
+    <ClCompile Include="src\tests\Scripting\SetPlayerAppearance.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp">

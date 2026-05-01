@@ -4800,6 +4800,24 @@ void CCurrentGame::SynchClonesWithPlayer(CCueEvents& CueEvents)
 
 	SetCloneWeaponsSheathed();
 
+	/*
+	MAURYCY (SKELL):
+	Intentionally left here as a future reference for 5.3 release if/when we
+	decide to tackle the issue that player changing role from flying to non-flying
+	does not cause pressure plate pressing. Nor any other action or interaction.
+	This extends to an issue with clones. Prior to TSS 5.0.2 clones would press plates
+	if player role changed from flying to non-flying but as part of fixes to a seep
+	bug I accidentally broke it so that they only press the plate if they cannot
+	press it.
+
+	So when we fix this we may want to reuse this code because
+	it's good code for the most part.
+
+	Reference threads:
+	 - Seep bug: https://forum.caravelgames.com/viewtopic.php?TopicID=39739
+	 - Player role issue: https://forum.caravelgames.com/viewtopic.php?TopicID=47375
+	 - Clone issue: https://forum.caravelgames.com/viewtopic.php?TopicID=47180
+
 	//Check for clones depressing pressure plates according to player role.
 	if (this->wTurnNo > 0) //...except on room entrance
 	{
@@ -4818,6 +4836,7 @@ void CCurrentGame::SynchClonesWithPlayer(CCueEvents& CueEvents)
 			}
 		}
 	}
+	*/
 }
 
 //*****************************************************************************
