@@ -37,7 +37,6 @@ bool Setting_SaveTestLevels = false;
 
 void CTestDb::Init(int argc, char* const argv[])
 {
-
 	CTestDb::InitializeCFiles(argv);
 	CTestDb::InitializeDb();
 	CTestDb::InitializePlayer();

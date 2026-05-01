@@ -699,7 +699,7 @@ void CDbRooms::FilterBy(
 void CDbRooms::LogRoomsWithItem(const UINT wTile, const UINT wParam)
 //Output a log of all rooms that contain the mentioned item.
 {
-	const UINT wLayer = TILE_LAYER[wTile];
+	const UINT wLayer = getTileLayer(wTile);
 
 	ASSERT(IsOpen());
 	CDb db;
@@ -2936,7 +2936,7 @@ bool CDbRoom::DoesSquareContainTile(
 		return false;
 	}
 
-	switch (TILE_LAYER[tile])
+	switch (getTileLayer(tile))
 	{
 		case 0:  //o-layer
 			if (bFakeElement) {
@@ -4282,7 +4282,7 @@ const
 
 	//Check each square for this tile.
 	char *pszSquare, *pszSquares;
-	switch (TILE_LAYER[wType])
+	switch (getTileLayer(wType))
 	{
 		case 0: pszSquares = pszOSquares; break;
 		case 1:
@@ -10678,7 +10678,7 @@ void CDbRoom::FloodPlot(
 	ASSERT(IsValidTileNo(wTileNo));
 
 	//Flood squares of tile type at (wX,wY).
-	const UINT wLayer = TILE_LAYER[wTileNo];
+	const UINT wLayer = getTileLayer(wTileNo);
 	CTileMask mask(wLayer == 0 ? GetOSquare(wX, wY) : GetTSquare(wX,wY));
 
 	//Gather list of squares to flood fill.
@@ -10911,7 +10911,7 @@ bool CDbRoom::RemoveTiles(const UINT wOldTile)
 //Returns:
 //True if any tiles were found
 {
-	ASSERT(TILE_LAYER[wOldTile] == 0);  //o-layer only implemented currently
+	ASSERT(getTileLayer(wOldTile) == 0);  //o-layer only implemented currently
 	bool bChangedTiles=false;
 	for (UINT wY=wRoomRows; wY--; )
 		for (UINT wX=wRoomCols; wX--; )
@@ -10944,8 +10944,8 @@ bool CDbRoom::ToggleTiles(const UINT wOldTile, const UINT wNewTile, CCueEvents& 
 //Returns:
 //True if any tiles were found
 {
-	ASSERT(TILE_LAYER[wOldTile] == 0);  //o-layer only implemented currently
-	ASSERT(TILE_LAYER[wNewTile] == 0);
+	ASSERT(getTileLayer(wOldTile) == 0);  //o-layer only implemented currently
+	ASSERT(getTileLayer(wNewTile) == 0);
 
 	bool bChangedTiles=false, bThisTileChanged=false;
 	const bool bSolidOldTile = bIsSolidOTile(wOldTile) || wOldTile == T_HOT;
@@ -11019,7 +11019,7 @@ void CDbRoom::Plot(
 	ASSERT(IsValidColRow(wX, wY));
 
 	const UINT wSquareIndex = ARRAYINDEX(wX,wY);
-	switch (TILE_LAYER[wTileNo])
+	switch (getTileLayer(wTileNo))
 	{
 		case 0: //Opaque layer.
 			this->pszOSquares[wSquareIndex] = static_cast<unsigned char>(wTileNo);
