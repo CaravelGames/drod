@@ -50,7 +50,8 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 	"", "",
 	"_MudSwap", "_TarSwap", "_GelSwap",
 	"", "",
-	"_ReturnX", "_ReturnY"
+	"_ReturnX", "_ReturnY",
+	"_Color", "_Hue", "_Saturation"
 };
 
 //Message texts corresponding to the above short var texts.
@@ -87,7 +88,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarTotalAtk, MID_VarTotalDef,
 	MID_VarMudSwap, MID_VarTarSwap, MID_VarGelSwap,
 	MID_VarMonsterHue, MID_VarMonsterSaturation,
-	MID_VarReturnX, MID_VarReturnY
+	MID_VarReturnX, MID_VarReturnY,
+	MID_VarColor, MID_VarHue, MID_VarSaturation
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -546,6 +548,10 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case ScriptVars::P_RETURN_X: return this->scriptReturnX;
 		case ScriptVars::P_RETURN_Y: return this->scriptReturnY;
 
+		case ScriptVars::P_PLAYER_COLOR: return this->color;
+		case ScriptVars::P_PLAYER_HUE: return this->hue;
+		case ScriptVars::P_PLAYER_SATURATION: return this->saturation;
+
 		case P_NoVar:
 		default: return 0;
 	}
@@ -616,6 +622,8 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_RETURN_X: this->scriptReturnX = int(val); break;
 		case P_RETURN_Y: this->scriptReturnY = int(val); break;
 
+		case P_PLAYER_COLOR: this->color = val; break;
+
 		case P_NoVar:
 		default: break;
 	}
@@ -681,6 +689,9 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		case P_PRIOR_O:
 		case P_RETURN_X: //globally accessible script return vars
 		case P_RETURN_Y:
+		case P_PLAYER_COLOR: //player coloring variables
+		case P_PLAYER_HUE:
+		case P_PLAYER_SATURATION:
 			return true;
 		default: return false;
 	}
@@ -765,6 +776,10 @@ void PlayerStats::Pack(CDbPackedVars& stats) const
 
 			case 106: val = this->scriptReturnX; break;
 			case 107: val = this->scriptReturnY; break;
+
+			case 108: val = this->color; break;
+			case 109: val = this->hue; break;
+			case 110: val = this->saturation; break;
 
 			default:
 				ASSERT(!"Not a global var index");
@@ -858,6 +873,10 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 
 			case 106: this->scriptReturnX = val; break;
 			case 107: this->scriptReturnY = val; break;
+
+			case 108: this->color = val; break;
+			case 109: this->hue = val; break;
+			case 110: this->saturation = val; break;
 
 			default: ASSERT(!"Bad var"); break;
 		}

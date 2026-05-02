@@ -5437,6 +5437,9 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_X, g_pTheDB->GetMessageText(MID_VarX));
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_Y, g_pTheDB->GetMessageText(MID_VarY));
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_O, g_pTheDB->GetMessageText(MID_VarO));
+	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_COLOR, g_pTheDB->GetMessageText(MID_VarColor));
+	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_HUE, g_pTheDB->GetMessageText(MID_VarHue));
+	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_SATURATION, g_pTheDB->GetMessageText(MID_VarSaturation));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOM_X, g_pTheDB->GetMessageText(MID_VarRoomX));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOM_Y, g_pTheDB->GetMessageText(MID_VarRoomY));
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_X, g_pTheDB->GetMessageText(MID_VarReturnX));

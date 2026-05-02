@@ -63,6 +63,7 @@ public:
 	UINT Damage(CCueEvents& CueEvents, int damageVal, CUEEVENT_ID deathCID);
 	void DecHealth(CCueEvents& CueEvents, const UINT delta, CUEEVENT_ID deathCID);
 	void EndHaste() {this->bHasted = false;}
+	virtual UINT getColor() const;
 	int  getGoldMultiplier() const;
 	int  getXPMultiplier() const;
 	virtual bool IsFlying() const;
@@ -75,6 +76,9 @@ public:
 	void RotateClockwise();
 	void RotateCounterClockwise();
 	void SetOrientation(const UINT wO);
+	void SetColorsFromStats();
+	virtual void SetHue(const UINT hue);
+	virtual void SetSaturation(const UINT saturation);
 	static UINT GetSwordMovement(const int nCommand, const UINT wO);
 
 	//Sword position

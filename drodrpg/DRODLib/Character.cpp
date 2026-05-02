@@ -853,6 +853,19 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 		}
 		break;
 
+		case (UINT)ScriptVars::P_PLAYER_HUE:
+		{
+			CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+			pGame->pPlayer->SetHue(val);
+		}
+		break;
+		case (UINT)ScriptVars::P_PLAYER_SATURATION:
+		{
+			CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+			pGame->pPlayer->SetSaturation(val);
+		}
+		break;
+
 		case (UINT)ScriptVars::P_MONSTER_NAME:
 		case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
 		case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
@@ -955,6 +968,7 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_GEL_SWAP:
 					case (UINT)ScriptVars::P_RETURN_X:
 					case (UINT)ScriptVars::P_RETURN_Y:
+					case (UINT)ScriptVars::P_PLAYER_COLOR:
 						//display nothing
 					break;
 

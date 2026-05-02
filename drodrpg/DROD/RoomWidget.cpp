@@ -7915,7 +7915,8 @@ void CRoomWidget::DrawPlayer(
 	{
 		TileImageBlitParams blit(swordsman.wX, swordsman.wY, wSManTI, wXOffset, wYOffset, true, fRaised);
 		blit.nOpacity = nOpacity;
-		//blit.nAddColor = nAddColor;
+		blit.nAddColor = swordsman.getColor();
+		blit.hsv = swordsman.getHSV();
 		DrawTileImage(blit, pDestSurface);
 	}
 

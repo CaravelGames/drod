@@ -409,3 +409,15 @@ _ReturnX
 [MID_VarReturnY]
 [eng]
 _ReturnY
+
+[MID_VarColor]
+[eng]
+_Color
+
+[MID_VarHue]
+[eng]
+_Hue
+
+[MID_VarSaturation]
+[eng]
+_Saturation

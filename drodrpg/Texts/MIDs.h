@@ -1930,6 +1930,9 @@ enum MID_CONSTANT {
   MID_VarMonsterSaturation = 2078,
   MID_VarReturnX = 2107,
   MID_VarReturnY = 2173,
+  MID_VarColor = 2183,
+  MID_VarHue = 2184,
+  MID_VarSaturation = 2185,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,
