@@ -7297,6 +7297,8 @@ void CCurrentGame::UnpackData(CDbPackedVars& stats)
 	this->pPlayer->bAccessoryOff = stats.GetVar(accessoryOffStr, this->pPlayer->bAccessoryOff);
 	this->pPlayer->bCommandOff = stats.GetVar(commandOffStr, this->pPlayer->bCommandOff);
 
+	this->pPlayer->SetColorsFromStats();
+
 	//Unpack music.
 	this->music.clear();
 	this->music.musicEnum = stats.GetVar(musicEnumStr, this->music.musicEnum);

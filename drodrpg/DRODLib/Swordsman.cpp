@@ -164,6 +164,12 @@ UINT CSwordsman::GetIdentity() const
 }
 
 //*****************************************************************************
+UINT CSwordsman::getColor() const
+{
+	return st.color;
+}
+
+//*****************************************************************************
 int CSwordsman::getGoldMultiplier() const
 //Returns: gold multiplier
 {
@@ -512,6 +518,25 @@ void CSwordsman::SetOrientation(
 	this->wO = this->wPrevO = wO;
 
 //	SetSwordCoords();
+}
+
+//*****************************************************************************
+void CSwordsman::SetColorsFromStats()
+{
+	this->hue = this->st.hue;
+	this->saturation = this->st.saturation;
+}
+
+//*****************************************************************************
+void CSwordsman::SetHue(const UINT hue) {
+	CMonster::SetHue(hue);
+	this->st.hue = this->hue;
+}
+
+//*****************************************************************************
+void CSwordsman::SetSaturation(const UINT saturation) {
+	CMonster::SetSaturation(saturation);
+	this->st.saturation = this->saturation;
 }
 
 //*****************************************************************************
