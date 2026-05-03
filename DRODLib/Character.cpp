@@ -2183,8 +2183,7 @@ void CCharacter::Process(
 					{
 						//Explode immediately.  Doesn't expend a turn.
 						room.ExplodePowderKeg(CueEvents, px, py);
-						if (IsAlive())
-							bProcessNextCommand = true;
+						bProcessNextCommand = true;
 						break;
 					} else {
 						//Pause script until after first turn to explode.
@@ -2209,8 +2208,7 @@ void CCharacter::Process(
 						{
 							//Explode a bomb immediately.  Doesn't expend a turn.
 							room.ExplodeBomb(CueEvents, px, py);
-							if (IsAlive())
-								bProcessNextCommand = true;
+							bProcessNextCommand = true;
 						} else {
 							//Pause script until after first turn to explode the bomb.
 							STOP_COMMAND;
@@ -2942,8 +2940,7 @@ void CCharacter::Process(
 
 					this->eImperative = eNewImperative;
 				}
-				if (IsAlive())
-					bProcessNextCommand = true;
+				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_Behavior:
@@ -4101,6 +4098,12 @@ void CCharacter::Process(
 			CFiles f;
 			f.AppendUserLog(str.c_str());
 		}
+
+		// Under no circumstances dead characters should still run commands as
+		// this can cause crashes with certain commands.
+		if (!IsAlive())
+			bProcessNextCommand = false;
+
 	} while (bProcessNextCommand);
 
 	} //Wrap variables initialized within jump, to make g++ happy
