@@ -1,6 +1,30 @@
 #include "RoomBuilder.h"
+
+#include "catch.hpp"
 #include "../../DRODLib/DbRooms.h"
 #include "../../DRODLib/MonsterPiece.h"
+
+// -------------------------------------------------------------------
+// ORB LINKER
+// -------------------------------------------------------------------
+
+RoomBuilder::OrbLinker RoomBuilder::OrbLinker::Link(const UINT wDoorX, const UINT wDoorY,
+	const OrbAgentType eLinkType) const
+{
+	REQUIRE(pOrbData->GetAgentAt(wDoorX, wDoorY) == nullptr);
+
+	pOrbData->AddAgent(wDoorX, wDoorY, eLinkType);
+
+	return OrbLinker(pOrbData);
+}
+
+RoomBuilder::OrbLinker::OrbLinker(COrbData* pOrbData) : pOrbData(pOrbData)
+{
+}
+
+// -------------------------------------------------------------------
+// Room Builder
+// -------------------------------------------------------------------
 
 void RoomBuilder::ClearRoom(){
 	CTestDb::RegenerateRoom();
@@ -10,7 +34,7 @@ CCharacter* RoomBuilder::AddCharacter(const UINT wX, const UINT wY, const UINT w
 	CMonster *pMonster = GetRoom()->AddNewMonster(M_CHARACTER, wX, wY, false);
 	pMonster->wO = wO;
 
-	CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+	const auto pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 	pCharacter->dwScriptID = CTestDb::hold->GetNewScriptID();
 	pCharacter->wLogicalIdentity = identity;
 	pCharacter->wIdentity = identity;
@@ -41,7 +65,7 @@ void RoomBuilder::AddSerpentPiece(CSerpent* serpent, const UINT pieceX, const UI
 	UINT ultimateTileX = UINT(-1);
 	UINT ultimateTileY = UINT(-1);
 
-	if (serpent->Pieces.size() == 0){
+	if (serpent->Pieces.empty()){
 		newTileType = GetSerpentTile(serpent->wX, serpent->wY, pieceX, pieceY);
 	}
 	else if (serpent->Pieces.size() == 1){
@@ -74,20 +98,20 @@ void RoomBuilder::AddSerpentPiece(CSerpent* serpent, const UINT pieceX, const UI
 	}
 
 	if (ultimateTileType != UINT(-1)){
-		CMonsterPiece *ultimatePiece = new CMonsterPiece(serpent, ultimateTileType, ultimateTileX, ultimateTileY);
+		const auto ultimatePiece = new CMonsterPiece(serpent, ultimateTileType, ultimateTileX, ultimateTileY);
 		GetRoom()->SetMonsterSquare(ultimatePiece);
 		serpent->Pieces.push_back(ultimatePiece);
 	}
 
 	if (newTileType != UINT(-1)){
-		CMonsterPiece *newPiece = new CMonsterPiece(serpent, newTileType, pieceX, pieceY);
+		const auto newPiece = new CMonsterPiece(serpent, newTileType, pieceX, pieceY);
 		GetRoom()->SetMonsterSquare(newPiece);
 		serpent->Pieces.push_back(newPiece);
 	}
 }
 
 void RoomBuilder::AddGentryiiPiece(CGentryii* gentryii, const UINT pieceX, const UINT pieceY){
-    CMonsterPiece* newPiece = new CMonsterPiece(gentryii, T_GENTRYII, pieceX, pieceY);
+    const auto newPiece = new CMonsterPiece(gentryii, T_GENTRYII, pieceX, pieceY);
     GetRoom()->SetMonsterSquare(newPiece);
     gentryii->Pieces.push_back(newPiece);
 }
@@ -105,11 +129,24 @@ void RoomBuilder::SaveRoom(){
 	GetRoom()->Update();
 }
 
-void RoomBuilder::AddCommand(CCharacter* character, CCharacterCommand::CharCommand command, UINT x, UINT y, UINT w, UINT h, UINT flags){
+void RoomBuilder::AddCommand(
+	CCharacter *character,
+	CCharacterCommand::CharCommand command,
+	UINT x, UINT y,
+	UINT w, UINT h,
+	UINT flags)
+{
 	WSTRING string;
 	RoomBuilder::AddCommand(character, command, x, y, w, h, flags, string);
 }
-void RoomBuilder::AddCommand(CCharacter* character, CCharacterCommand::CharCommand command, UINT x, UINT y, UINT w, UINT h, UINT flags, WSTRING label){
+void RoomBuilder::AddCommand(
+	CCharacter *character,
+	CCharacterCommand::CharCommand command,
+	UINT x, UINT y,
+	UINT w, UINT h,
+	UINT flags,
+	WSTRING label)
+{
 	CCharacterCommand pCommand;
 	pCommand.command = command;
 	pCommand.x = x;
@@ -117,26 +154,41 @@ void RoomBuilder::AddCommand(CCharacter* character, CCharacterCommand::CharComma
 	pCommand.w = w;
 	pCommand.h = h;
 	pCommand.flags = flags;
-	pCommand.label = label;
+	pCommand.label = std::move(label);
 
 	character->commands.push_back(pCommand);
 }
-void RoomBuilder::AddCommand(CCharacter *character, CCharacterCommand::CharCommand command, UINT x, UINT y, UINT w, UINT h, UINT flags, const char *label)
+void RoomBuilder::AddCommand(
+	CCharacter *character,
+	CCharacterCommand::CharCommand command,
+	UINT x, UINT y,
+	UINT w, UINT h,
+	UINT flags,
+	const char *label)
 {
-	AddCommand(character, command, x, y, w, h, flags, UTF8ToUnicode(label).c_str());
+	AddCommand(character, command, x, y, w, h, flags, UTF8ToUnicode(label));
 }
 
 COrbData *RoomBuilder::AddOrbDataToTile(const UINT wX, const UINT wY, const OrbType eOrbType)
 {
-    COrbData* pOrbData = GetRoom()->AddOrbToSquare(wX, wY);
-	pOrbData->eType = eOrbType;
+	auto& room = GetRoomRef();
+	auto pOrbData = room.GetOSquare(wX, wY) == T_PRESSPLATE
+		? room.GetPressurePlateAtCoords(wX, wY)
+		: room.GetOrbAtCoords(wX, wY);
+
+	if (pOrbData != nullptr) {
+		REQUIRE(pOrbData->eType == eOrbType);
+	} else {
+		pOrbData = room.AddOrbToSquare(wX, wY);
+		pOrbData->eType = eOrbType;
+	}
 
 	return pOrbData;
 }
 
 void RoomBuilder::AddWallLight(const UINT wX, const UINT wY, const UINT type){
 	if (type >= NUM_LIGHT_TYPES){
-		throw "Invalid light type selected";
+		throw std::invalid_argument("Invalid light type selected");
 	}
 
 	GetRoom()->tileLights.Add(wX, wY, WALL_LIGHT + type);
@@ -144,7 +196,7 @@ void RoomBuilder::AddWallLight(const UINT wX, const UINT wY, const UINT type){
 
 void RoomBuilder::AddCeilingLight(const UINT wX, const UINT wY, const UINT type){
 	if (type >= NUM_LIGHT_TYPES){
-		throw "Invalid light type selected";
+		throw std::invalid_argument("Invalid light type selected");
 	}
 
 	GetRoom()->tileLights.Add(wX, wY, type + 1);
@@ -152,7 +204,7 @@ void RoomBuilder::AddCeilingLight(const UINT wX, const UINT wY, const UINT type)
 
 void RoomBuilder::AddCeilingDarkness(const UINT wX, const UINT wY, const UINT type){
 	if (type >= NUM_DARK_TYPES){
-		throw "Invalid darkness type selected";
+		throw std::invalid_argument("Invalid light type selected");
 	}
 
 	GetRoom()->tileLights.Add(wX, wY, LIGHT_OFF + type + 1);
@@ -166,8 +218,8 @@ void RoomBuilder::LinkOrb(const UINT wOrbX, const UINT wOrbY, const UINT wDoorX,
 		pEditOrb = GetRoom()->GetOrbAtCoords(wOrbX, wOrbY);
 	}
 
-	if (pEditOrb == NULL){
-		throw "No orb on given tile";
+	if (pEditOrb == nullptr){
+		throw std::invalid_argument("No orb on given tile");
 	}
 
 	pEditOrb->AddAgent(wDoorX, wDoorY, eLinkType);
@@ -175,6 +227,26 @@ void RoomBuilder::LinkOrb(const UINT wOrbX, const UINT wOrbY, const UINT wDoorX,
 
 void RoomBuilder::Plot(const UINT tileType, const UINT wX, const UINT wY){
 	PlotRect(tileType, wX, wY, wX, wY);
+}
+
+RoomBuilder::OrbLinker RoomBuilder::PlotPlate(UINT wX, UINT wY, OrbType eOrbType)
+{
+	return PlotPlate(wX, wY, wX, wY, eOrbType);
+}
+
+RoomBuilder::OrbLinker RoomBuilder::PlotPlate(const UINT wX, const UINT wY, const UINT wEndX, const UINT wEndY, OrbType eOrbType)
+{
+	auto& room = GetRoomRef();
+	REQUIRE(room.IsValidColRow(wX, wY));
+	REQUIRE(room.IsValidColRow(wEndX, wEndY));
+
+	PlotRect(T_PRESSPLATE, wX, wY, wEndX, wEndY);
+
+	auto pOrbData = AddOrbDataToTile(wX, wY, eOrbType);
+
+	REQUIRE(pOrbData->eType == eOrbType);
+
+	return OrbLinker(pOrbData);
 }
 
 void RoomBuilder::PlotObstacle(const UINT obstacleType, const UINT wX, const UINT wY) {
@@ -206,13 +278,17 @@ void RoomBuilder::PlotStation(const UINT wX, const UINT wY, const UINT stationTy
 void RoomBuilder::PlotRect(const UINT tileType, const UINT startX, const UINT startY, const UINT endX, const UINT endY){
 	for (UINT x = startX; x <= endX; ++x){
 		for (UINT y = startY; y <= endY; ++y){
-			GetRoom()->Plot(x, y, tileType);
+			GetRoomRef().Plot(x, y, tileType);
 		}
 	}
 }
 
 CDbRoom* RoomBuilder::GetRoom(){
 	return CTestDb::room;
+}
+
+CDbRoom& RoomBuilder::GetRoomRef(){
+	return *(CTestDb::room);
 }
 
 UINT RoomBuilder::GetSerpentTile(const UINT prevTileX, const UINT prevTileY,
@@ -245,11 +321,11 @@ UINT RoomBuilder::GetSerpentTile(const UINT prevTileX, const UINT prevTileY,
 			return thisTileX > prevTileX ? T_SNK_SW : T_SNK_SE;
 	}
 
-	throw "invalid serpent positions";
+	throw std::invalid_argument("invalid serpent positions");
 }
 
 CMonsterPiece* RoomBuilder::GetPieceAtIndex(MonsterPieces piecesList, const UINT index){
-	std::list<CMonsterPiece*>::iterator it = piecesList.begin();
+	auto it = piecesList.begin();
 	std::advance(it, index);
 
 	return *it;
