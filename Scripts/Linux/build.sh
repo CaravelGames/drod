@@ -26,7 +26,9 @@ Actions:
     build-deps        Build project dependencies inside the docker container
     build-drod        Build DROD (Master/Linux) inside the docker container
     build-drod-rpg    Build DROD RPG (drodrpg/Master/Linux) inside the docker container
-    run-tests         Build & run DROD tests
+    run-tests         Build DROD tests
+    build-tests       Run DROD tests
+    test              Build & Run DROD tests
 
 Options:
     -r, --root        Use root user where applicable
@@ -56,6 +58,8 @@ fi
 # The first argument is the action; remaining arguments are for that action
 ACTION="$1"
 shift
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 BASH_USER=1000
 BUILD=debug
@@ -147,7 +151,9 @@ action_build_deps() {
 
 action_build_drod() {
     echo "=> build-drod: running ninjamaker and build in /drod/Master/Linux"
-    docker_exec "cd /drod/Master/Linux && ./ninjamaker -64 -$MODE -$BUILD && ninja -f build.$MODE.$BUILD.x86_64.ninja"
+    docker_exec "cd /drod/Master/Linux \
+      && ./ninjamaker -64 -$MODE -$BUILD \
+      && ninja -f build.$MODE.$BUILD.x86_64.ninja"
 }
 
 action_build_drod_rpg() {
@@ -155,14 +161,16 @@ action_build_drod_rpg() {
     docker_exec "cd /drod/drodrpg/Master/Linux && ./ninjamaker -64 -$MODE -$BUILD && ninja -f build.$MODE.$BUILD.x86_64.ninja"
 }
 
+action_build_tests() {
+    echo "=> build-tests: building DROD tests MODE=$MODE BUILD=$BUILD"
+    docker_exec "cd /drod/Master/Linux \
+      && ./ninjamaker -64 -$MODE -$BUILD"
+}
+
 action_run_tests() {
-    echo "=> run-tests: running DROD tests"
-    # Only run ninjamaker when it's not already built
-    docker_exec "cd /drod/Master/Linux && [ ! -f 'build.custom.$BUILD.x86_64.ninja' ] && ./ninjamaker -64 -$BUILD"
-    # Build DRODLibTests
-    docker_exec "cd /drod/Master/Linux && ninja -f build.custom.$BUILD.x86_64.ninja builds/custom.$BUILD.x86_64/drod_tests"
+    echo "=> run-tests: running DROD tests MODE=$MODE BUILD=$BUILD"
     # Run the tests
-    docker_exec "cd /drod/Master/Linux && builds/custom.$BUILD.x86_64/drod_tests"
+    $SCRIPT_DIR/../../Master/Linux/builds/$MODE.$BUILD.x86_64/drod_tests
 }
 
 # Dispatch the selected action
@@ -186,12 +194,24 @@ case "$ACTION" in
         action_build_deps
         ;;
     build-drod)
+        action_docker_up
         action_build_drod
         ;;
     build-drod-rpg)
+        action_docker_up
         action_build_drod_rpg
         ;;
     run-tests)
+        action_docker_up
+        action_run_tests
+        ;;
+    build-tests)
+        action_docker_up
+        action_build_tests
+        ;;
+    test)
+        action_docker_up
+        action_build_tests
         action_run_tests
         ;;
     *)
