@@ -8,7 +8,18 @@
 #include "../../DRODLib/DbRooms.h"
 #include <BackEndLib/Types.h>
 
-class RoomBuilder{
+class RoomBuilder {
+
+private:
+	class OrbLinker {
+		public:
+			OrbLinker Link(UINT wDoorX, UINT wDoorY, OrbAgentType eLinkType = OA_TOGGLE) const;
+		private:
+			friend class RoomBuilder;
+			explicit OrbLinker(COrbData* pOrbData);
+			COrbData* pOrbData;
+		};
+
 public:
 	static void ClearRoom();
 	static CCharacter* AddCharacter(const UINT wX, const UINT wY, const UINT wO = N, const UINT identity = M_ROACH);
@@ -27,6 +38,8 @@ public:
 	static COrbData* AddOrbDataToTile(const UINT wX, const UINT wY, const OrbType eOrbType = OT_NORMAL);
 	static void LinkOrb(const UINT wOrbX, const UINT wOrbY, const UINT wDoorX, const UINT wDoorY, const OrbAgentType eLinkType);
 	static void Plot(const UINT tileType, const UINT wX, const UINT wY);
+	static OrbLinker PlotPlate(UINT wX, UINT wY, OrbType eOrbType = OT_NORMAL);
+	static OrbLinker PlotPlate(UINT wX, UINT wY, UINT wEndX, UINT wEndY, OrbType eOrbType = OT_NORMAL);
 	static void PlotToken(const RoomTokenType tokenType, const UINT wX, const UINT wY);
 	static void PlotObstacle(const UINT obstacleType, const UINT wX, const UINT wY);
 	static void PlotObstacle(const UINT obstacleType, const UINT startX, const UINT startY, const UINT endX, const UINT endY);
@@ -35,12 +48,14 @@ public:
 
 private:
 	static CDbRoom* GetRoom();
+	static CDbRoom& GetRoomRef();
 
 	static UINT GetSerpentTile(const UINT prevTileX, const UINT prevTileY,
 		const UINT thisTileX, const UINT thisTileY,
-		const UINT nextTileX = UINT(-1), const UINT nextTileY = UINT(-1));
+		const UINT nextTileX = static_cast<UINT>(-1), const UINT nextTileY = static_cast<UINT>(-1));
 
 	static CMonsterPiece* GetPieceAtIndex(MonsterPieces piecesList, const UINT index);
+
 };
 
 #endif
