@@ -26,8 +26,8 @@ Actions:
     build-deps        Build project dependencies inside the docker container
     build-drod        Build DROD (Master/Linux) inside the docker container
     build-drod-rpg    Build DROD RPG (drodrpg/Master/Linux) inside the docker container
-    run-tests         Build DROD tests
-    build-tests       Run DROD tests
+    run-tests         Run DROD tests
+    build-tests       Build DROD tests
     test              Build & Run DROD tests
 
 Options:
