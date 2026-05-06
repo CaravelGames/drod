@@ -195,9 +195,8 @@ TEST_CASE("Scripting: Primitive Functions", "[game][scripting][functions]") {
 
 		RoomBuilder::AddMonster(M_ROACH, 5, 17);
 		RoomBuilder::AddMonster(M_GELMOTHER, 6, 17);
-		CMonster* pSnake = RoomBuilder::AddMonster(M_SERPENT, 7, 17);
-		CSerpent* pSerpent = DYN_CAST(CSerpent*, CMonster*, pSnake);
-		RoomBuilder::AddSerpentPiece(pSerpent, 8, 17);
+		RoomBuilder::AddLongMonster(M_SERPENT, 7, 17, E)
+			.GrowIn(E, 1).End();
 
 		CCurrentGame* pGame = Runner::StartGame(10, 10);
 		CDbHold* pHold = pGame->pHold;

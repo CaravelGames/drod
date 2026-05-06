@@ -170,9 +170,8 @@ TEST_CASE("Scripting: Damage Immunity Behaviors", "[game][scripting][behavior]")
 		RoomBuilder::Plot(T_WALL, 9, 9);
 		RoomBuilder::Plot(T_WALL, 11, 9);
 
-		CMonster* pMonster = RoomBuilder::AddMonster(M_SERPENTG, 10, 9, S);
-		CSerpent* pAdder = DYN_CAST(CSerpent*, CMonster*, pMonster);
-		RoomBuilder::AddSerpentPiece(pAdder, 10, 8);
+		RoomBuilder::AddLongMonster(M_SERPENTG, 10, 9, S)
+			.GrowIn(N, 1).End();
 
 		CCurrentGame* pGame = Runner::StartGame(5, 5, S);
 		Runner::ExecuteCommand(CMD_WAIT);

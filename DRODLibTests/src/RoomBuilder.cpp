@@ -4,6 +4,8 @@
 #include "../../DRODLib/DbRooms.h"
 #include "../../DRODLib/MonsterPiece.h"
 
+constexpr UINT uint_n1 = static_cast<UINT>(-1);
+
 // -------------------------------------------------------------------
 // ORB LINKER
 // -------------------------------------------------------------------
@@ -19,6 +21,228 @@ RoomBuilder::OrbLinker RoomBuilder::OrbLinker::Link(const UINT wDoorX, const UIN
 }
 
 RoomBuilder::OrbLinker::OrbLinker(COrbData* pOrbData) : pOrbData(pOrbData)
+{
+}
+
+
+// -------------------------------------------------------------------
+// LONG MONSTER BUILDER
+// -------------------------------------------------------------------
+
+/**
+ * Grow the tail in the direction `wO` by `wTiles` tiles.
+ * @param wO Direction in which to grow
+ * @param wTiles Number of tiles to grow.
+ */
+RoomBuilder::LongMonsterBuilder RoomBuilder::LongMonsterBuilder::GrowIn(
+	const UINT wO,
+	const UINT wTiles) const
+{
+	for (UINT i = 0; i < wTiles; i++)
+	{
+		const auto tail = GetTail();
+		Plot(tail.wX + nGetOX(wO), tail.wY + nGetOY(wO));
+	}
+
+	return LongMonsterBuilder(this->pMonster);
+}
+
+/**
+ * Grow the tail to position `wX`, `wY`. It has to be either perfectly orthogonally or
+ * perfectly diagonally from the tail's end.
+ * @param wX X coordinate of the position to which to grow the tail.
+ * @param wY Y coordinate of the position to which to grow the tail.
+ */
+RoomBuilder::LongMonsterBuilder RoomBuilder::LongMonsterBuilder::GrowTo(
+	const UINT wX,
+	const UINT wY) const
+{
+	const auto tail = GetTail();
+
+	return this->Grow(
+		static_cast<int>(wX) - static_cast<int>(tail.wX),
+		static_cast<int>(wY) - static_cast<int>(tail.wY)
+	);
+}
+
+/**
+ * Grow the tail by `wX` and `wY`. It has to be either perfectly orthogonally or
+ * perfectly diagonally from the tail's end.
+ * @param deltaX X coordinate of the position to which to grow the tail.
+ * @param deltaY Y coordinate of the position to which to grow the tail.
+ */
+RoomBuilder::LongMonsterBuilder RoomBuilder::LongMonsterBuilder::Grow(
+	const int deltaX,
+	const int deltaY) const
+{
+	const int distanceX = abs(deltaX);
+	const int distanceY = abs(deltaY);
+
+	REQUIRE((distanceX == 0 || distanceY == 0 || distanceX == distanceY));
+
+	return GrowIn(
+		nGetO(sgn(deltaX), sgn(deltaY)),
+		max(distanceX, distanceY)
+	);
+}
+
+CMonster* RoomBuilder::LongMonsterBuilder::ToMonster() const
+{
+	return &this->pMonster;
+}
+
+void RoomBuilder::LongMonsterBuilder::Plot(const UINT wPieceX, const UINT wPieceY) const
+{
+	if (this->pMonster.wType == M_GENTRYII)
+	{
+		PlotGentryiiPiece(wPieceX, wPieceY);
+	} else
+	{
+		PlotSerpentPiece(wPieceX, wPieceY);
+	}
+}
+
+void RoomBuilder::LongMonsterBuilder::PlotSerpentPiece(UINT wPieceX, UINT wPieceY) const
+{
+	// Sorry for this mess of a function, but it works at least!
+
+	REQUIRE((this->pMonster.wType == M_SERPENT
+		|| this->pMonster.wType == M_SERPENTB
+		|| this->pMonster.wType == M_SERPENTG));
+	REQUIRE(GetRoomRef().IsValidColRow(wPieceX, wPieceY));
+	REQUIRE(GetRoomRef().GetMonsterTypeAt(wPieceX, wPieceY) == M_NONE);
+
+	UINT newTileType;
+	UINT ultimateTileType = uint_n1;
+	UINT ultimateTileX;
+	UINT ultimateTileY;
+
+	if (this->pMonster.Pieces.empty()){
+		REQUIRE(abs((int)wPieceX - (int)this->pMonster.wX) + abs((int)wPieceY - (int)this->pMonster.wY) == 1);
+		newTileType = GetSerpentTile(this->pMonster.wX, this->pMonster.wY, wPieceX, wPieceY);
+	}
+	else if (this->pMonster.Pieces.size() == 1){
+		CMonsterPiece* ultimatePiece = this->GetPieceAtIndex(-1);
+		REQUIRE(abs((int)wPieceX - (int)ultimatePiece->wX) + abs((int)wPieceY - (int)ultimatePiece->wY) == 1);
+
+		ultimateTileType = this->GetSerpentTile(
+			this->pMonster.wX, this->pMonster.wY,
+			ultimatePiece->wX, ultimatePiece->wY,
+			wPieceX, wPieceY
+		);
+		newTileType = GetSerpentTile(ultimatePiece->wX, ultimatePiece->wY, wPieceX, wPieceY);
+
+		ultimateTileX = ultimatePiece->wX;
+		ultimateTileY = ultimatePiece->wY;
+
+		GetRoom()->RemoveMonsterFromTileArray(ultimatePiece);
+		this->pMonster.Pieces.pop_back();
+		ultimatePiece->Clear();
+		delete ultimatePiece;
+	}
+	else
+	{
+		CMonsterPiece* ultimatePiece = this->GetPieceAtIndex(-1);
+		CMonsterPiece* penultimatePiece = this->GetPieceAtIndex(-2);
+		REQUIRE(abs((int)wPieceX - (int)ultimatePiece->wX) + abs((int)wPieceY - (int)ultimatePiece->wY) == 1);
+
+		ultimateTileType = GetSerpentTile(penultimatePiece->wX, penultimatePiece->wY, ultimatePiece->wX, ultimatePiece->wY, wPieceX, wPieceY);
+		newTileType = GetSerpentTile(ultimatePiece->wX, ultimatePiece->wY, wPieceX, wPieceY);
+
+		ultimateTileX = ultimatePiece->wX;
+		ultimateTileY = ultimatePiece->wY;
+
+		GetRoom()->RemoveMonsterFromTileArray(ultimatePiece);
+		this->pMonster.Pieces.pop_back();
+		ultimatePiece->Clear();
+		delete ultimatePiece;
+	}
+
+	if (ultimateTileType != uint_n1 && ultimateTileX != uint_n1 && ultimateTileY != uint_n1) {
+		const auto ultimatePiece = new CMonsterPiece(&this->pMonster, ultimateTileType, ultimateTileX, ultimateTileY);
+		GetRoom()->SetMonsterSquare(ultimatePiece);
+		this->pMonster.Pieces.push_back(ultimatePiece);
+	}
+
+	if (newTileType != uint_n1){
+		const auto newPiece = new CMonsterPiece(&this->pMonster, newTileType, wPieceX, wPieceY);
+		GetRoom()->SetMonsterSquare(newPiece);
+		this->pMonster.Pieces.push_back(newPiece);
+	}
+}
+
+void RoomBuilder::LongMonsterBuilder::PlotGentryiiPiece(UINT wPieceX, UINT wPieceY) const
+{
+	REQUIRE(this->pMonster.wType == M_GENTRYII);
+
+	const auto newPiece = new CMonsterPiece(&this->pMonster, T_GENTRYII, wPieceX, wPieceY);
+	GetRoom()->SetMonsterSquare(newPiece);
+	this->pMonster.Pieces.push_back(newPiece);
+}
+
+CMonsterPiece* RoomBuilder::LongMonsterBuilder::GetPieceAtIndex(int index) const
+{
+	if (index < 0)
+	{
+		index = this->pMonster.Pieces.size() + index;
+	}
+
+	REQUIRE(index < this->pMonster.Pieces.size());
+
+	auto it = this->pMonster.Pieces.begin();
+	std::advance(it, index);
+
+	return *it;
+}
+
+UINT RoomBuilder::LongMonsterBuilder::GetSerpentTile(
+	const UINT prevTileX, const UINT prevTileY,
+	const UINT thisTileX, const UINT thisTileY,
+	const UINT nextTileX, const UINT nextTileY)
+{
+	const bool hasNextTile = (nextTileX != uint_n1 && nextTileY != uint_n1);
+	if (!hasNextTile){
+		if (thisTileX == prevTileX)
+			return thisTileY > prevTileY ? T_SNKT_S : T_SNKT_N;
+		if (thisTileY == prevTileY)
+			return thisTileX > prevTileX ? T_SNKT_E : T_SNKT_W;
+	}
+	else if (prevTileX == thisTileX && thisTileX == nextTileX){
+		return T_SNK_NS;
+	}
+	else if (prevTileY == thisTileY && thisTileY == nextTileY){
+		return T_SNK_EW;
+	}
+	else if (thisTileX == prevTileX){
+		if (thisTileY > prevTileY)
+			return thisTileX > nextTileX ? T_SNK_NW : T_SNK_NE;
+		return thisTileX > nextTileX ? T_SNK_SW : T_SNK_SE;
+	}
+	else if (thisTileX == nextTileX){
+		if (thisTileY > nextTileY)
+			return thisTileX > prevTileX ? T_SNK_NW : T_SNK_NE;
+		return thisTileX > prevTileX ? T_SNK_SW : T_SNK_SE;
+	}
+
+	throw std::invalid_argument("invalid serpent positions");
+}
+
+CCoord RoomBuilder::LongMonsterBuilder::GetTail() const
+{
+	if (this->pMonster.Pieces.empty())
+	{
+		return CCoord(this->pMonster.wX, this->pMonster.wY);
+	} else
+	{
+		const auto pTail = this->pMonster.Pieces.back();
+		return CCoord(pTail->wX, pTail->wY);
+	}
+}
+
+RoomBuilder::LongMonsterBuilder::LongMonsterBuilder(CMonster* pMonster): pMonster(*pMonster)
+{
+}
+RoomBuilder::LongMonsterBuilder::LongMonsterBuilder(CMonster& pMonster): pMonster(pMonster)
 {
 }
 
@@ -59,69 +283,27 @@ CMonster* RoomBuilder::AddMonster(const UINT wType, const UINT wX, const UINT wY
 	return pMonster;
 }
 
-void RoomBuilder::AddSerpentPiece(CSerpent* serpent, const UINT pieceX, const UINT pieceY){
-	UINT newTileType = UINT(-1);
-	UINT ultimateTileType = UINT(-1);
-	UINT ultimateTileX = UINT(-1);
-	UINT ultimateTileY = UINT(-1);
-
-	if (serpent->Pieces.empty()){
-		newTileType = GetSerpentTile(serpent->wX, serpent->wY, pieceX, pieceY);
-	}
-	else if (serpent->Pieces.size() == 1){
-		CMonsterPiece* ultimatePiece = GetPieceAtIndex(serpent->Pieces, serpent->Pieces.size() - 1);
-		ultimateTileType = GetSerpentTile(serpent->wX, serpent->wY, ultimatePiece->wX, ultimatePiece->wY, pieceX, pieceY);
-		newTileType = GetSerpentTile(ultimatePiece->wX, ultimatePiece->wY, pieceX, pieceY);
-
-		ultimateTileX = ultimatePiece->wX;
-		ultimateTileY = ultimatePiece->wY;
-
-		GetRoom()->RemoveMonsterFromTileArray(ultimatePiece);
-		serpent->Pieces.pop_back();
-		ultimatePiece->Clear();
-		delete ultimatePiece;
-	}
-	else
-	{
-		CMonsterPiece* ultimatePiece = GetPieceAtIndex(serpent->Pieces, serpent->Pieces.size() - 1);
-		CMonsterPiece* penultimatePiece = GetPieceAtIndex(serpent->Pieces, serpent->Pieces.size() - 2);
-		ultimateTileType = GetSerpentTile(penultimatePiece->wX, penultimatePiece->wY, ultimatePiece->wX, ultimatePiece->wY, pieceX, pieceY);
-		newTileType = GetSerpentTile(ultimatePiece->wX, ultimatePiece->wY, pieceX, pieceY);
-
-		ultimateTileX = ultimatePiece->wX;
-		ultimateTileY = ultimatePiece->wY;
-
-		GetRoom()->RemoveMonsterFromTileArray(ultimatePiece);
-		serpent->Pieces.pop_back();
-		ultimatePiece->Clear();
-		delete ultimatePiece;
-	}
-
-	if (ultimateTileType != UINT(-1)){
-		const auto ultimatePiece = new CMonsterPiece(serpent, ultimateTileType, ultimateTileX, ultimateTileY);
-		GetRoom()->SetMonsterSquare(ultimatePiece);
-		serpent->Pieces.push_back(ultimatePiece);
-	}
-
-	if (newTileType != UINT(-1)){
-		const auto newPiece = new CMonsterPiece(serpent, newTileType, pieceX, pieceY);
-		GetRoom()->SetMonsterSquare(newPiece);
-		serpent->Pieces.push_back(newPiece);
-	}
-}
-
-void RoomBuilder::AddGentryiiPiece(CGentryii* gentryii, const UINT pieceX, const UINT pieceY){
-    const auto newPiece = new CMonsterPiece(gentryii, T_GENTRYII, pieceX, pieceY);
-    GetRoom()->SetMonsterSquare(newPiece);
-    gentryii->Pieces.push_back(newPiece);
-}
-
 CCharacter* RoomBuilder::AddMonsterWithWeapon(const UINT wType, const WeaponType weaponType, const UINT wX, const UINT wY, const UINT wO){
 	CCharacter *pCharacter = AddVisibleCharacter(wX, wY, wO, wType);
 	AddCommand(pCharacter, CCharacterCommand::CC_VarSet, ScriptVars::P_MONSTER_WEAPON, ScriptVars::Assign, weaponType);
 	AddCommand(pCharacter, CCharacterCommand::CC_TurnIntoMonster);
 
 	return pCharacter;
+}
+
+/**
+ * Start creating a long monster. This places its head and returns a builder you can use to grow
+ * the tail.
+ */
+RoomBuilder::LongMonsterBuilder RoomBuilder::AddLongMonster(
+	const UINT wType, const UINT wX, const UINT wY, const UINT wO)
+{
+	REQUIRE((wType == M_SERPENT
+		|| wType == M_SERPENTB
+		|| wType == M_SERPENTG
+		|| wType == M_GENTRYII));
+
+	return LongMonsterBuilder(AddMonster(wType, wX, wY, wO));
 }
 
 
@@ -289,44 +471,4 @@ CDbRoom* RoomBuilder::GetRoom(){
 
 CDbRoom& RoomBuilder::GetRoomRef(){
 	return *(CTestDb::room);
-}
-
-UINT RoomBuilder::GetSerpentTile(const UINT prevTileX, const UINT prevTileY,
-	const UINT thisTileX, const UINT thisTileY,
-	const UINT nextTileX, const UINT nextTileY)
-{
-	const bool hasNextTile = (nextTileX != UINT(-1) && nextTileY != UINT(-1));
-	if (!hasNextTile){
-		if (thisTileX == prevTileX)
-			return thisTileY > prevTileY ? T_SNKT_S : T_SNKT_N;
-		else if (thisTileY == prevTileY)
-			return thisTileX > prevTileX ? T_SNKT_E : T_SNKT_W;
-	}
-	else if (prevTileX == thisTileX && thisTileX == nextTileX){
-		return T_SNK_NS;
-	}
-	else if (prevTileY == thisTileY && thisTileY == nextTileY){
-		return T_SNK_EW;
-	}
-	else if (thisTileX == prevTileX){
-		if (thisTileY > prevTileY)
-			return thisTileX > nextTileX ? T_SNK_NW : T_SNK_NE;
-		else
-			return thisTileX > nextTileX ? T_SNK_SW : T_SNK_SE;
-	}
-	else if (thisTileX == nextTileX){
-		if (thisTileY > nextTileY)
-			return thisTileX > prevTileX ? T_SNK_NW : T_SNK_NE;
-		else
-			return thisTileX > prevTileX ? T_SNK_SW : T_SNK_SE;
-	}
-
-	throw std::invalid_argument("invalid serpent positions");
-}
-
-CMonsterPiece* RoomBuilder::GetPieceAtIndex(MonsterPieces piecesList, const UINT index){
-	auto it = piecesList.begin();
-	std::advance(it, index);
-
-	return *it;
 }
