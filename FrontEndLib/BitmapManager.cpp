@@ -1693,15 +1693,15 @@ void CBitmapManager::CropRect(
 	SDL_Rect& rect,
 	const SDL_Rect& bounds
 ) {
-    const int x1 = std::max(rect.x, bounds.x);
-    const int y1 = std::max(rect.y, bounds.y);
-    const int x2 = std::min(rect.x + rect.w, bounds.x + bounds.w);
-    const int y2 = std::min(rect.y + rect.h, bounds.y + bounds.h);
+    const int x1 = max(rect.x, bounds.x);
+    const int y1 = max(rect.y, bounds.y);
+    const int x2 = min(rect.x + rect.w, bounds.x + bounds.w);
+    const int y2 = min(rect.y + rect.h, bounds.y + bounds.h);
 
     rect.x = x1;
     rect.y = y1;
-    rect.w = std::max(x2 - x1, 0);
-    rect.h = std::max(y2 - y1, 0);
+    rect.w = max(x2 - x1, 0);
+    rect.h = max(y2 - y1, 0);
 }
 
 //**********************************************************************************
