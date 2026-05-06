@@ -58,9 +58,9 @@ TEST_CASE("Fegundo", "[game]") {
 		// ##C. - Gentryii Chain
 		// #G.. - Gentryii surrounded by walls
 
-		CGentryii* gentryii = DYN_CAST(CGentryii*, CMonster*, RoomBuilder::AddMonster(M_GENTRYII, 10, 12, SW));
-		RoomBuilder::AddGentryiiPiece(gentryii, 11, 11);
-		RoomBuilder::PlotRect(T_WALL, 9, 11, 10, 12);
+		RoomBuilder::AddLongMonster(M_GENTRYII, 10, 12, SW)
+			.GrowTo(11, 11).End();
+		RoomBuilder::Pl otRect(T_WALL, 9, 11, 10, 12);
 
 		SECTION("Should explode if nothing else is there") {
 			TestExploded();
@@ -89,9 +89,9 @@ TEST_CASE("Fegundo", "[game]") {
 		// ##C.. - Gentryii Chain
 		// #G... - Gentryii surrounded by walls
 
-		CGentryii* gentryii = DYN_CAST(CGentryii*, CMonster*, RoomBuilder::AddMonster(M_GENTRYII, 9, 12, SW));
-		RoomBuilder::AddGentryiiPiece(gentryii, 10, 11);
-		RoomBuilder::AddGentryiiPiece(gentryii, 11, 10);
+
+		RoomBuilder::AddLongMonster(M_GENTRYII, 9, 12, SW)
+			.GrowTo(11, 10).End();
 		RoomBuilder::PlotRect(T_WALL, 8, 11, 9, 12);
 
 		SECTION("Should explode if nothing else is there") {
