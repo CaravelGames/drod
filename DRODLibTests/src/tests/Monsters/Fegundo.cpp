@@ -60,7 +60,7 @@ TEST_CASE("Fegundo", "[game]") {
 
 		RoomBuilder::AddLongMonster(M_GENTRYII, 10, 12, SW)
 			.GrowTo(11, 11).End();
-		RoomBuilder::Pl otRect(T_WALL, 9, 11, 10, 12);
+		RoomBuilder::PlotRect(T_WALL, 9, 11, 10, 12);
 
 		SECTION("Should explode if nothing else is there") {
 			TestExploded();
