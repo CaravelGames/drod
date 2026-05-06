@@ -1831,7 +1831,3 @@ Count array entries
 [MID_RemoveTransparentLayer]
 [eng]
 Remove transparent layer object
-
-[MID_BuildModifierQuiet]
-[eng]
-Quietly
