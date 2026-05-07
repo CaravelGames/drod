@@ -4692,6 +4692,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	//Update room weather as needed.
 	this->pRoomWidget->SyncWeather(CueEvents);
+	// If fade occurred we don't want moves to be repeated or queued during this time
+	ClearEventBuffer();
 
 	//
 	//Begin section where room load can occur.  If room load occurs then

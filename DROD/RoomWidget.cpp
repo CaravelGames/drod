@@ -1923,7 +1923,6 @@ void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
 			this->wDark = roomWeather.wLight;
 			ASSERT(this->wDark < LIGHT_LEVELS);
 			g_pTheDBM->fLightLevel = fRoomLightLevel[this->wDark];
-			ClearEffects();
 			UpdateFromCurrentGame();
 			ResetForPaint();
 			Paint();
@@ -6619,7 +6618,7 @@ void CRoomWidget::DrawPlatformsAndTLayer(
 		}
 	}
 
-	this->pOLayerEffects->DrawEffects();
+	this->pOLayerEffects->DrawEffects(pDestSurface);
 
 	CBitmapManager::fLightLevel = fOldLightLevel;
 
