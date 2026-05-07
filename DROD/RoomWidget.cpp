@@ -8028,15 +8028,10 @@ void CRoomWidget::DrawPlayer(
 	}
 
 	//Get movement offset.
-	int nSgnX = 0, nSgnY = 0;
 	if (this->dwMovementStepsLeft)
 	{
 		wXOffset += (swordsman.wPrevX - swordsman.wX) * this->dwMovementStepsLeft;
 		wYOffset += (swordsman.wPrevY - swordsman.wY) * this->dwMovementStepsLeft;
-		nSgnX = swordsman.wPrevX == swordsman.wX ? 0 : swordsman.wPrevX > swordsman.wX ?
-			1 : -1;
-		nSgnY = swordsman.wPrevY == swordsman.wY ? 0 : swordsman.wPrevY > swordsman.wY ?
-			1 : -1;
 	}
 
 	//Blit the player.
@@ -8059,14 +8054,14 @@ void CRoomWidget::DrawPlayer(
 			!bIsStairs(this->pRoom->GetOSquare(wSX, wSY))))
 		return;	//sword should be hidden
 
-	//If sword is not fully in display, draw it clipped.
-	//This is needed when raised at top edge or stepping onto room edge.
-	const bool bClipped = !IS_COLROW_IN_DISP(wSX, wSY) ||
-			!IS_COLROW_IN_DISP(wSX + nSgnX, wSY + nSgnY);
+	int nPrevSwordX = static_cast<int>(swordsman.wPrevX) + nGetOX(swordsman.wO);
+	int nPrevSwordY = static_cast<int>(swordsman.wPrevY) + nGetOY(swordsman.wO);
 
 	TileImageBlitParams blit(wSX, wSY, wSwordTI, wXOffset, wYOffset, true, bDrawRaised);
 	blit.nOpacity = nOpacity;
-	blit.bClipped = bClipped;
+	// If the sword is or was outside the room mark it as clipped
+	blit.bClipped = !IS_COLROW_IN_DISP(blit.wCol, blit.wRow) ||
+		!IS_COLROW_IN_DISP(nPrevSwordX, nPrevSwordY);
 	DrawTileImage(blit, pDestSurface);
 }
 
@@ -8595,34 +8590,16 @@ void CRoomWidget::DrawSwordFor(
 	ASSERT(IS_COLROW_IN_DISP(pMonster->wX, pMonster->wY));
 
 	//See if its sword square is within display.
-	int nSgnX = 0, nSgnY = 0;
+	int nPrevSwordX = 0, nPrevSwordY = 0;
 	if (this->dwMovementStepsLeft)
 	{
-		nSgnX = pMonster->wPrevX == pMonster->wX ? 0 :
-				pMonster->wPrevX > pMonster->wX ? 1 : -1;
-		nSgnY = pMonster->wPrevY == pMonster->wY ? 0 :
-				pMonster->wPrevY > pMonster->wY ? 1 : -1;
+		nPrevSwordX = static_cast<int>(pMonster->wPrevX) + nGetOX(pMonster->wO);
+		nPrevSwordY = static_cast<int>(pMonster->wPrevY) + nGetOY(pMonster->wO);
 	}
 
-	//Sword isn't fully in display -- just draw it clipped.
-	//(This is needed for when stepping onto room edge.)
-	signed int columnOffset = 0;
-	if ((signed int)blit.wXOffset > 0)
-		columnOffset = 1;
-	if ((signed int)blit.wXOffset < 0)
-		columnOffset = -1;
-	UINT offsetCol = blit.wCol + columnOffset;
-
-	signed int rowOffset = 0;
-	if ((signed int)blit.wYOffset > 0)
-		rowOffset = 1;
-	if ((signed int)blit.wYOffset < 0)
-		rowOffset = -1;
-	UINT offsetRow = blit.wRow + rowOffset;
-	if (!IS_COLROW_IN_DISP(blit.wCol, blit.wRow) ||
-		!IS_COLROW_IN_DISP(blit.wCol + nSgnX, blit.wRow + nSgnY) ||
-		!IS_COLROW_IN_DISP(offsetCol, offsetRow))
-		blit.bClipped = true;
+	// If the sword is or was outside the room mark it as clipped
+	blit.bClipped = !IS_COLROW_IN_DISP(blit.wCol, blit.wRow) ||
+		!IS_COLROW_IN_DISP(nPrevSwordX, nPrevSwordY);
 
 	DrawTileImage(blit, pDestSurface);
 }
