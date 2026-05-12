@@ -81,13 +81,16 @@ using std::string;
 # if defined(WIN32) && !defined(__GNUC__)
 #   define ASSERT(exp)          _ASSERT_VOID_CAST( (exp) ? void() : AssertErr(__FILENAME__,__LINE__,#exp) )
 #   define ASSERTP(exp, desc)   _ASSERT_VOID_CAST( (exp) ? void() : AssertErr(__FILENAME__,__LINE__,(desc)) )
+#   define ASSERT_DETAIL(exp, desc, info)   _ASSERT_VOID_CAST( (exp) ? void() : AssertDetailedErr(__FILENAME__,__LINE__,(desc), (info)) )
 # else
 #   define ASSERT(exp)          do { if (!(exp)) { AssertErr(__FILENAME__,__LINE__,#exp); MY_BREAKPOINT(); }} while (0)
 #   define ASSERTP(exp, desc)   do { if (!(exp)) { AssertErr(__FILENAME__,__LINE__,(desc)); MY_BREAKPOINT(); }} while (0)
+#   define ASSERT_DETAIL(exp, desc, info)   do { if (!(exp)) { AssertDetailedErr(__FILENAME__,__LINE__,(desc), (info)); MY_BREAKPOINT(); }} while (0)
 # endif
 #else
 #   define ASSERT(exp)
 #   define ASSERTP(exp,desc)
+#   define ASSERT_DETAIL(exp, desc, info)
 #endif
 
 //Log context is applied to error logging to show a history of what happened before an error.
@@ -148,6 +151,8 @@ using std::string;
 //Debug-mode.
 #ifdef _DEBUG
 	 void AssertErr(const char *pszFile, int nLine, const char *pszDesc);
+	 void AssertDetailedErr(const char *pszFile, int nLine, const char *pszDesc, const char* pszInfo);
+	 void AssertDetailedErr(const char *pszFile, int nLine, const char *pszDesc, const unsigned int wInfo);
 	 void LogErr(const char *pszMessage);
 	 void DebugPrint(const char *pszMessage);
 
