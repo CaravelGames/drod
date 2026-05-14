@@ -1987,6 +1987,7 @@ void CDbXML::Import_Init()
 	{
 		info.ImportStatus = MID_ImportSuccessful;
 		info.dwPlayerImportedID = info.dwHoldImportedID = info.dwDemoImportedID = 0;
+		info.dwHoldNotImportedID = 0;
 		info.roomStyles.clear();
 	}
 	CDbRoom::ResetForImport();

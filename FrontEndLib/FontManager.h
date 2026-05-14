@@ -69,7 +69,7 @@ struct FontCacheMember
 };
 
 //pre-defined colors
-extern const SDL_Color Black, DarkGray, DarkBrown, MediumBrown, LightGray,
+extern const SDL_Color Black, MidDarkGray, DarkGray, DarkBrown, MediumBrown, LightGray,
 		Gray, LightBrown, BlueishWhite, PinkishWhite, DarkYellow, MidYellow,
 		Yellow, LightYellow, White, Maroon, Gold, Blue, DarkBlue, LightBlue,
 		LightCyan,

@@ -122,7 +122,7 @@ bool Assert::HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wE
 	const UINT baseTile = bConvertFakeElement(wExpectedType);
 	REQUIRE(IsValidTileNo(baseTile));
 
-	switch (TILE_LAYER[baseTile])
+	switch (getTileLayer(baseTile))
 	{
 	case LAYER_OPAQUE:
 		switch (baseTile) {

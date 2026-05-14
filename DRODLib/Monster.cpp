@@ -1923,7 +1923,7 @@ const
 	CDbRoom *pRoom = this->pCurrentGame->pRoom;
 	ASSERT(pRoom);
 
-	const UINT wLayer = TILE_LAYER[wObject];
+	const UINT wLayer = getTileLayer(wObject);
 	ASSERT(wLayer <= 2);
 
 	int i,j;

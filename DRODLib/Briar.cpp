@@ -610,7 +610,7 @@ void CBriars::plotted(const UINT wX, const UINT wY, const UINT wTileNo)
 
 	//If a door closes here or the t-layer is modified (i.e. briar is overwritten),
 	//synch data structures for any briar that used to be here.
-	if (!bIsDoor(wTileNo) && TILE_LAYER[wTileNo] != 1) //t-layer plots affect briars
+	if (!bIsDoor(wTileNo) && getTileLayer(wTileNo) != 1) //t-layer plots affect briars
 		return;
 
 	vector<CCoordSet>::iterator tiles;

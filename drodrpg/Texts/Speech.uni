@@ -293,7 +293,7 @@ Enemy sneak attack
 [MID_HitObstacle]
 [eng]
 Player bumps obstacle
-	
+
 [MID_ItemUsed]
 [eng]
 Item used

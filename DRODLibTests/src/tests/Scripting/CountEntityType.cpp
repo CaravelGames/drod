@@ -2,10 +2,15 @@
 #include "../../CAssert.h"
 
 TEST_CASE("Scripting: CountEntityType", "[game][scripting][imperative]") {
+	// SETUP:
+	// ###### -- Located at (10,10)
+	// #S##E# -- Stalwart & evil eye surrounded by walls
+	// ######
+
 	RoomBuilder::ClearRoom();
 	RoomBuilder::PlotRect(T_WALL, 10, 10, 15, 12);
-	RoomBuilder::PlotRect(T_FLOOR, 11, 11, 14, 11);
-	RoomBuilder::Plot(T_FLOOR, 13, 12);
+	RoomBuilder::Plot(T_FLOOR, 11, 11);
+	RoomBuilder::Plot(T_FLOOR, 14, 11);
 	RoomBuilder::AddMonster(M_STALWART, 11, 11, E);
 	RoomBuilder::AddMonster(M_EYE, 14, 11, E);
 
@@ -23,10 +28,8 @@ TEST_CASE("Scripting: CountEntityType", "[game][scripting][imperative]") {
 	}
 
 	SECTION("Do not double count serpents if area both head and body") {
-		CSerpent* serpent = DYN_CAST(CSerpent*, CMonster*, RoomBuilder::AddMonster(M_SERPENT, 10, 10, E));
-		RoomBuilder::AddSerpentPiece(serpent, 9, 10);
-		RoomBuilder::AddSerpentPiece(serpent, 8, 10);
-		RoomBuilder::AddSerpentPiece(serpent, 7, 10);
+		RoomBuilder::AddLongMonster(M_SERPENT, 10, 10, E)
+			.GrowIn(W, 3).End();
 		RoomBuilder::AddCommand(pScript, CCharacterCommand::CC_CountEntityType, 0, 0, 37, 31, M_SERPENT);
 
 		CCurrentGame* pGame = Runner::StartGame(4, 4, E);
@@ -34,10 +37,8 @@ TEST_CASE("Scripting: CountEntityType", "[game][scripting][imperative]") {
 	}
 
 	SECTION("Count serpent's head") {
-		CSerpent* serpent = DYN_CAST(CSerpent*, CMonster*, RoomBuilder::AddMonster(M_SERPENT, 10, 10, E));
-		RoomBuilder::AddSerpentPiece(serpent, 9, 10);
-		RoomBuilder::AddSerpentPiece(serpent, 8, 10);
-		RoomBuilder::AddSerpentPiece(serpent, 7, 10);
+		RoomBuilder::AddLongMonster(M_SERPENT, 10, 10, E)
+			.GrowIn(W, 3).End();
 		RoomBuilder::AddCommand(pScript, CCharacterCommand::CC_CountEntityType, 10, 10, 0, 0, M_SERPENT);
 
 		CCurrentGame* pGame = Runner::StartGame(4, 4, E);
@@ -45,10 +46,8 @@ TEST_CASE("Scripting: CountEntityType", "[game][scripting][imperative]") {
 	}
 
 	SECTION("Count serpent's body") {
-		CSerpent* serpent = DYN_CAST(CSerpent*, CMonster*, RoomBuilder::AddMonster(M_SERPENT, 10, 10, E));
-		RoomBuilder::AddSerpentPiece(serpent, 9, 10);
-		RoomBuilder::AddSerpentPiece(serpent, 8, 10);
-		RoomBuilder::AddSerpentPiece(serpent, 7, 10);
+		RoomBuilder::AddLongMonster(M_SERPENT, 10, 10, E)
+			.GrowIn(W, 3).End();
 		RoomBuilder::AddCommand(pScript, CCharacterCommand::CC_CountEntityType, 7, 10, 0, 0, M_SERPENT);
 
 		CCurrentGame* pGame = Runner::StartGame(4, 4, E);

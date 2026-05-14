@@ -1093,6 +1093,16 @@ void CHoldSelectScreen::OnClick(
 				}
 				//Show hold once any new styles are imported.
 				SelectImportedHold(importedHoldIDs);
+
+				// If we matched the imported hold to the database but for some reason
+				// the import failed or was cancelled we want it to still be selected
+				// because most likely the user wanted to play it anyway
+			} else if (CDbXML::info.dwHoldNotImportedID) {
+				// Failed import could have created an empty hold, clean it up
+				// otherwise hold list will become empty
+				g_pTheDB->Holds.RemoveEmptyRows();
+				importedHoldIDs += CDbXML::info.dwHoldNotImportedID;
+				SelectImportedHold(importedHoldIDs);
 			}
 		}
 		break;
@@ -1229,7 +1239,7 @@ void CHoldSelectScreen::OnSelectChange(
 
 //*****************************************************************************
 bool CHoldSelectScreen::PollForOperationInterrupt()
-//Returns: true if user has requested 
+//Returns: true if user has requested
 {
 	//Get any events waiting in the queue.
 	//Prompt to halt the process on a key press.
@@ -1378,9 +1388,16 @@ void CHoldSelectScreen::SelectHold(const UINT dwSelectedHoldID)
 }
 
 //*****************************************************************************
-void CHoldSelectScreen::SelectImportedHold(const CIDSet& importedHoldIDs)
+void CHoldSelectScreen::SelectImportedHold(
+	const CIDSet& importedHoldIDs, // IDs of the imported holds
+	const bool bEvenOnFailedImport) // If true then successfull import check will be
+	                                // ignored. Make sure hold DB has no empty
+                                    // records otherwise all holds will disappear
 {
-	if (CDbXML::WasImportSuccessful() && !importedHoldIDs.empty())
+	if (
+		(bEvenOnFailedImport || CDbXML::WasImportSuccessful())
+		&& !importedHoldIDs.empty()
+	)
 	{
 		g_pTheNet->MatchCNetHolds();
 		PopulateHoldListBox();  //Update in case a new hold was added.

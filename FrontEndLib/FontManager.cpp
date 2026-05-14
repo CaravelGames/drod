@@ -44,6 +44,7 @@ static const UINT MAXLEN_WORD = 1024;
 //pre-defined colors
 const SDL_Color Black = {0, 0, 0, 0};
 const SDL_Color DarkGray = {64, 64, 64, 0};
+const SDL_Color MidDarkGray = {96, 96, 96, 0};
 const SDL_Color DarkBrown = {138, 126, 103, 0};
 const SDL_Color MediumBrown = {190, 181, 165, 0};
 const SDL_Color LightGray = {180, 180, 180, 0};

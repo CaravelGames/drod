@@ -166,7 +166,7 @@ private:
 	void  SetActionWidgetStates();
 	void  SetAnimationSpeed();
 	void  SetCharacterWidgetStates();
-	void  SetCommandColor(CListBoxWidget* pListBox, int line, CCharacterCommand::CharCommand command);
+	void  SetCommandColor(CListBoxWidget* pListBox, int line, const CCharacterCommand& command);
 	void  SetCommandParametersFromWidgets(CListBoxWidget *pActiveCommandList, COMMANDPTR_VECTOR& commands);
 	void  SetCustomImage();
 	void  SetCustomGraphic();
@@ -219,9 +219,12 @@ private:
 	CListBoxWidget *pAttackTileListBox;
 	CListBoxWidget *pMovementTypeListBox;
 	CListBoxWidget *pIgnoreFlagsListBox;
-	CListBoxWidget* pColorListBox;
-	CListBoxWidget* pOrbAgentListBox;
-	CListBoxWidget* pPlayerBehaviorListBox, * pPlayerBehaviorStateListBox;
+	CListBoxWidget *pColorListBox;
+	CListBoxWidget *pOrbAgentListBox;
+	CListBoxWidget *pPlayerBehaviorListBox, * pPlayerBehaviorStateListBox;
+
+	/// List box for playing build sound
+	CListBoxWidget *pBuildSoundOnOffListBox;
 
 	map<UINT, pair<UINT, UINT>> onOffListBox3Positions;
 

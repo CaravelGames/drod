@@ -11,6 +11,10 @@
 #include <vector>
 #include <cstring> // memcpy
 
+/// Prefix for labels indicating that they should display differently and not show up
+/// in Go To and GoSub commands. Basically a label that functions like a comment
+const WCHAR wszCommentPrefix[] = { We('/'),We('/'),We(0) };
+
 //Speakers for whom some faces are implemented.
 enum SPEAKER
 {
@@ -470,6 +474,25 @@ public:
 		}
 	}
 
+	/// Labels prefixed with "//" function as comments: they display differently
+	/// in the command list and cannot be selected in the UI in Go To and GoSub
+	/// and other Label-selecting commands.
+	/// This helper can be used to quickly check if the label has full functionality
+	/// or not.
+	/// This should only matter on the UI level - if a hold already contains such
+	/// labels with other commands linking to them those must stay and work
+	/// as before.
+	bool IsActiveLabel() const {
+		return command == CC_Label
+			&& label.compare(0, 2, wszCommentPrefix) != 0;
+	}
+
+	/// @see IsActiveLabel
+	bool IsCommentLabel() const {
+		return command == CC_Label
+			&& label.compare(0, 2, wszCommentPrefix) == 0;
+	}
+
 	bool isIfNotCommand() const {
 		return command == CC_IfNot || command == CC_IfElseIfNot;
 	}
@@ -616,5 +639,6 @@ typedef std::vector<CCharacterCommand*> COMMANDPTR_VECTOR;
 
 extern SPEAKER getSpeakerType(const MONSTERTYPE eType);
 extern UINT getSpeakerNameText(const UINT wSpeaker, std::string& color);
+extern const WCHAR wszBuildCommandModifierQuiet[];
 
 #endif

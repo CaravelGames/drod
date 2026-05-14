@@ -42,6 +42,9 @@ public:
 	static bool BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 	static bool CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame);
 
+	/// If true then CID_ObjectBuilt CueEvents will be modified to signal they are quiet
+	static bool bQuietObjectBuildEvents;
+
 private:
 	static bool BuildAnyTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 	static bool BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);

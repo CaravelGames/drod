@@ -49,6 +49,7 @@
     </ClCompile>
     <ClCompile Include="src\CTestDb.cpp" />
     <ClCompile Include="src\RoomBuilder.cpp" />
+    <ClCompile Include="src\CharacterBuilder.cpp" />
     <ClCompile Include="src\Runner.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp">
       <Filter>Tests\Monsters\Puff</Filter>
@@ -192,7 +193,7 @@
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstCaber.cpp">
       <Filter>Tests\Player\Bugs</Filter>
     </ClCompile>
-    <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp">
+    <ClCompile Include="src\tests\Scripting\SetPlayerAppearance.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp">
@@ -226,6 +227,9 @@
       <Filter>Tests\Scripting\Behavior</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Scripting\PushTile.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\SelfKillCrash.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp">
@@ -287,6 +291,7 @@
     <ClInclude Include="src\catch.hpp" />
     <ClInclude Include="src\CTestDb.h" />
     <ClInclude Include="src\RoomBuilder.h" />
+    <ClInclude Include="src\CharacterBuilder.h" />
     <ClInclude Include="src\Runner.h" />
     <ClInclude Include="src\CAssert.h" />
   </ItemGroup>

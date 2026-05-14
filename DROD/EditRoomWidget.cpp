@@ -731,7 +731,7 @@ const
 
 	//Get what's on the other layers to see if they're compatible.
 	UINT wTileNo[4];
-	const UINT wTileLayer = TILE_LAYER[wSelectedObject];
+	const UINT wTileLayer = getTileLayer(wSelectedObject);
 	const UINT wSquareIndex = this->pRoom->ARRAYINDEX(wX,wY);
 	wTileNo[0] = this->pRoom->pszOSquares[wSquareIndex];
 	wTileNo[1] = this->pRoom->GetTSquare(wSquareIndex);
