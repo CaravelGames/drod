@@ -5690,7 +5690,7 @@ void CEditRoomScreen::PlotObjects()
 			//Refresh room stats and/or covered tiles when needed.
 			if (bIsBriar(wPlottedObject) || wPlottedObject == T_TOKEN) //briar and conquer token require recalcs
 				this->pRoom->InitRoomStats();
-			else if (TILE_LAYER[wPlottedObject] == 0)
+			else if (getTileLayer(wPlottedObject) == 0)
 			{
 				//Redefine current connected components, like platforms,
 				//and synch coveredOTiles.
@@ -6050,7 +6050,7 @@ void CEditRoomScreen::EraseObjects()
 
 	Changing();
 
-	const UINT wLayer = TILE_LAYER[this->wSelectedObject];
+	const UINT wLayer = getTileLayer(this->wSelectedObject);
 	bool bSomethingPlotted = false, bSomethingDeleted = false;
 	if ((SDL_GetModState() & KMOD_SHIFT) == 0) {
 		EraseObjects(wLayer, bSomethingPlotted, bSomethingDeleted);
@@ -6338,7 +6338,7 @@ CObjectMenuWidget* CEditRoomScreen::ObjectMenuForTile(const UINT wTile)
 {
 	ASSERT(wTile < TOTAL_EDIT_TILE_COUNT);
 	UINT dwMenu = 0;
-	switch (TILE_LAYER[wTile])
+	switch (getTileLayer(wTile))
 	{
 		case 0: dwMenu = TAG_OMENU; break;
 		case 1: dwMenu = TAG_TMENU; break;
@@ -6689,7 +6689,7 @@ bool CEditRoomScreen::RemoveObjectAt(
 	const UINT wOTileNo = room.GetOSquare(wX,wY),
 			fTile = room.GetFSquare(wX,wY),
 			wTTileNo = room.GetTSquare(wX,wY),
-			wLayer = TILE_LAYER[wPlottedObject];
+			wLayer = getTileLayer(wPlottedObject);
 	CMonster *pMonster;
 
 	bool bSuccess = true;

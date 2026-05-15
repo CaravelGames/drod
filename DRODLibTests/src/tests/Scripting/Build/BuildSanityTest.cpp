@@ -15,7 +15,9 @@ static void CanBuildOnPlayer(const UINT tileToBuild, const bool canBuild){
 	CCurrentGame* game = Runner::StartGame(10, 10, N);
 	Runner::ExecuteCommand(CMD_WAIT, 1);
 
-	const UINT wBaseTile = getBaseTile(tileToBuild);
+	const UINT wBaseTile = bConvertFakeElement(tileToBuild);
+	INFO("Make sure this tile has an actual layer we can use for checking");
+	REQUIRE(bIsTileWithLayer(wBaseTile));
 	REQUIRE(game->pRoom->IsTileInRectOfType(10, 10, 10, 10, wBaseTile) == canBuild);
 }
 
@@ -29,7 +31,9 @@ static void CanBuildOnTile(const UINT tileToBuild, const UINT underTile, const b
 	CCurrentGame* game = Runner::StartGame(5, 10, N);
 	Runner::ExecuteCommand(CMD_WAIT, 1);
 
-	const UINT wBaseTile = getBaseTile(tileToBuild);
+	const UINT wBaseTile = bConvertFakeElement(tileToBuild);
+	INFO("Make sure this tile has an actual layer we can use for checking");
+	REQUIRE(bIsTileWithLayer(wBaseTile));
 	REQUIRE(game->pRoom->IsTileInRectOfType(10, 10, 10, 10, wBaseTile) == canBuild);
 }
 

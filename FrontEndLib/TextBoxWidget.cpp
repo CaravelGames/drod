@@ -133,14 +133,21 @@ void CTextBoxWidget::HandleKeyDown(
 	case SDLK_BACKSPACE:
 		if (HasSelection())
 			DeleteSelected();
-		else if (MoveCursorLeft())
+		else if (MoveCursorLeft()) {
+			this->undoList.push_back(TextUndoInfo(this->GetText(), this->wCursorIndex + 1));
 			DeleteAtCursor();
+		}
 		break;
 	case SDLK_DELETE:
 	case SDLK_KP_PERIOD:
-		if (!HasSelection())
+		if (!HasSelection()) {
+			// Only store undo if there is anything to delete
+			if (this->wCursorIndex < this->text.size()) {
+				this->undoList.push_back(TextUndoInfo(this->GetText(), this->wCursorIndex));
+			}
+
 			DeleteAtCursor();
-		else
+		} else
 			DeleteSelected();
 		break;
 	case SDLK_LEFT:
@@ -588,7 +595,9 @@ void CTextBoxWidget::SetText(const WCHAR* newText, const bool bClearUndos)
 	//Selection is no longer valid.
 	ClearSelection();
 
-	this->wTextDisplayIndex = 0;
+	if (bClearUndos) {
+		this->wTextDisplayIndex = 0;
+	}
 	CalcAreas();
 
 	//Undo/redo lists are invalidated.  Cursor is placed at end of text.
@@ -693,6 +702,8 @@ bool CTextBoxWidget::DeleteSelected()
 {
 	if (!HasSelection())
 		return false;
+
+	this->undoList.push_back(TextUndoInfo(this->GetText(), this->wCursorIndex));
 
 	UINT wStart, wEnd;
 	GetSelection(wStart, wEnd);

@@ -4094,9 +4094,23 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_ObjectBuilt))
 	{
-		this->fPos[0] = static_cast<float>(player.wX);
-		this->fPos[1] = static_cast<float>(player.wY);
-		PlaySoundEffect(SEID_TRAPDOOR, this->fPos);
+		// If we find any non-T_SILENT_BUILD private data then play the sound
+		for (pObj = CueEvents.GetFirstPrivateData(CID_ObjectBuilt);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CAttachableWrapper<UINT> *pBuiltTileID = DYN_CAST(
+				const CAttachableWrapper<UINT>*,
+				const CAttachableObject*,
+				pObj
+			);
+
+			if (pBuiltTileID->data != T_SILENT_BUILD) {
+				this->fPos[0] = static_cast<float>(player.wX);
+				this->fPos[1] = static_cast<float>(player.wY);
+				PlaySoundEffect(SEID_TRAPDOOR, this->fPos);
+				break;
+			}
+		}
 	}
 	if (CueEvents.HasOccurred(CID_ObjectFell))
 	{
@@ -4678,6 +4692,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	//Update room weather as needed.
 	this->pRoomWidget->SyncWeather(CueEvents);
+	// If fade occurred we don't want moves to be repeated or queued during this time
+	ClearEventBuffer();
 
 	//
 	//Begin section where room load can occur.  If room load occurs then

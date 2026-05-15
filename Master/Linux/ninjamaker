@@ -44,7 +44,7 @@ distlinkflags_post=(
 
 declare -A buildflags
 buildflags=(
-	[debug]="-Og -D_DEBUG -DENABLE_BREAKPOINTS"
+	[debug]="-O0 -D_DEBUG -DENABLE_BREAKPOINTS"
 	[debugsan]="-Og -D_DEBUG -DENABLE_BREAKPOINTS -fsanitize=address -fsanitize=undefined"
 	[dev]="-Og -D_DEBUG -DENABLE_BREAKPOINTS -DDEV_BUILD"
 	[release]="-O2 -DNDEBUG -flto"

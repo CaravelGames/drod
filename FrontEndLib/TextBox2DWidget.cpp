@@ -110,13 +110,15 @@ void CTextBox2DWidget::HandleKeyDown(
 			break;
 		case SDLK_HOME:
 		case SDLK_KP_7:
-			MoveCursorToLineStart();
+			if (bCtrl) MoveCursorToTextStart();
+			else MoveCursorToLineStart();
 			if (bShift) SetSelection(wOldCursorPos, wOldCursorX, wOldCursorY);
 			else ClearSelection();
 			break;
 		case SDLK_END:
 		case SDLK_KP_1:
-			MoveCursorToLineEnd();
+			if (bCtrl) MoveCursorToTextEnd();
+			else MoveCursorToLineEnd();
 			if (bShift) SetSelection(wOldCursorPos, wOldCursorX, wOldCursorY);
 			else ClearSelection();
 			break;
@@ -312,6 +314,30 @@ bool CTextBox2DWidget::MoveCursorToLineEnd()
 }
 
 //******************************************************************************
+bool CTextBox2DWidget::MoveCursorToTextStart()
+//Moves cursor to start of all text.
+//Returns: true
+{
+	// +1 is technically unnecessary but is kept
+	// for consistency with MoveCursorToTextEnd
+	MoveCursorUp(this->lineIndices.size() + 1);
+
+	return true;
+}
+
+//******************************************************************************
+bool CTextBox2DWidget::MoveCursorToTextEnd()
+//Moves cursor to end of all text.
+//Returns: true
+{
+	// +1 is required to put it at the end of the last line if
+	// started on the first
+	MoveCursorDown(this->lineIndices.size() + 1);
+
+	return true;
+}
+
+//******************************************************************************
 bool CTextBox2DWidget::MoveCursorUpPage()
 //Moves cursor down one page (widget height) and moves view with it.
 //Returns: Whether or not the operation was successful (possible)
@@ -332,7 +358,7 @@ bool CTextBox2DWidget::MoveCursorUpPage()
 
 //******************************************************************************
 bool CTextBox2DWidget::MoveCursorDownPage()
-//Moves cursor up one page (widget height) and moves view with it.
+//Moves cursor down one page (widget height) and moves view with it.
 //Returns: Whether or not the operation was successful (possible)
 {
 	ASSERT(this->wCursorIndex <= this->text.size());
@@ -353,50 +379,9 @@ bool CTextBox2DWidget::MoveCursorDownPage()
 void CTextBox2DWidget::SelectAllText()
 {
 	CTextBoxWidget::SelectAllText();
-	CalculateHighlightedRegion();
-}
 
-void CTextBox2DWidget::CalculateHighlightedRegion()
-{
-	if (!HasSelection())
-		return;
-
-	const int nLineHeightPixels = g_pTheFM->GetFontLineHeight(this->fontType);
-
-	//Calculate where to start highlighting.
-	const UINT wTopViewLine = getLineContainingIndex(this->wTextDisplayIndex);
-	if (this->wMarkStart <= this->wTextDisplayIndex) {
-		this->nSelectStartX = this->nSelectStartY = 0;
-	} else {
-		const UINT wStartLineIndex = getLineContainingIndex(this->wMarkStart);
-		ASSERT(wStartLineIndex >= wTopViewLine);
-		this->nSelectStartY = (wStartLineIndex - wTopViewLine) * nLineHeightPixels;
-
-		const UINT wIndexAtStartOfHighlightStartLine = getIndexAtStartOfLine(wStartLineIndex);
-		UINT wW, wHIgnored;
-		const WSTRING wStr = this->text.substr(wIndexAtStartOfHighlightStartLine, this->wMarkStart);
-		g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wW, wHIgnored);
-		this->nSelectStartX = int(wW);
-	}
-
-	//Calculate where to end highlighting.
-	const UINT wEndLineIndex = getLineContainingIndex(this->wMarkEnd);
-	const UINT wViewableTextLinesInWidget = GetViewableTextLinesInWidget();
-	const UINT wHighlightedLines = wEndLineIndex - wTopViewLine;
-
-	if (wHighlightedLines > wViewableTextLinesInWidget) {
-		const int nOffsetX = 0; //!!TODO needed?
-		this->nSelectEndX = GetTextLineDisplayWidth(nOffsetX);
-		this->nSelectEndY = wViewableTextLinesInWidget * nLineHeightPixels - EDGE_OFFSET;
-	} else {
-		const UINT wIndexAtStartOfHighlightEndLine = getIndexAtStartOfLine(wEndLineIndex);
-		UINT wW, wHIgnored;
-		const WSTRING wStr = this->text.substr(wIndexAtStartOfHighlightEndLine, this->wMarkEnd);
-		g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wW, wHIgnored);
-		this->nSelectEndX = int(wW);
-
-		this->nSelectEndY = wHighlightedLines * nLineHeightPixels;
-	}
+	this->getPositionAtIndex(0, this->nSelectStartX, this->nSelectStartY);
+	this->getPositionAtIndex(this->text.size(), this->nSelectEndX, this->nSelectEndY);
 }
 
 //******************************************************************************
@@ -541,7 +526,6 @@ void CTextBox2DWidget::ScrollDownOneLine(const UINT wLines)   //[default=1]
 		MoveViewDown(lineDelta);
 		CalcAreas();
 		GetPixelLocationAt(this->wTextDisplayIndex, this->wCursorIndex, this->wCursorX, this->wCursorY);
-		CalculateHighlightedRegion();
 	}
 }
 
@@ -551,6 +535,20 @@ UINT CTextBox2DWidget::GetViewableTextLinesInWidget() const
 	const UINT wDisplayH = this->h - CY_INSET_BORDER*2;
 	const UINT lineH = g_pTheFM->GetFontLineHeight(this->fontType);
 	return wDisplayH/lineH;
+}
+
+//******************************************************************************
+UINT CTextBox2DWidget::GetMaxScrollInLines() const
+// Return the maximum number of lines the widget can be scrolled down
+{
+	const UINT wViewableLines = GetViewableTextLinesInWidget();
+	const UINT wTotalLines = this->lineIndices.size();
+
+	if (wTotalLines < wViewableLines) {
+		return 0;
+	} else {
+		return wTotalLines - wViewableLines + 1;
+	}
 }
 
 //******************************************************************************
@@ -571,7 +569,6 @@ void CTextBox2DWidget::ScrollUpOneLine(const UINT wLines)   //[default=1]
 		MoveViewUp(wLines);
 		CalcAreas();
 		GetPixelLocationAt(this->wTextDisplayIndex, this->wCursorIndex, this->wCursorX, this->wCursorY);
-		CalculateHighlightedRegion();
 	}
 }
 
@@ -689,10 +686,8 @@ void CTextBox2DWidget::SetSelection(const UINT wStart,
 	const UINT wCursorStartX, const UINT wCursorStartY)
 {
 	CTextBoxWidget::SetSelection(wStart);
-	if (this->nSelectStartX == -1)
-	{
-		this->nSelectStartX = wCursorStartX;
-		this->nSelectStartY = wCursorStartY;
+	if (this->nSelectStartX == -1) {
+		this->getPositionAtIndex(wStart, this->nSelectStartX, this->nSelectStartY);
 	}
 	this->nSelectEndX = this->wCursorX;
 	this->nSelectEndY = this->wCursorY;
@@ -807,51 +802,103 @@ void CTextBox2DWidget::DrawText(
 		index = nextIndex;
 	}
 
-	if (!HasSelection() || !IsSelected()) //don't show selection when widget doesn't have focus
+	// Don't show selection when widget doesn't have focus or selection is
+	// not calculated/visible
+	if (
+		!HasSelection() || !IsSelected()
+		|| this->nSelectStartX == -1 || this->nSelectStartY == -1
+		|| this->nSelectEndX == -1 || this->nSelectEndY == -1
+	) {
 		return;
+	}
 
 	//Highlight selected text.
 	const UINT wW = GetTextLineDisplayWidth(nOffsetX);
+	const UINT wViewableTextLinesInWidget = GetViewableTextLinesInWidget();
+	const int dItemsListH = this->ItemsRect.h - Y_KLUDGE * 2;
 
 	//Determine where to start and end highlighting.
 	int nStartX, nStartY, nEndX, nEndY;
-	if (this->nSelectStartY <= this->nSelectEndY)
-	{
-		nStartX = this->nSelectStartX;  nStartY = this->nSelectStartY;
-		nEndX = this->nSelectEndX;  nEndY = this->nSelectEndY;
+	if (this->nSelectStartY <= this->nSelectEndY) {
+		nStartX = this->nSelectStartX;
+		nStartY = this->nSelectStartY;
+		nEndX = this->nSelectEndX;
+		nEndY = this->nSelectEndY;
+
+		// For single line selections make sure start is smaller than end
+		// to simplify later calculations
+		if (this->nSelectStartY == this->nSelectEndY && nStartX > nEndX) {
+			std::swap(nStartX, nEndX);
+		}
+
 	} else {
-		nStartX = this->nSelectEndX;  nStartY = this->nSelectEndY;
-		nEndX = this->nSelectStartX;  nEndY = this->nSelectStartY;
+		nStartX = this->nSelectEndX;
+		nStartY = this->nSelectEndY;
+		nEndX = this->nSelectStartX;
+		nEndY = this->nSelectStartY;
 	}
-	nEndY += Y_KLUDGE + EDGE_OFFSET;
-	if (nEndY < 0) return;  //selected area out of view
-	if (nStartY < 0)
-	{	//Highlight begins above viewed area.  Start highlighting from beginning.
-		nStartX = nStartY = 0;
+	// Selection completely outside display, ignore
+	if (nEndY < 0 || nStartY > dItemsListH) {
+		return;
 	}
-	nStartY += Y_KLUDGE + EDGE_OFFSET;
 
 	//Highlight.
 	const int nLineHeight = g_pTheFM->GetFontLineHeight(this->fontType);
-	if (nStartY == nEndY)
-	{
-		if (nStartX == nEndX) return;
-		if (nStartX > nEndX) std::swap(nStartX, nEndX);
-		g_pTheBM->Invert(GetDestSurface(), wX + nStartX, wY + nStartY,
-				nEndX - nStartX, nLineHeight-1);
-	} else {
-		//Highlight multi-line region in three strips.
-		const int nMidRegionY = nEndY - (nStartY + nLineHeight);
-		g_pTheBM->Invert(GetDestSurface(), wX + nStartX, wY + nStartY,
-				wW - nStartX, nLineHeight);
-		if (nMidRegionY >= nLineHeight) {
-			g_pTheBM->Invert(GetDestSurface(), wX, wY + nStartY + nLineHeight,
-					wW, nMidRegionY);
-		} else if (nEndX>nStartX && nMidRegionY > 0) {
-			g_pTheBM->Invert(GetDestSurface(), wX+nStartX, wY + nStartY + nLineHeight,
-					nEndX-nStartX, nMidRegionY);
-		}
-		g_pTheBM->Invert(GetDestSurface(), wX, wY + nEndY, nEndX, nLineHeight-1);
+
+	nStartY += Y_KLUDGE + EDGE_OFFSET;
+	nEndY += Y_KLUDGE + EDGE_OFFSET + nLineHeight;
+
+	/*
+	 Highlight is constructed in three strips:
+	  - One for the top line of the selection which can have an indent
+	  - One for the bottom line of the selection which may take only some of the line
+	  - One for the middle section which takes full width of the line and
+	    fills the space between the two
+	 */
+
+	// STEP 1: Calculate strips' rects in relation to the widget without limitations
+	SDL_Rect StripTop    = MAKE_SDL_RECT(wX + nStartX, wY + nStartY, wW - nStartX, nLineHeight);
+	SDL_Rect StripMiddle = MAKE_SDL_RECT(wX, wY + nStartY + nLineHeight, wW, nEndY - nStartY - nLineHeight * 2);
+	SDL_Rect StripBottom = MAKE_SDL_RECT(wX, wY + nEndY - nLineHeight, nEndX, nLineHeight);
+
+	// STEP 2: Special case, if it's only a single-line selection adjust top strip width
+	if (nStartY + nLineHeight >= nEndY) {
+		StripTop.w = nEndX - nStartX;
+		StripMiddle.h = 0;
+		StripBottom.h = 0;
+	}
+
+	// STEP 3: Crop the strips against the visible space
+	SDL_Rect CropArea = this->ItemsRect;
+	CropArea.h -= EDGE_OFFSET; // to avoid drawing outside text box
+
+	CBitmapManager::CropRect(StripTop, CropArea);
+	CBitmapManager::CropRect(StripMiddle, CropArea);
+	CBitmapManager::CropRect(StripBottom, CropArea);
+
+	// STEP 4: Render each strip if possible
+	if (StripTop.w > 0 && StripTop.h > 0) {
+		g_pTheBM->Invert(
+			GetDestSurface(),
+			StripTop.x, StripTop.y,
+			StripTop.w, StripTop.h
+		);
+	}
+
+	if (StripMiddle.w > 0 && StripMiddle.h > 0) {
+		g_pTheBM->Invert(
+			GetDestSurface(),
+			StripMiddle.x, StripMiddle.y,
+			StripMiddle.w, StripMiddle.h
+		);
+	}
+
+	if (StripBottom.w > 0 && StripBottom.h > 0) {
+		g_pTheBM->Invert(
+			GetDestSurface(),
+			StripBottom.x, StripBottom.y,
+			StripBottom.w, StripBottom.h
+		);
 	}
 }
 
@@ -1052,15 +1099,48 @@ const
 }
 
 //******************************************************************************
+void CTextBox2DWidget::getPositionAtIndex(
+//Given an index returns the relative position of the character's top-left corner
+//to the current view. This takes into account scrolls and can produce negative
+//Y positions. Most useful to fill nSelect variables
+	const UINT index, // IN: Index of the character
+	int &wX, int &wY) // OUT: Calculated position
+const {
+	if (index > this->text.size()) {
+		wX = 0;
+		wY = 0;
+		return;
+	}
+
+	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(this->fontType);
+	const int wCurrentLineIndex = getLineContainingIndex(this->wTextDisplayIndex);
+	const int wLine = getLineContainingIndex(index);
+	const int wLineFirstCharacterIndex = getIndexAtStartOfLine(wLine);
+
+	UINT wLineWidthTillCharacter, wHIgnored;
+	const WSTRING wStr = this->text.substr(
+		wLineFirstCharacterIndex,
+		index - wLineFirstCharacterIndex
+	);
+	g_pTheFM->GetTextWidthHeight(this->fontType, wStr.c_str(), wLineWidthTillCharacter, wHIgnored);
+
+	wX = wLineWidthTillCharacter;
+	wY = (wLine - wCurrentLineIndex) * wLineHeight;
+}
+
+//******************************************************************************
 UINT CTextBox2DWidget::MoveViewDown(const UINT wNumLines)   //[default=1]
 //Move viewing area down a line.
 //Returns: Number of lines actually moved down
 {
 	UINT numMoved = 0;
 	UINT wIndex = this->wTextDisplayIndex;
+	UINT wStartingLine = getLineContainingIndex(wIndex);
 	const UINT wLength = this->text.size();
+	const UINT wMaxLines = GetMaxScrollInLines();
 	for (UINT line = 0; line < wNumLines; ++line)
 	{
+		if (wStartingLine + line >= wMaxLines) break;
 		if (wIndex >= wLength) break;
 		if (!getLineStartIndexFollowingIndex(wIndex))
 			break; //already at bottom line

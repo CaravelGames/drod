@@ -2917,8 +2917,6 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 		const int clearsLayer = pImageOverlay->clearsImageOverlays();
 		if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
 			RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
-			CueEvents.Remove(cid, pObj);
-			pObj = CueEvents.GetFirstPrivateData(cid);
 			bClearedEffect = true;
 		}
 
@@ -2928,8 +2926,11 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 			bClearedEffect = true;
 		}
 
-		if (bClearedEffect)
+		if (bClearedEffect) {
+			CueEvents.Remove(cid, pObj);
+			pObj = CueEvents.GetFirstPrivateData(cid);
 			continue;
+		}
 
 		pObj = CueEvents.GetNextPrivateData();
 	}

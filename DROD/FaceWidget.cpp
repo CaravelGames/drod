@@ -790,13 +790,11 @@ FACE_FRAME CFaceWidget::ResolveFaceFrame(Face *face)
 			eFrame = FF_None;
 		break;
 	}
-	if (eFrame == FF_None)
-		eFrame = FF_Default;
 
-	//!!HACK for empty face images in the current data.
-	//If portraits are added for these types, then remove this.
-	if (eFrame >= FF_Roach)
-		eFrame = FF_Default;
+	// Selected frame has no graphic
+	if (yFace(eFrame) >= (UINT)this->images[0]->h) {
+		eFrame = FF_None;
+	}
 
 	return eFrame;
 }
@@ -837,6 +835,13 @@ void CFaceWidget::PaintFace(
 	//Select src image based on this->eSpeaker.
 	FACE_FRAME eFrame = ResolveFaceFrame(face);
 
+	// If speaker has not resolved to a face use player's current face instead
+	if (eFrame == FF_None && face->eLayer == FaceWidgetLayer::Speaker) {
+		face->dwImageID = this->facePlayer.dwImageID;
+		face->eCharacter = this->facePlayer.eCharacter;
+		eFrame = ResolveFaceFrame(face);
+	}
+
 	//Blit entire face frame if needed.
 	const bool bDrawPupils = IsSpeakerAnimated(face) && !face->bIsBlinking;
 	if (
@@ -855,10 +860,9 @@ void CFaceWidget::PaintFace(
 
 			SDL_Rect Src = MAKE_SDL_RECT(srcX, 0, this->w, this->h);
 			SDL_BlitSurface(faceImage, &Src, pDestSurface, &Dest);
-		}
-		else {
+		} else {
 			//Bounds check -- just revert to default if this face frame is not loaded.
-			if (eFrame == FF_Default || yFace(eFrame) >= (UINT)this->images[0]->h)
+			if (eFrame == FF_None || eFrame == FF_Default || yFace(eFrame) >= (UINT)this->images[0]->h)
 			{
 				if (face->eCharacter != Speaker_Beethro)
 				{

@@ -142,7 +142,7 @@ int CDbPackedVars::GetVar(const char *pszVarName, int nNotFoundValue) const
 #if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
 		LittleToBig(&nRet);
 #endif
-		ASSERT(GetVarValueSize(pszVarName)==sizeof(int));
+		ASSERT_DETAIL(GetVarValueSize(pszVarName)==sizeof(int), "Var %s was not int size", pszVarName);
 		return nRet;
 	}
 	return nNotFoundValue;
@@ -157,7 +157,7 @@ UINT CDbPackedVars::GetVar(const char *pszVarName, UINT wNotFoundValue) const
 #if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
 		LittleToBig(&wRet);
 #endif
-		ASSERT(GetVarValueSize(pszVarName)==sizeof(UINT));
+		ASSERT_DETAIL(GetVarValueSize(pszVarName)==sizeof(UINT), "Var %s was not UINT size", pszVarName);
 		return wRet;
 	}
 	return wNotFoundValue;
@@ -168,7 +168,7 @@ char CDbPackedVars::GetVar(const char *pszVarName, char cNotFoundValue) const
 	const char *pcRet = (char *) GetVar(pszVarName, (void *)NULL);
 	if (pcRet)
 	{
-		ASSERT(GetVarValueSize(pszVarName)==sizeof(char));
+		ASSERT_DETAIL(GetVarValueSize(pszVarName)==sizeof(char), "Var %s was not char size", pszVarName);
 		return *pcRet;
 	}
 	return cNotFoundValue;
@@ -179,7 +179,7 @@ const char * CDbPackedVars::GetVar(const char *pszVarName, const char *pszNotFou
 	const char *pszRet = (char *) GetVar(pszVarName, (void *)NULL);
 	if (pszRet)
 	{
-		ASSERT(GetVarValueSize(pszVarName)==strlen(pszRet)+1);
+		ASSERT_DETAIL(GetVarValueSize(pszVarName)==strlen(pszRet)+1, "Var %s was did not have expected size", pszVarName);
 		return pszRet;
 	}
 	return pszNotFoundValue;
@@ -204,7 +204,7 @@ const WCHAR * CDbPackedVars::GetVar(const char *pszVarName, const WCHAR *pwczNot
 #else
 		tempBuffer = reinterpret_cast<USHORT*>(const_cast<WCHAR*>(pwczRet));
 #endif
-		ASSERT(GetVarValueSize(pszVarName)==(len+1)*sizeof(WCHAR));
+		ASSERT_DETAIL(GetVarValueSize(pszVarName)==(len+1)*sizeof(WCHAR), "Var %s was not WCHAR size", pszVarName);
 		return reinterpret_cast<const WCHAR*>(tempBuffer);
 	}
 	return pwczNotFoundValue;
@@ -215,7 +215,7 @@ BYTE CDbPackedVars::GetVar(const char *pszVarName, BYTE ucNotFoundValue) const
 	const BYTE *pucRet = (BYTE*) GetVar(pszVarName, (void *)NULL);
 	if (pucRet)
 	{
-		ASSERT(GetVarValueSize(pszVarName)==sizeof(BYTE));
+		ASSERT_DETAIL(GetVarValueSize(pszVarName)==sizeof(BYTE), "Var %s was not BYTE size", pszVarName);
 		return *pucRet;
 	}
 	return ucNotFoundValue;
@@ -230,7 +230,7 @@ bool CDbPackedVars::GetVar(const char *pszVarName, bool bNotFoundValue) const
 			return *pucRet != 0;
 
 		//Handle old data size (UINT).
-		ASSERT(GetVarValueSize(pszVarName)==sizeof(UINT));
+		ASSERT_DETAIL(GetVarValueSize(pszVarName)==sizeof(UINT), "Var %s was not UINT size", pszVarName);
 		UINT wRet(*((UINT*)pucRet)); //recast what's being pointed at to 4-byte value
 #if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
 		LittleToBig(&wRet);
@@ -249,7 +249,7 @@ int64_t CDbPackedVars::GetVar(const char* pszVarName, int64_t notFoundValue) con
 #if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
 		LittleToBig(&wRet);
 #endif
-		ASSERT(GetVarValueSize(pszVarName) == sizeof(int64_t));
+		ASSERT_DETAIL(GetVarValueSize(pszVarName) == sizeof(int64_t), "Var %s was not int64_t size", pszVarName);
 		return wRet;
 	}
 	return notFoundValue;

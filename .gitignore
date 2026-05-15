@@ -130,6 +130,8 @@ drodrpg/Master/Linux/steam
 **/*.vspx
 **/*.tlog
 **/*.pdb
+/CMakeLists.txt
+/cmake-build-debug
 
 # OS X specific files/folders
 Master/Darwin/custom/

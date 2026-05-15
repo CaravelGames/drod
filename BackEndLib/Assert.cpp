@@ -98,6 +98,30 @@ void AssertErr(const char *pszFile, int nLine, const char *pszDesc)
 }
 
 //**************************************************************************************
+void AssertDetailedErr(const char* pszFile, int nLine, const char* pszDesc, const char* pszInfo)
+{
+	if (!bLogErrors)
+	{
+		return;
+	}
+
+	assert(pszDesc);
+	assert(pszInfo);
+	char szDescription[500];
+	sprintf(szDescription, pszDesc, pszInfo);
+	AssertErr(pszFile, nLine, szDescription);
+}
+
+//**************************************************************************************
+void AssertDetailedErr(const char* pszFile, int nLine, const char* pszDesc, const unsigned int wInfo)
+{
+	assert(pszDesc);
+	char szDescription[500];
+	sprintf(szDescription, pszDesc, wInfo);
+	AssertErr(pszFile, nLine, szDescription);
+}
+
+//**************************************************************************************
 void DebugPrint(const char *pszMessage)
 //Send message to debug output.
 {
