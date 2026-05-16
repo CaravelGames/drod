@@ -754,6 +754,9 @@ extern const CUEEVENT_ID CIDA_PlayerLeftRoom[11];
 //project-wide changes to code.
 extern const CUEEVENT_ID CIDA_PlayerDied[6];
 
+//Did something happen that will prevent a scorepoint from being valid?
+extern const CUEEVENT_ID CIDA_ScoreCheckpointBlocked[12];
+
 //Did a monster die?
 extern const CUEEVENT_ID CIDA_MonsterDied[2];
 

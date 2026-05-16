@@ -49,6 +49,15 @@ const CUEEVENT_ID CIDA_PlayerDied[6] = {
 	CID_MonsterKilledPlayer, CID_ExplosionKilledPlayer, CID_BriarKilledPlayer,
 	CID_CriticalNPCDied, CID_PlayerFellIntoPit, CID_PlayerDrownedInWater}; //CID_NPCBeethroDied
 
+//Did something happen that will prevent a scorepoint from being valid?
+//Leaving a room in anyway other than winning the game, or making an illegal move that
+//has to be rewound.
+const CUEEVENT_ID CIDA_ScoreCheckpointBlocked[12] = {
+	CID_ExitRoomPending, CID_ExitRoom, CID_ExitLevelPending, CID_ExitToWorldMapPending,
+	CID_MonsterKilledPlayer, CID_ExplosionKilledPlayer, CID_BriarKilledPlayer,
+	CID_CriticalNPCDied, CID_PlayerFellIntoPit, CID_PlayerDrownedInWater,
+	CID_InvalidAttackMove, CID_StalledCombat};
+
 //Did a monster die?
 const CUEEVENT_ID CIDA_MonsterDied[2] = {
 	CID_SnakeDiedFromTruncation, CID_MonsterDiedFromStab}; //, CID_MonsterBurned};
