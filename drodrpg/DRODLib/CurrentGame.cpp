@@ -3322,7 +3322,7 @@ void CCurrentGame::ProcessCommand(
 	//Create any pending scorepoint saves and local highscore entries.
 	//Due to how validation works, it's not valid to make a scorepoint when leaving a room
 	if (CueEvents.HasOccurred(CID_ScoreCheckpoint) && !this->Commands.IsFrozen() &&
-		!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom)) {
+		!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_ScoreCheckpointBlocked), CIDA_ScoreCheckpointBlocked)) {
 		for (const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 		{
