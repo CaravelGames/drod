@@ -861,6 +861,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_LogicalWaitNOR: strText = "Wait for None:"; break;
 		case MID_IfNot: strText = "If Not ..."; break;
 		case MID_IfElseIfNot: strText = "Else If Not"; break;
+		case MID_VarColor: strText = "_Color"; break;
+		case MID_VarHue: strText = "_Hue"; break;
+		case MID_VarSaturation: strText = "_Saturation"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
