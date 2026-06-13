@@ -440,6 +440,7 @@ public:
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
 	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 //	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
+	bool bSkeletonKeyGuard; //safety to prevent player spending skeleton keys
 //	PlayerStats playerStatsAtRoomStart;
 
 	//Front-end effects.

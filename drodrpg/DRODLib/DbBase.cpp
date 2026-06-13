@@ -864,6 +864,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarColor: strText = "_Color"; break;
 		case MID_VarHue: strText = "_Hue"; break;
 		case MID_VarSaturation: strText = "_Saturation"; break;
+		case MID_Command_ToggleSkeletonGuard: strText = "Skeleton Key Guard"; break;
+		case MID_SkeletonGuardBlock: strText = "Skeleton key guard prevents spending skeleton key"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

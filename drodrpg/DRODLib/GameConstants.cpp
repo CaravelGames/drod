@@ -93,6 +93,7 @@ namespace InputCommands
 		keyDefinitions[DCMD_QuickSave] = new KeyDefinition(CMD_EXTRA_QUICK_SAVE, "Key_QuickSave", MID_QuickSave, SDLK_F5);
 		keyDefinitions[DCMD_QuickLoad] = new KeyDefinition(CMD_EXTRA_QUICK_LOAD, "Key_QuickLoad", MID_QuickLoad, SDLK_F9);
 		keyDefinitions[DCMD_ShowMap] = new KeyDefinition(CMD_EXTRA_SHOW_MAP, "Key_ShowMap", MID_Command_ShowMap, SDLK_m);
+		keyDefinitions[DCMD_SkeletonKeyGuard] = new KeyDefinition(CMD_EXTRA_SKELETON_KEY_GUARD, "Key_ToggleSkeletonGuard", MID_Command_ToggleSkeletonGuard, BuildInputKey(0, true, false, false));
 
 		keyDefinitions[DCMD_SkipSpeech] = new KeyDefinition(CMD_EXTRA_SKIP_SPEECH, "Key_SkipSpeech", MID_SkipSpeech, SDLK_SPACE);
 		keyDefinitions[DCMD_OpenChat] = new KeyDefinition(CMD_EXTRA_OPEN_CHAT, "Key_OpenChat", MID_Command_OpenChat, SDLK_RETURN);

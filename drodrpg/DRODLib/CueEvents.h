@@ -732,6 +732,12 @@ enum CUEEVENT_ID
 	//Private data: CDbMessageText *pAutosaveName (one)
 	CID_MakeAutosave,
 
+	//The player tried to open a door with a skeleton key, but has locked spending
+	//of skeleton keys
+	//
+	//Private data: none
+	CID_SkeletonKeyBlocked,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

@@ -393,3 +393,7 @@ Multiplies resources gained from health potions, gems and shovels.
 [MID_FlyingAbility]
 [eng]
 Airborne
+
+[MID_SkeletonGuardBlock]
+[eng]
+Skeleton key guard prevents spending skeleton key

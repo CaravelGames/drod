@@ -665,3 +665,7 @@ Show Character Options
 [MID_Command_ShowMap]
 [eng]
 Open Map
+
+[MID_Command_ToggleSkeletonGuard]
+[eng]
+Skeleton Key Guard
