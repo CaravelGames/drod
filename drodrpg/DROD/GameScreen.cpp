@@ -2743,6 +2743,12 @@ void CGameScreen::OnKeyDown(
 			ToggleBigMap();
 		break;
 
+		case CMD_EXTRA_SKELETON_KEY_GUARD:
+			this->pCurrentGame->bSkeletonKeyGuard = !this->pCurrentGame->bSkeletonKeyGuard;
+			g_pTheSound->PlaySoundEffect(this->pCurrentGame->bSkeletonKeyGuard ?
+				SEID_WISP : SEID_CHECKPOINT);
+		break;
+
 		//Skip cutscene/clear playing speech.
 		case CMD_EXTRA_SKIP_SPEECH:
 			if (this->pCurrentGame && this->pCurrentGame->InCombat()) {
@@ -5639,7 +5645,8 @@ SCREENTYPE CGameScreen::ProcessCommand(
 			}
 
 			if (this->sCueEvents.HasOccurred(CID_InvalidAttackMove) ||
-				this->sCueEvents.HasOccurred(CID_StalledCombat))
+				this->sCueEvents.HasOccurred(CID_StalledCombat) ||
+				this->sCueEvents.HasOccurred(CID_SkeletonKeyBlocked))
 			{
 				//This move was just undone.
 				//Speech pointers need to be relinked and room state refreshed.
@@ -6956,6 +6963,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 		this->pRoomWidget->AddInfoSubtitle(&coord, g_pTheDB->GetMessageText(MID_CantHarmDangerousEnemy), 2000);
 		PlayHitObstacleSound(player.wAppearance, CueEvents);
 		ShowStatsForMonsterAt(pCoord->wX, pCoord->wY);
+	} else if (CueEvents.HasOccurred(CID_SkeletonKeyBlocked)) {
+		CSwordsman* player = this->pCurrentGame->pPlayer;
+		this->pRoomWidget->DisplaySubtitle(g_pTheDB->GetMessageText(MID_SkeletonGuardBlock),
+			player->wX, player->wY, true);
+		g_pTheSound->PlaySoundEffect(SEID_WISP);
 	}
 
 	if (CueEvents.HasOccurred(CID_BumpedLockedDoor))

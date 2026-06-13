@@ -688,6 +688,7 @@ enum MID_CONSTANT {
   MID_ShovelTooltip = 2158,
   MID_LevelMultiplierTooltip = 2159,
   MID_FlyingAbility = 2164,
+  MID_SkeletonGuardBlock = 2187,
 
   //Messages from General.uni:
   MID_SDLInitFailed = 464,
@@ -1351,6 +1352,7 @@ enum MID_CONSTANT {
   MID_Command_Script_AddCommand = 2161,
   MID_Command_Script_CharacterOptions = 2162,
   MID_Command_ShowMap = 2163,
+  MID_Command_ToggleSkeletonGuard = 2186,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

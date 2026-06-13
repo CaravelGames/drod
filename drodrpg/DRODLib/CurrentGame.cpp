@@ -786,6 +786,7 @@ void CCurrentGame::Clear(
 	this->persistingImageOverlays.clear();
 	this->imageOverlayNextID = 0;
 
+	this->bSkeletonKeyGuard = false;
 /*
 	this->bRoomExitLocked = false;
 
@@ -3301,6 +3302,11 @@ void CCurrentGame::ProcessCommand(
 			UndoCommand(CueEvents); //can't undo when move sequence is frozen (avoid infinite recursion)
 		CueEvents.Clear(); //don't show events from previous turn again
 		CueEvents.Add(CID_StalledCombat, &coord); //add an event to let the front-end know what happened
+	} else if (CueEvents.HasOccurred(CID_SkeletonKeyBlocked)) {
+		if (!this->Commands.IsFrozen())
+			UndoCommand(CueEvents); //can't undo when move sequence is frozen (avoid infinite recursion)
+		CueEvents.Clear(); //don't show events from previous turn again
+		CueEvents.Add(CID_SkeletonKeyBlocked); //readd the event for front-end
 	}
 
 	//Now everything else is done, make any autosaves that have been queued
@@ -5404,8 +5410,13 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				--ps.yellowKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, YellowKey), true);
 			} else if (ps.skeletonKeys) {
-				--ps.skeletonKeys;
-				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
+					--ps.skeletonKeys;
+					CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				}
 			}
 			else
 				return false;
@@ -5416,8 +5427,13 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				--ps.greenKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, GreenKey), true);
 			} else if (ps.skeletonKeys) {
-				--ps.skeletonKeys;
-				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
+					--ps.skeletonKeys;
+					CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				}
 			}
 			else
 				return false;
@@ -5428,8 +5444,13 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				--ps.blueKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, BlueKey), true);
 			} else if (ps.skeletonKeys) {
-				--ps.skeletonKeys;
-				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
+					--ps.skeletonKeys;
+					CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				}
 			}
 			else
 				return false;
@@ -5442,8 +5463,13 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				incintValueWithBounds(ps.GOLD, -cost); //gold may go negative
 				CueEvents.Add(CID_EntityAffected, new CCombatEffect(this->pPlayer, CET_GOLD, -cost), true);
 			} else if (ps.skeletonKeys) {
-				--ps.skeletonKeys;
-				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
+					--ps.skeletonKeys;
+					CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, SkeletonKey), true);
+				}
 			}
 			else
 				return false;
@@ -5487,8 +5513,13 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			}
 			else if (ps.skeletonKeys)
 			{
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
 				--ps.skeletonKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY - (wY > 0 ? 1 : -1), SkeletonKey), true);
+				}
 			}
 			else
 				return false;
@@ -5501,8 +5532,13 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			}
 			else if (ps.skeletonKeys)
 			{
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
 				--ps.skeletonKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY - (wY > 0 ? 1 : -1), SkeletonKey), true);
+				}
 			}
 			else
 				return false;
@@ -5515,8 +5551,13 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			}
 			else if (ps.skeletonKeys)
 			{
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
 				--ps.skeletonKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY - (wY > 0 ? 1 : -1), SkeletonKey), true);
+				}
 			}
 			else
 				return false;
@@ -5530,8 +5571,13 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 				incintValueWithBounds(ps.GOLD, -cost); //gold may go negative
 				CueEvents.Add(CID_EntityAffected, new CCombatEffect(this->pPlayer, CET_GOLD, -cost), true);
 			} else if (ps.skeletonKeys) {
+				if (this->bSkeletonKeyGuard) {
+					CueEvents.Add(CID_SkeletonKeyBlocked);
+					return false;
+				} else {
 				--ps.skeletonKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY - (wY > 0 ? 1 : -1), SkeletonKey), true);
+				}
 			}
 			else
 				return false;

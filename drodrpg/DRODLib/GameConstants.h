@@ -128,6 +128,7 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_SCRIPT_ADD_COMMAND (COMMAND_COUNT+44)
 #define CMD_EXTRA_SCRIPT_CHAR_OPTIONS (COMMAND_COUNT+45)
 #define CMD_EXTRA_SHOW_MAP (COMMAND_COUNT+46)
+#define CMD_EXTRA_SKELETON_KEY_GUARD (COMMAND_COUNT+47)
 
 //Sword orientation.
 static const UINT NW = 0;
@@ -205,6 +206,7 @@ namespace InputCommands
 		DCMD_QuickSave,
 		DCMD_QuickLoad,
 		DCMD_ShowMap,
+		DCMD_SkeletonKeyGuard,
 
 		//Dialogs and screens
 		DCMD_SkipSpeech,
@@ -282,7 +284,7 @@ static inline bool bIsGameScreenCommand(const int command)
 {
 	return bIsGameCommand(command) ||
 		(command >= CMD_ADVANCE_CUTSCENE && command <= CMD_EXTRA_RELOAD_STYLE) ||
-		command == CMD_EXTRA_SHOW_MAP;
+		command == CMD_EXTRA_SHOW_MAP || command == CMD_EXTRA_SKELETON_KEY_GUARD;
 }
 
 static inline bool bIsEditorCommand(const int command)
