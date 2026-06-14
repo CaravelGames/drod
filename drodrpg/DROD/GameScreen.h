@@ -203,6 +203,7 @@ private:
 	void           StopAmbientSounds();
 	void           TakeStepTowardQuickExit();
 	void           ToggleBigMap();
+	void           ToggleSkeletonKeyGuard();
 	void           UndoMove();
 	void           UpdateEffectsFreeze();
 	void           UpdateScroll();
