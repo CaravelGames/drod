@@ -680,6 +680,12 @@ void CGameScreen::RedrawStats(
 		pLabel->RequestPaint();
 	}
 
+	if (this->pCurrentGame->bSkeletonKeyGuard) {
+		CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SKEY));
+		g_pTheDBM->BlitTileImagePart(TI_SMALL_CROSSES, pLabel->GetX() - 2, pLabel->GetY() - 18,
+			0, 0, 22, 22, pDestSurface);
+	}
+
 	//Draw tile image.
 	for (i=0; i<numMenuPics; ++i)
 	{
@@ -2747,6 +2753,7 @@ void CGameScreen::OnKeyDown(
 			this->pCurrentGame->bSkeletonKeyGuard = !this->pCurrentGame->bSkeletonKeyGuard;
 			g_pTheSound->PlaySoundEffect(this->pCurrentGame->bSkeletonKeyGuard ?
 				SEID_WISP : SEID_CHECKPOINT);
+			Paint();
 		break;
 
 		//Skip cutscene/clear playing speech.

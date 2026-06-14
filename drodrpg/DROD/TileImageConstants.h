@@ -2578,8 +2578,10 @@
 #define TI_WORLDMAP_LOCK 2378
 #define TI_WORLDMAP_IN_PROGRESS 2379
 #define TI_WORLDMAP_CLEAR 2380
+//*****************************************************************************
+#define TI_SMALL_CROSSES 2381
 
-static const UINT TI_COUNT = 2381;
+static const UINT TI_COUNT = 2382;
 
 static inline bool bIsBriarTI(const UINT ti)
 {
