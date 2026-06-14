@@ -2750,10 +2750,7 @@ void CGameScreen::OnKeyDown(
 		break;
 
 		case CMD_EXTRA_SKELETON_KEY_GUARD:
-			this->pCurrentGame->bSkeletonKeyGuard = !this->pCurrentGame->bSkeletonKeyGuard;
-			g_pTheSound->PlaySoundEffect(this->pCurrentGame->bSkeletonKeyGuard ?
-				SEID_WISP : SEID_CHECKPOINT);
-			Paint();
+			ToggleSkeletonKeyGuard();
 		break;
 
 		//Skip cutscene/clear playing speech.
@@ -3123,6 +3120,8 @@ void CGameScreen::OnMouseUp(
 					ClickOnEquipment(CMD_USE_ARMOR, Button.button == SDL_BUTTON_RIGHT);
 				else if (IsInRect(Button.x, Button.y, X_PIC[6], Y_PIC[6], X_PIC[6] + g_pTheDBM->CX_TILE, Y_PIC[6] + g_pTheDBM->CY_TILE))
 					ClickOnEquipment(CMD_USE_ACCESSORY, Button.button == SDL_BUTTON_RIGHT);
+				else if (IsInRect(Button.x, Button.y, 16, 352, 16 + 112, 400))
+					ToggleSkeletonKeyGuard();
 			}
 
 			//Texts describing stat labels on sidebar.
@@ -9047,6 +9046,16 @@ void CGameScreen::ToggleBigMap()
 		RedrawStats(this->pCurrentGame ? this->pCurrentGame->pCombat : NULL, false);
 
 	UpdateRect();
+}
+
+//*****************************************************************************
+void CGameScreen::ToggleSkeletonKeyGuard()
+{
+	ASSERT(this->pCurrentGame);
+	this->pCurrentGame->bSkeletonKeyGuard = !this->pCurrentGame->bSkeletonKeyGuard;
+	g_pTheSound->PlaySoundEffect(this->pCurrentGame->bSkeletonKeyGuard ?
+		SEID_WISP : SEID_CHECKPOINT);
+	Paint();
 }
 
 //*****************************************************************************
