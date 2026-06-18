@@ -522,6 +522,7 @@ private:
 	bool     SetRoomAtCoords(const UINT dwRoomX, const UINT dwRoomY);
 	void     SetRoomStartToPlayer();
 //	void     SwitchToCloneAt(const UINT wX, const UINT wY);
+	bool     SpendSkeletonKey(CCueEvents& CueEvents, const UINT wX, const UINT wY, PlayerStats& playerStats);
 	bool     TunnelMove(const int dx, const int dy);
 	void     UpdatePrevPlatformCoords();
 //	UINT     WriteCurrentRoomDemo(DEMO_REC_INFO &dri, const bool bHidden=false,
