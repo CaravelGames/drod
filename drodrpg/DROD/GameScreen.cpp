@@ -161,6 +161,10 @@ const UINT CX_SIDEBAR = 268; //width of active sidebar widget area
 const UINT CX_SPACE = 12;
 const UINT CY_SPACE = 12;
 
+//Position of cross graphic when skeleton key guard is active
+const UINT CX_SKEY_CROSS = 99;
+const UINT CY_SKEY_CROSS = 343;
+
 //UINT wMood = SONG_PUZZLE;
 int nDangerLevel = 0;	//for setting room mood
 
@@ -682,8 +686,7 @@ void CGameScreen::RedrawStats(
 
 	if (this->pCurrentGame->bSkeletonKeyGuard) {
 		CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SKEY));
-		g_pTheDBM->BlitTileImagePart(TI_SMALL_CROSSES, pLabel->GetX() - 2, pLabel->GetY() - 18,
-			0, 0, 22, 22, pDestSurface);
+		g_pTheDBM->BlitTileImage(TI_SMALL_CROSS, CX_SKEY_CROSS, CY_SKEY_CROSS, pDestSurface);
 	}
 
 	//Draw tile image.
