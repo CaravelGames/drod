@@ -40,9 +40,10 @@ To build, run `./ninjamaker -arch aarch64 -no-static` followed by `./build` in t
 
 ##### Mac builds
 
-Makefiles for Mac are included in Master/Darwin.
+The macOS build uses Apple Clang + Homebrew and is documented in *CompilingDrod_macOS.md*.
 
-To build a 64-bit binary, run "make custom" (etc.)
+In short: `cd Master/Darwin && ./build_macos.sh` produces a self-contained `DROD TSS.app`
+(add `--dmg` for a disk image). To build just the binary, run `make drod-custom` in `Master/Darwin`.
 
 ### Contributing
 

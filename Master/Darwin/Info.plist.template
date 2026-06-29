@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>%EXECUTABLE_NAME%</string>
 	<key>CFBundleGetInfoString</key>
-	<string>%VERSION% OS X, Copyright Caravel Games, 2014</string>
+	<string>%VERSION% macOS, Copyright Caravel Games, 2026</string>
 	<key>CFBundleIconFile</key>
 	<string>DROD</string>
 	<key>CFBundleInfoDictionaryVersion</key>

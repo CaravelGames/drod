@@ -899,13 +899,20 @@ const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimit
 // Explodes a string into pieces
 // Adapted from: https://stackoverflow.com/a/12967010
 {
+	// Split manually rather than via std::basic_istringstream<WCHAR>/std::getline:
+	// libc++ (macOS) does not provide the std::ctype<char16_t> facet those require.
 	std::vector<WSTRING> result;
-	std::basic_istringstream<WCHAR> iss(source);
-
-	for (WSTRING token; std::getline(iss, token, delimiter); )
+	for (WSTRING::size_type start = 0; start <= source.size(); )
 	{
+		const WSTRING::size_type pos = source.find(delimiter, start);
+		const WSTRING token = (pos == WSTRING::npos)
+			? source.substr(start)
+			: source.substr(start, pos - start);
 		if (!token.empty())
 			result.push_back(token);
+		if (pos == WSTRING::npos)
+			break;
+		start = pos + 1;
 	}
 
 	return result;
@@ -915,13 +922,19 @@ const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimit
 const std::set<WSTRING> WCSExplodeSet(WSTRING const& source, WCHAR const delimiter)
 // Explodes a string into pieces, and put them into a set
 {
+	// See WCSExplode: avoid char16_t streams, unsupported by libc++ (macOS).
 	std::set<WSTRING> result;
-	std::basic_istringstream<WCHAR> iss(source);
-
-	for (WSTRING token; std::getline(iss, token, delimiter); )
+	for (WSTRING::size_type start = 0; start <= source.size(); )
 	{
+		const WSTRING::size_type pos = source.find(delimiter, start);
+		const WSTRING token = (pos == WSTRING::npos)
+			? source.substr(start)
+			: source.substr(start, pos - start);
 		if (!token.empty())
 			result.insert(token);
+		if (pos == WSTRING::npos)
+			break;
+		start = pos + 1;
 	}
 
 	return result;
