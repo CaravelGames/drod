@@ -479,7 +479,11 @@ continue executing script commands from a different location in the script.</p>
 	  <a href="#eachdefend"><b>Each Defend</b></a>
 	  and <a href="#eachuse"><b>Each Use</b></a>
       commands).  Also, labels may be used to simply comment in normal language
-      on what the following script commands do.</li>
+      on what the following script commands do.<br />
+      Labels can also be used as comments if you prefix them with a double
+      slash. Eg: "// This is a comment" will display differently in the command
+      list and will not appear in any command that allows jumping to a label.
+    </li>
   <li><a name="goto"><b>Go to</b></a> - Select a label to continue executing
       commands from.  Hint: Use Goto to make a loop in the script that repeats a
       sequence of commands over and over. Use a <a href="#wait"><b>Wait 0</b></a>
