@@ -38,17 +38,33 @@ CXXFLAGS_custom  = -Wno-unused -pipe -O2 -fomit-frame-pointer -ffast-math
 CXXFLAGS_release = -Wno-unused -pipe -O2 -fomit-frame-pointer -ffast-math
 CXXFLAGS_debug   = -Wno-unused -pipe -ggdb -D_DEBUG -ffast-math
 
-# Steam build: optimized + STEAMBUILD (TSS app), with the Steamworks SDK headers.
+# Steam build: optimized + STEAMBUILD, with the Steamworks SDK headers.
 # STEAM_SDK must point at an unpacked Steamworks SDK (so $(STEAM_SDK)/public/steam
 # contains steam_api.h); pass it on the make command line or via build_macos.sh.
+# STEAM_TSS=1 selects the TSS app (adds STEAMBUILD_TSS_APP -> drod-tss5_0.dat);
+# leaving it unset builds GatEB (default drod5_0.dat).
 STEAM_SDK ?=
-CXXFLAGS_steam = $(CXXFLAGS_custom) -DSTEAMBUILD -DSTEAMBUILD_TSS_APP -I$(STEAM_SDK)/public/steam
+STEAM_TSS ?=
+STEAM_DEFINES = -DSTEAMBUILD $(if $(STEAM_TSS),-DSTEAMBUILD_TSS_APP)
+CXXFLAGS_steam = $(CXXFLAGS_custom) $(STEAM_DEFINES) -I$(STEAM_SDK)/public/steam
 
 # Linker flags always applied (architecture + deployment target).
 LDFLAGS = $(ARCH_FLAGS) -mmacosx-version-min=$(MACOSX_VERSION_MIN)
 
+# Standalone game selection. The TSS engine builds several older games from the
+# same source, each gated behind a compile-time define (see wszUniqueResFile /
+# GAMETITLE in DROD/Main.cpp and GetOfficialHoldStatus in DRODLib/DbHolds.cpp).
+# Pass GAME=<kdd|jtrh|tcb|gateb> on the make command line (or via build_macos.sh
+# --game) to build that standalone game; leaving it unset builds plain TSS.
+GAME ?=
+GAME_DEFINE = \
+	$(if $(filter kdd,$(GAME)),-DKDD_STANDALONE) \
+	$(if $(filter jtrh,$(GAME)),-DJTRH_STANDALONE) \
+	$(if $(filter tcb,$(GAME)),-DTCB_STANDALONE) \
+	$(if $(filter gateb,$(GAME)),-DGATEB_STANDALONE)
+
 # Build variant selection.
-VARIANT_FLAGS = -DUSE_SDL_MIXER -DCARAVELBUILD
+VARIANT_FLAGS = -DUSE_SDL_MIXER -DCARAVELBUILD $(GAME_DEFINE)
 
 ###########################################
 ### <2> Library locations               ###

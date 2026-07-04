@@ -140,8 +140,6 @@ Master/Darwin/release/
 Master/Darwin/debug/
 Master/Darwin/steam/
 Master/Darwin/deps/
-# Local Steam AppID for out-of-Steam dev testing (never shipped/committed)
-Master/Darwin/steam_appid.txt
 # Local game data (.dat) for dev builds — copyrighted, never committed
 Master/Darwin/localdata/
 .DS_Store
