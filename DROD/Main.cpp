@@ -294,6 +294,12 @@ int main(int argc, char *argv[])
 #ifdef STEAMBUILD_TSS_APP
 	const WCHAR wszDRODTSS[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We(0) };
 	gameName = wszDRODTSS;
+#elif defined(__APPLE__) && defined(STEAMBUILD)
+	//The macOS Steam GatEB build uses a dedicated folder so it doesn't collide
+	//with the non-Steam TSS standalone build (both otherwise use "drod-5_0").
+	const WCHAR wszDRODGatEBSteam[] = { We('d'),We('r'),We('o'),We('d'),We('-'),
+		We('g'),We('a'),We('t'),We('e'),We('b'),We('-'),We('s'),We('t'),We('e'),We('a'),We('m'),We(0) };
+	gameName = wszDRODGatEBSteam;
 #elif defined(KDD_STANDALONE)
 	const WCHAR wszDRODKDD[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('k'),We('d'),We('d'),We(0) };
 	gameName = wszDRODKDD;
