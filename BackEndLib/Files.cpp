@@ -393,14 +393,14 @@ WSTRING CFiles::GetUserspacePath(bool bUserSpecificDir)
 
 #endif
 
-const WSTRING CFiles::GetGameConfPath() {
+const WSTRING CFiles::GetGameConfPathForName(const WCHAR *pwszGameName) {
 #ifdef USE_XDG_BASEDIR_SPEC
 	WSTRING path = CFiles::wstrHomeConfPath + wszSlash
 #else
 	WSTRING path = CFiles::wstrHomePath + wszSlash
 		+ CFiles::wszHomeConfDir + wszSlash
 #endif
-		+ CFiles::wGameName + wszHyphen	+ CFiles::wGameVer;
+		+ pwszGameName + wszHyphen	+ CFiles::wGameVer;
 	if (CFiles::bIsDemo)
 		path += CFiles::wszDemo;
 
@@ -409,6 +409,94 @@ const WSTRING CFiles::GetGameConfPath() {
 
 	return path;
 }
+
+const WSTRING CFiles::GetGameConfPath() {
+	return GetGameConfPathForName(CFiles::wGameName.c_str());
+}
+
+#if defined(__APPLE__) && defined(STEAMBUILD) && !defined(STEAMBUILD_TSS_APP)
+//******************************************************************************
+bool CFiles::ReadDataPathResPath(
+//Reads the resource-path field from the DataPath.txt ("<datPath>;<resPath>;") in
+//the given folder, without touching any CFiles members (which must remain empty
+//until GetDatPathFromDataPathDotTxt runs).
+//
+//Params:
+	const WCHAR *pwszFolder,  //(in)  Folder that may contain a DataPath.txt.
+	WSTRING& wszResPath)      //(out) The parsed resource path.
+//
+//Returns: true if the file was opened and parsed, false otherwise.
+{
+	WSTRING wstrPath = pwszFolder;
+	wstrPath += wszSlash;
+	wstrPath += wszDataPathDotTxt;
+
+	FILE *pFile = Open(wstrPath.c_str(), "r");
+	if (!pFile)
+		return false;
+
+	//On macOS DataPath.txt is plain UTF-8 (HAS_UNICODE is undefined here).
+	char buffer[2 * (MAX_PATH + 1)];
+	const bool bRead = (fgets(buffer, 2 * (MAX_PATH + 1), pFile) != NULL);
+	fclose(pFile);
+	if (!bRead)
+		return false;
+
+	UINT i = 0;
+	while (i < MAX_PATH && buffer[i] != ';')
+		++i;
+	if (buffer[i] != ';')
+		return false;
+
+	UINT j = i + 1;
+	while (buffer[j] && buffer[j] != ';')
+		++j;
+	buffer[j] = 0;
+
+	CPathToUnicode(buffer + i + 1, wszResPath);
+	return true;
+}
+
+//******************************************************************************
+void CFiles::MigrateGatEBSteamDataFolder()
+//One-time migration for the macOS Steam GatEB build.  Earlier builds stored player
+//data in "drod-5_0", which is shared with the non-Steam TSS standalone build.  If
+//the new "drod-gateb-steam-5_0" folder doesn't exist yet but "drod-5_0" does and
+//holds Steam GatEB data (its DataPath.txt resource path points into the "Gunthro"
+//Steam install), rename it so no progress is lost.  TSS data is left untouched.
+{
+	const WSTRING newPath = GetGameConfPath();
+	if (IsValidPath(newPath.c_str()))
+	    //already migrated, or a fresh folder was already created
+		return;
+
+	static const WCHAR wszDROD[] = { We('d'),We('r'),We('o'),We('d'),We(0) };
+	const WSTRING oldPath = GetGameConfPathForName(wszDROD); //drod-5_0
+	if (!IsValidPath(oldPath.c_str()))
+	    //nothing to migrate (fresh install)
+		return;
+
+	WSTRING wszResPath;
+	if (!ReadDataPathResPath(oldPath.c_str(), wszResPath))
+	    //can't tell what kind of data this is. leave it alone
+		return;
+
+	static const WCHAR wszGunthro[] =
+		{ We('g'),We('u'),We('n'),We('t'),We('h'),We('r'),We('o'),We(0) };
+	if (WCSToLower(wszResPath).find(wszGunthro) == WSTRING::npos)
+	    //TSS standalone data, don't do anything. a fresh folder is created below
+		return;
+
+	if (RenameFile(oldPath.c_str(), newPath.c_str())) {
+		//DataPath.txt inside the renamed folder still records the old data path;
+		//rewrite it so the game finds its data at the new location.
+		WSTRING wstrDatPathTxt = newPath;
+		wstrDatPathTxt += wszSlash;
+		wstrDatPathTxt += wszDataPathDotTxt;
+		WriteDataPathTxt(wstrDatPathTxt.c_str(), newPath.c_str(), wszResPath.c_str());
+	}
+}
+#endif
 
 //******************************************************************************
 void CFiles::TryToFindDataPath()
@@ -1103,6 +1191,10 @@ void CFiles::SetupHomePath()
 #endif
 
 	if (!CFiles::wstrHomePath.empty()) {
+#if defined(__APPLE__) && defined(STEAMBUILD) && !defined(STEAMBUILD_TSS_APP)
+		//Migrate a pre-existing shared "drod-5_0" folder before it's (re)created.
+		MigrateGatEBSteamDataFolder();
+#endif
 		//Need to create:
 		//<player data path>
 		//<player data path>/Data

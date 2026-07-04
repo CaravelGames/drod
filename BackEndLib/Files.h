@@ -168,6 +168,7 @@ public:
 	static bool          GetDriveList(vector<WSTRING>& drives);
 	static const WCHAR * GetHomePath() {return wstrHomePath.c_str();}
 	static const WSTRING GetGameConfPath();
+	static const WSTRING GetGameConfPathForName(const WCHAR *pwszGameName);
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 	static bool          FileCopy(const WCHAR *src, const WCHAR *dst, mode_t mode);
 	static bool          DirectoryCopy(const WSTRING& srcdir, const WSTRING& dstdir, const WCHAR *extmask = 0, bool bOverwrite = false, bool bUpdate = false);
@@ -195,6 +196,10 @@ private:
 	bool                 ParseDataFileCPath(FILE* pFile);
 
 	static bool          FindDataPathDotTxt(WSTRING& wszPath);
+#if defined(__APPLE__) && defined(STEAMBUILD) && !defined(STEAMBUILD_TSS_APP)
+	static void          MigrateGatEBSteamDataFolder();
+	static bool          ReadDataPathResPath(const WCHAR *pwszFolder, WSTRING& wszResPath);
+#endif
 #if defined(WIN32)
 	static bool          FindPossibleDatPath(const WCHAR *wszStartPath, WSTRING& wszPossibleDatPath);
 	static bool          FindPossibleResPath(const WCHAR *wszStartPath, WSTRING& wszPossibleResPath);
