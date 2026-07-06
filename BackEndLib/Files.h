@@ -89,7 +89,8 @@ public:
 	CFiles(const WCHAR *wszSetAppPath,
 				const WCHAR *wszSetGameName, const WCHAR *wszSetGameVer,
 				const bool bIsDemo = false, const bool confirm_resource_file = true,
-				const bool bIsRunningTests = false);
+				const bool bIsRunningTests = false,
+				const WCHAR *wszSetGameConfName = NULL);
 	CFiles(); //may call this one after the class has been inited
 	~CFiles();
 
@@ -178,6 +179,9 @@ public:
 #endif
 
 	static WSTRING wCompanyName, wGameName, wGameVer, wUniqueResFile;
+	//Save-folder name; defaults to wGameName but can differ, so a build can use its
+	//own folder without changing the .dat/.ini/log names wGameName also determines.
+	static WSTRING wGameConfName;
 	static vector<string> datFiles, playerDataSubDirs;
 
 	static bool bad_data_path_file;
@@ -206,7 +210,8 @@ private:
 #endif
 	void                 InitClass(const WCHAR *pszSetAppPath,
 			const WCHAR *wszSetGameName, const WCHAR *wszSetGameVer, const bool bIsDemo,
-			const bool confirm_resource_file, const bool bIsRunningTests);
+			const bool confirm_resource_file, const bool bIsRunningTests,
+			const WCHAR *wszSetGameConfName = NULL);
 	static bool          InitINI();
 	static void          SetupHomePath();
 	static void          SetupHomePathSubDirs();
