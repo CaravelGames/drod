@@ -20,5 +20,7 @@
 	<string>%VERSION%</string>
 	<key>CSResourceFileMapped</key>
 	<true/>
+	<key>LSMinimumSystemVersion</key>
+	<string>%MIN_OS%</string>
 </dict>
 </plist>

@@ -68,7 +68,7 @@ METAKIT_DIR="$REPO_DIR/metakit"
 APP_NAME=""          # resolved from the Steam variant (or "DROD TSS") unless --name given
 NAME_SET=0
 APP_VERSION="5.2.1"
-DEPLOY="15.0"
+DEPLOY="11.0"
 BUILD_TYPE="custom"
 OUTPUT_DIR="$DARWIN_DIR/custom/bin"
 ASSETS_DIR=""
@@ -286,7 +286,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Frameworks" "$RES_DATA"
 
 # 4a. Executable, Info.plist, icon
 cp "$BUILT_BIN" "$APP/Contents/MacOS/drod"
-sed "s/%EXECUTABLE_NAME%/drod/; s/%VERSION%/$APP_VERSION/" \
+sed "s/%EXECUTABLE_NAME%/drod/; s/%VERSION%/$APP_VERSION/; s/%MIN_OS%/$DEPLOY/" \
 	"$DARWIN_DIR/Info.plist.template" > "$APP/Contents/Info.plist"
 # Icon: the app's own .icns, falling back to TSS's if a new game's art isn't in
 # place yet (so a data-only test build still completes).
@@ -369,9 +369,13 @@ dylibbundler -of -b \
 # 6. Ad-hoc code sign (must be last; arm64 binaries must be signed to run)
 ###############################################################################
 log "Ad-hoc code signing..."
+# Sign inside-out (nested code first, bundle last), not with --deep: --deep leaves
+# an invalid seal over libsteam_api.dylib, which Valve ships hardened-runtime with
+# a designated requirement. Verify with --strict to catch a bad seal.
 codesign --force -s - "$APP/Contents/Frameworks/"*.dylib
-codesign --force --deep -s - "$APP"
-codesign --verify --deep "$APP" && log "Code signature OK"
+codesign --force -s - "$APP/Contents/MacOS/drod"
+codesign --force -s - "$APP"
+codesign --verify --deep --strict "$APP" && log "Code signature OK"
 
 # 6a. Sanity: no build-machine paths leaked into the bundle
 if otool -L "$APP/Contents/MacOS/drod" "$APP/Contents/Frameworks/"*.dylib \

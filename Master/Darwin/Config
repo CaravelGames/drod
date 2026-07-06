@@ -25,7 +25,7 @@ endif
 
 # Deployment target. The third-party dependencies are built from source for this
 # same target (see build_deps.sh), so the .app genuinely runs on macOS >= this.
-MACOSX_VERSION_MIN = 15.0
+MACOSX_VERSION_MIN = 11.0
 
 # Flags always applied. Architecture, deployment target and the C++ standard go
 # here (not in CXXFLAGS) so they survive the make recursion. -std=c++11 makes

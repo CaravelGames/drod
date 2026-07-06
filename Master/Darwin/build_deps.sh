@@ -18,7 +18,7 @@ REPO_DIR="$(cd "$DARWIN_DIR/../.." && pwd)"
 METAKIT_DIR="$REPO_DIR/metakit"
 PREFIX="$DARWIN_DIR/deps"
 SRC="$PREFIX/src"
-DEPLOY="${MACOSX_DEPLOYMENT_TARGET:-15.0}"
+DEPLOY="${MACOSX_DEPLOYMENT_TARGET:-11.0}"
 ARCHS="x86_64;arm64"
 JOBS="$(sysctl -n hw.ncpu)"
 
@@ -236,7 +236,11 @@ dep_metakit() {
 		( cd "$bd" && CC=clang CXX=clang++ \
 			CFLAGS="-arch $a -mmacosx-version-min=$DEPLOY" \
 			CXXFLAGS="-arch $a -std=c++11 -mmacosx-version-min=$DEPLOY -fno-rtti" \
-			../unix/configure $host ac_cv_sizeof_long=8 && make -j"$JOBS" libmk4.a && ranlib libmk4.a )
+			../unix/configure $host ac_cv_sizeof_long=8 \
+			&& make -j"$JOBS" AR=ar RANLIB=ranlib libmk4.a )
+			# metakit's Makefile references $(RANLIB) but never defines it (and make
+			# has no built-in default), so its "$(RANLIB) $@" archive step runs a bare
+			# "libmk4.a" and fails -- pass AR/RANLIB explicitly to index the archive.
 	done
 	mkdir -p "$PREFIX/lib"
 	lipo -create "$METAKIT_DIR/build-uni-x86_64/libmk4.a" "$METAKIT_DIR/build-uni-arm64/libmk4.a" \
