@@ -84,6 +84,7 @@ WSTRING CFiles::wszDatPath;
 WSTRING CFiles::wszResPath;
 WSTRING CFiles::wCompanyName;
 WSTRING CFiles::wGameName;
+WSTRING CFiles::wGameConfName;
 WSTRING CFiles::wGameVer;
 WSTRING CFiles::wUniqueResFile;
 UINT CFiles::dwRefCount = 0;
@@ -173,7 +174,8 @@ CFiles::CFiles(
 	const WCHAR *wszSetGameVer,   //(in) game major version -- for finding resource files or paths
 	const bool bIsDemo,           //(in) whether we should be looking for files for a demo version or not [default=false]
 	const bool confirm_resource_file,
-	const bool bIsRunningTests)   //(in) set to true by test runner to ensure it uses its own dat files
+	const bool bIsRunningTests,   //(in) set to true by test runner to ensure it uses its own dat files
+	const WCHAR *wszSetGameConfName) //(in) save folder name; NULL uses wszSetGameName
 {
 	ASSERT(this->dwRefCount == 0);
 
@@ -181,7 +183,7 @@ CFiles::CFiles(
 	ASSERT(wszSetGameName != NULL);
 	ASSERT(wszSetGameVer != NULL);
 
-	InitClass(wszSetAppPath, wszSetGameName, wszSetGameVer, bIsDemo, confirm_resource_file, bIsRunningTests);
+	InitClass(wszSetAppPath, wszSetGameName, wszSetGameVer, bIsDemo, confirm_resource_file, bIsRunningTests, wszSetGameConfName);
 
 	++this->dwRefCount;
 }
@@ -411,7 +413,7 @@ const WSTRING CFiles::GetGameConfPathForName(const WCHAR *pwszGameName) {
 }
 
 const WSTRING CFiles::GetGameConfPath() {
-	return GetGameConfPathForName(CFiles::wGameName.c_str());
+	return GetGameConfPathForName(CFiles::wGameConfName.c_str());
 }
 
 #if defined(__APPLE__) && defined(STEAMBUILD) && !defined(STEAMBUILD_TSS_APP)
@@ -1070,7 +1072,8 @@ void CFiles::InitClass(
 	const WCHAR *wszSetGameVer,      //(in)
 	const bool bIsDemo,              //(in)
 	const bool confirm_resource_file,
-	const bool bIsRunningTests)
+	const bool bIsRunningTests,
+	const WCHAR *wszSetGameConfName) //(in) config subfolder name; NULL uses wszSetGameName
 {
 	ASSERT(wszSetAppPath);
 	ASSERT(wszSetGameName);
@@ -1088,6 +1091,8 @@ void CFiles::InitClass(
 	//Get game name and version.
 	ASSERT(CFiles::wGameName.empty());
 	CFiles::wGameName = wszSetGameName;
+	ASSERT(CFiles::wGameConfName.empty());
+	CFiles::wGameConfName = wszSetGameConfName ? wszSetGameConfName : wszSetGameName;
 	ASSERT(this->wGameVer.empty());
 	CFiles::wGameVer = wszSetGameVer;
 
@@ -1362,6 +1367,7 @@ void CFiles::DeinitClass()
 	CFiles::wszResPath.resize(0);
 
 	CFiles::wGameName.resize(0);
+	CFiles::wGameConfName.resize(0);
 	CFiles::wGameVer.resize(0);
 }
 

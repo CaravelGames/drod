@@ -291,15 +291,17 @@ int main(int argc, char *argv[])
 #endif
 
 	const WCHAR* gameName = wszDROD;
+	const WCHAR* gameConfName = NULL; //save folder; NULL means same as gameName
 #ifdef STEAMBUILD_TSS_APP
 	const WCHAR wszDRODTSS[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We(0) };
 	gameName = wszDRODTSS;
 #elif defined(__APPLE__) && defined(STEAMBUILD)
-	//The macOS Steam GatEB build uses a dedicated folder so it doesn't collide
-	//with the non-Steam TSS standalone build (both otherwise use "drod-5_0").
+	//Keep gameName "drod" (so it still loads drod5_0.dat) but give the macOS Steam
+	//GatEB build its own save folder, so it doesn't collide with the non-Steam TSS
+	//standalone build (both otherwise use "drod-5_0").
 	const WCHAR wszDRODGatEBSteam[] = { We('d'),We('r'),We('o'),We('d'),We('-'),
 		We('g'),We('a'),We('t'),We('e'),We('b'),We('-'),We('s'),We('t'),We('e'),We('a'),We('m'),We(0) };
-	gameName = wszDRODGatEBSteam;
+	gameConfName = wszDRODGatEBSteam;
 #elif defined(KDD_STANDALONE)
 	const WCHAR wszDRODKDD[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('k'),We('d'),We('d'),We(0) };
 	gameName = wszDRODKDD;
@@ -313,7 +315,7 @@ int main(int argc, char *argv[])
 	const WCHAR wszDRODGatEB[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('g'),We('a'),We('t'),We('e'),We('b'),We(0) };
 	gameName = wszDRODGatEB;
 #endif
-	m_pFiles = new CFiles(wstrPath.c_str(), gameName, wszDROD_VER, bIsDemo);
+	m_pFiles = new CFiles(wstrPath.c_str(), gameName, wszDROD_VER, bIsDemo, true, false, gameConfName);
 	if (CFiles::bad_data_path_file) {
 		DisplayInitErrorMessage(MID_DataPathDotTextFileIsInvalid);
 	}
