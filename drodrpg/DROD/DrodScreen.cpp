@@ -810,11 +810,17 @@ WSTRING CDrodScreen::getStatsText(
 			{
 				if (pGame && pGame->pHold)
 				{
-					HoldCharacter *pChar = pGame->pHold->GetCharacter(st.sword);
-					if (pChar)
-					{
-						wstr += pChar->charNameText.c_str();
+					CCharacter* pChar = pGame->getCustomEquipment(ScriptFlag::Weapon);
+					if (pChar && pChar->GetCustomName() != DefaultCustomCharacterName) {
+						wstr += pChar->GetCustomName();
 						bCustomDesc = true;
+					} else {
+						HoldCharacter* pHoldChar = pGame->pHold->GetCharacter(st.sword);
+						if (pChar)
+						{
+							wstr += pHoldChar->charNameText.c_str();
+							bCustomDesc = true;
+						}
 					}
 				}
 			}
@@ -834,11 +840,17 @@ WSTRING CDrodScreen::getStatsText(
 			{
 				if (pGame && pGame->pHold)
 				{
-					HoldCharacter *pChar = pGame->pHold->GetCharacter(st.shield);
-					if (pChar)
-					{
-						wstr += pChar->charNameText.c_str();
+					CCharacter* pChar = pGame->getCustomEquipment(ScriptFlag::Armor);
+					if (pChar && pChar->GetCustomName() != DefaultCustomCharacterName) {
+						wstr += pChar->GetCustomName();
 						bCustomDesc = true;
+					} else {
+						HoldCharacter* pHoldChar = pGame->pHold->GetCharacter(st.shield);
+						if (pChar)
+						{
+							wstr += pHoldChar->charNameText.c_str();
+							bCustomDesc = true;
+						}
 					}
 				}
 			}
@@ -858,11 +870,17 @@ WSTRING CDrodScreen::getStatsText(
 			{
 				if (pGame && pGame->pHold)
 				{
-					HoldCharacter *pChar = pGame->pHold->GetCharacter(st.accessory);
-					if (pChar)
-					{
-						wstr += pChar->charNameText.c_str();
+					CCharacter* pChar = pGame->getCustomEquipment(ScriptFlag::Accessory);
+					if (pChar && pChar->GetCustomName() != DefaultCustomCharacterName) {
+						wstr += pChar->GetCustomName();
 						bCustomDesc = true;
+					} else {
+						HoldCharacter* pHoldChar = pGame->pHold->GetCharacter(st.accessory);
+						if (pChar)
+						{
+							wstr += pHoldChar->charNameText.c_str();
+							bCustomDesc = true;
+						}
 					}
 				}
 			}
