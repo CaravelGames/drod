@@ -87,6 +87,7 @@ CRestoreScreen::CRestoreScreen()
 	, pSaveListBoxWidget(NULL)
 	, pScorepointsDialog(NULL)
 	, pScorepointsListBox(NULL)
+	, pScorepointsCountLabel(NULL)
 //Constructor.
 {
 	SetKeyRepeat(66);
@@ -286,11 +287,11 @@ CRestoreScreen::CRestoreScreen()
 	AddWidget(pButton);
 
 	const UINT CX_SCOREPOINTS_DIALOG = 510;
-	const UINT CY_SCOREPOINTS_DIALOG = 510;
+	const UINT CY_SCOREPOINTS_DIALOG = 500;
 
 	const int CX_SCOREPOINTS_OKAY = 100;
 	static const UINT CY_SCOREPOINTS_OKAY = CY_STANDARD_BUTTON;
-	static const int X_SCOREPOINTS_OKAY = (CX_SCOREPOINTS_DIALOG - CX_SCOREPOINTS_OKAY) / 2;
+	static const int X_SCOREPOINTS_OKAY = CX_SCOREPOINTS_DIALOG - CX_SCOREPOINTS_OKAY - CX_SPACE;
 	static const int Y_SCOREPOINTS_OKAY = CY_SCOREPOINTS_DIALOG - CY_SCOREPOINTS_OKAY - CY_SPACE - 5;
 
 	this->pScorepointsDialog = new CDialogWidget(0L, 0, 0, CX_SCOREPOINTS_DIALOG, CY_SCOREPOINTS_DIALOG);
@@ -323,6 +324,12 @@ CRestoreScreen::CRestoreScreen()
 	this->pScorepointsListBox = new CListBoxWidget(TAG_SCOREPOINTS_LIST, CX_SPACE, CY_SPACE,
 		CX_SCOREPOINTS_FRAME - 2 * CX_SPACE, CY_SCOREPOINTS_FRAME - 2 * CY_SPACE);
 	pFrame->AddWidget(this->pScorepointsListBox);
+
+	this->pScorepointsCountLabel = new CLabelWidget(0, CX_SPACE, Y_SCOREPOINTS_OKAY,
+		CX_SCOREPOINTS_DIALOG - 2 * CX_SPACE, CY_SCOREPOINTS_TITLE,
+		FONTLIB::F_Message, L"(0/0)");
+	this->pScorepointsCountLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	this->pScorepointsDialog->AddWidget(this->pScorepointsCountLabel);
 }
 
 //*****************************************************************************
@@ -600,7 +607,7 @@ void CRestoreScreen::DisplayScorepointsDialog()
 {
 	if (this->pScorepointsListBox->IsEmpty()) {
 		SetCursor(CUR_Wait);
-		PopulateScorepoints(this->pScorepointsListBox);
+		PopulateScorepoints(this->pScorepointsListBox, this->pScorepointsCountLabel);
 		SetCursor();
 	}
 
@@ -992,7 +999,8 @@ WSTRING obscureScorepointName(const WSTRING& name)
 	return obscured;
 }
 
-void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
+void CRestoreScreen::PopulateScorepoints(
+	CListBoxWidget* pListBoxWidget, CLabelWidget* pLabelWidget)
 {
 	//Complete scanning any remaining rooms for scorepoints.
 	for (CIDSet::const_iterator roomIt = this->scorepointScanRoomIDs.begin();
@@ -1004,6 +1012,9 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 
 	if (this->scorepointVarMap.empty()) {
 		pListBoxWidget->AddItem(0, g_pTheDB->GetMessageText(MID_None), true);
+		pLabelWidget->Hide();
+	} else {
+		pLabelWidget->Show();
 	}
 
 	CDb db;
@@ -1021,6 +1032,7 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 #endif
 	delete pPlayer;
 
+	int gainedScores = 0;
 	for (CDbHolds::VARCOORDMAP::const_iterator vars = this->scorepointVarMap.begin();
 		vars != this->scorepointVarMap.end(); ++vars)
 	{
@@ -1042,11 +1054,20 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 				scorepointName += wszSpace;
 				scorepointName += to_WSTRING(pHighScore->score);
 				delete pHighScore;
+				++gainedScores;
 			}
 
 			pListBoxWidget->AddItem(0, scorepointName.c_str(), !hasScore);
 		}
 	}
+
+	// Count of scorepoints
+	WSTRING countString = wszLeftParen;
+	countString += to_WSTRING(gainedScores);
+	countString += wszForwardSlash;
+	countString += to_WSTRING(this->scorepointVarMap.size());
+	countString += wszRightParen;
+	pLabelWidget->SetText(countString.c_str());
 }
 
 //*****************************************************************************
