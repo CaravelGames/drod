@@ -58,7 +58,7 @@ private:
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	virtual void   Paint(bool bUpdateRect=true);
 	void     PopulateListBoxFromSavedGames();
-	void     PopulateScorepoints(CListBoxWidget* pListBoxWidget);
+	void     PopulateScorepoints(CListBoxWidget* pListBoxWidget, CLabelWidget* pLabelWidget);
 	void     RenameSaveGame(const UINT saveID);
 	void     RestoreGame();
 	bool     SetWidgets();
@@ -85,6 +85,7 @@ private:
 	CListBoxWidget *pSaveListBoxWidget;
 	CDialogWidget* pScorepointsDialog;
 	CListBoxWidget* pScorepointsListBox;
+	CLabelWidget* pScorepointsCountLabel;
 
 	//optimization for compiling challenges and completion
 	CIDSet scorepointScanRoomIDs;
