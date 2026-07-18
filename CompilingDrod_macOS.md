@@ -175,3 +175,35 @@ apart from the Steam TSS data in `localdata/TSS/` (`drod-tss5_0.dat`). It is the
 same binary as a full standalone TSS, so it shares the `custom/` build objects — no
 recompile when switching between them. TSS-standalone only (not with `--game` /
 `--steam`).
+
+## DROD RPG
+
+DROD RPG is a separate game (`drodrpg/`) with its own copy of this modern build
+system in **`drodrpg/Master/Darwin`**. Build it exactly the same way:
+
+```
+cd drodrpg/Master/Darwin
+./build_macos.sh                    # -> "DROD RPG 2.app" under custom/bin/
+./build_macos.sh --steam --steam-appid   # Steam build (AppID 3661610)
+```
+
+`make drod-custom` / `make drod-release` / `make drod-steam` build just the binary.
+`--universal`, `--dmg`, `--build-type`, `--output` and `--name` behave as above.
+
+Notes specific to DROD RPG:
+
+- **Shared code.** DROD RPG uses the repo-root `BackEndLib` and `FrontEndLib`
+  (only `DRODLib`, `CaravelNet`, `DROD`, `DRODUtil` live under `drodrpg/`). The
+  Makefile sources those two modules from the repo root automatically.
+- **Shared dependencies.** It reuses the main game's from-source libraries in
+  `Master/Darwin/deps` and the repo-root `metakit` submodule — the dep sets are
+  identical, so they are built once by `Master/Darwin/build_deps.sh` (invoked
+  automatically). Build the main game's deps first, or just run RPG's
+  `build_macos.sh` without `--skip-deps` and it bootstraps them.
+- **Game data.** Same three-source split as the main game (see *Game assets*
+  above). The data file is `drodrpg2_0.dat` — the real build (tilesets,
+  music and sounds baked in) is not open-source; drop it into
+  `drodrpg/Master/Darwin/localdata/` (gitignored). The loose Fonts + UI Bitmaps
+  come from the private **`drodrpgData`** repo (auto-detected as a sibling, or
+  `--assets /path/to/drodrpgData`); `Help/` and `Licenses/` come from this repo.
+  It is a single game, so there is no `--game` / variant selection.
