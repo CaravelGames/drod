@@ -1138,9 +1138,10 @@ void CDrodScreen::EditGlobalVars(
 				wstrValue = pGame->GetArrayVarAsString(itemID);
 			} else if (vType == UVT_int) {
 				int iVarValue = stats.GetVar(varName, (int)0);
-				std::basic_stringstream<WCHAR_t> stream;
-				stream << iVarValue;
-				wstrValue = stream.str();
+				// libc++ (macOS) has no std::ctype<char16_t>, so a
+				// basic_stringstream<WCHAR_t> won't compile; use _itoW.
+				WCHAR wszIBuf[16];
+				wstrValue = _itoW(iVarValue, wszIBuf, 10);
 			}
 			else {
 				wstrValue = stats.GetVar(varName, WS("0"));
