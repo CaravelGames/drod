@@ -669,3 +669,7 @@ Open Map
 [MID_Command_ToggleSkeletonGuard]
 [eng]
 Skeleton Key Guard
+
+[MID_Command_ShowInitialRoom]
+[eng]
+Show Initial Room

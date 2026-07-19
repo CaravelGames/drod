@@ -1353,6 +1353,7 @@ enum MID_CONSTANT {
   MID_Command_Script_CharacterOptions = 2162,
   MID_Command_ShowMap = 2163,
   MID_Command_ToggleSkeletonGuard = 2186,
+  MID_Command_ShowInitialRoom = 2188,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

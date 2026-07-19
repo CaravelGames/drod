@@ -355,6 +355,7 @@ public:
 	void     QuickSave();
 	void     RemoveClearedImageOverlays(const int clearLayers);
 	void     RestartRoom(CCueEvents &CueEvents);
+	void     RestartRoomForPreview(bool bLoadExploration);
 	void     SaveGame(const SAVETYPE eSaveType, const WSTRING& name);
 	void     SaveToContinue();
 	void     SaveToEndHold();
@@ -397,7 +398,7 @@ public:
 	UINT     WriteLocalHighScore(const ScoreCheckpointData& scoreData);
 	UINT     WriteScoreCheckpointSave(const ScoreCheckpointData& scoreData);
 
-	bool     PrepTempGameForRoomDisplay(const UINT roomID);
+	bool     PrepTempGameForRoomDisplay(const UINT roomID, bool initialState);
 
 	//World map.
 	void     SetWorldMapIcon(UINT worldMapID, UINT xPos, UINT yPos, UINT entranceID, ExitType exitType,
