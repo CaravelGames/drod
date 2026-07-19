@@ -8534,7 +8534,7 @@ void CGameScreen::ShowStatsForMonster(CMonster *pMonster)
 }
 
 //*****************************************************************************
-UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to display
+UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents, bool& initialState) //room to display
 //Temporarily display another room in place of the current room.
 //
 //Returns: roomID of a different room to display, or 0 for none
@@ -8582,6 +8582,9 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 				case SDL_MOUSEBUTTONDOWN:
 				{
 					bShow = HandlePreviewClick(event.button, originalRoomID, newShowRoomID);
+					if (!bShow) {
+						initialState = false;
+					}
 				}
 				break;
 
@@ -8604,6 +8607,15 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 							break;
 						default: nCommand = GetCommandForInputKey(BuildInputKey(event.key)); break;
 					}
+
+					//Don't allow panning while showing initial room state.
+					if (initialState && !(nCommand == -1 || nCommand == CMD_BATTLE_KEY)) {
+						initialState = false;
+						bShow = false;
+						newShowRoomID = this->pTempRoomWidget->pRoom->dwRoomID;
+						break;
+					}
+
 					switch (nCommand)
 					{
 						case CMD_BATTLE_KEY:
@@ -8624,6 +8636,19 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 						case CMD_E:
 							DisplayAdjacentTempRoom(E);
 							break;
+						case CMD_EXTRA_SHOW_INITIAL_ROOM:
+						{
+							//Trying to show initial state for non-visited rooms causes problems, so don't do it
+							//(Since it has been visited, it would look the same anyway)
+							UINT roomID = this->pTempRoomWidget->pRoom->dwRoomID;
+							ExploredRoom* expRoom = this->pTempRoomWidget->pCurrentGame->getExploredRoom(roomID);
+							if (expRoom && expRoom->HasDetail()) {
+								initialState = true;
+								newShowRoomID = this->pTempRoomWidget->pRoom->dwRoomID;
+								bShow = false;
+							}
+						}
+						break;
 						case -1: // modifier key
 							break;
 						default:
@@ -8789,7 +8814,7 @@ void CGameScreen::ShowRoomCoords(CDbRoom *pRoom)
 }
 
 //*****************************************************************************
-void CGameScreen::ShowRoomTemporarily(UINT roomID)
+void CGameScreen::ShowRoomTemporarily(UINT roomID, bool initialState)
 //Temporarily show the indicated room instead of the current room.
 {
 	if (!roomID)
@@ -8804,7 +8829,7 @@ Loop:
 	//list with the start of turn version. This is not really what we want, so we
 	//update the starting list to be the current list.
 	pTempGame->SetMonsterListAtRoomStart();
-	if (!pTempGame->PrepTempGameForRoomDisplay(roomID)) {
+	if (!pTempGame->PrepTempGameForRoomDisplay(roomID, initialState)) {
 		delete pTempGame;
 		return;
 	}
@@ -8813,7 +8838,7 @@ Loop:
 	this->bNoMoveByCurrentMouseClick = true;
 
 	CCueEvents CueEvents;
-	const UINT showNewRoomID = ShowRoom(pTempGame->pRoom, CueEvents);
+	const UINT showNewRoomID = ShowRoom(pTempGame->pRoom, CueEvents, initialState);
 	delete pTempGame;
 
 	this->bShowingTempRoom = false;

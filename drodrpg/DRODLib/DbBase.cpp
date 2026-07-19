@@ -866,6 +866,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarSaturation: strText = "_Saturation"; break;
 		case MID_Command_ToggleSkeletonGuard: strText = "Skeleton Key Guard"; break;
 		case MID_SkeletonGuardBlock: strText = "Skeleton key guard prevents spending skeleton key"; break;
+		case MID_Command_ShowInitialRoom: strText = "Show Initial Room"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

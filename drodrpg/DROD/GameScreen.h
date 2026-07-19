@@ -193,9 +193,9 @@ private:
 //	void           ShowLockIcon(const bool bShow=true);
 	void           UpdatePlayerFace();
 	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter** playerHoldCharacter);
-	UINT           ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents);
+	UINT           ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents, bool& initialState);
 	void           ShowRoomCoords(CDbRoom *pRoom);
-	void           ShowRoomTemporarily(UINT roomID);
+	void           ShowRoomTemporarily(UINT roomID, bool initialState = false);
 	void           ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st);
 	void           ShowSpeechLog();
 	void           SwirlEffect();

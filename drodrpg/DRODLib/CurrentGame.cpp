@@ -8681,7 +8681,7 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const ScoreCheckpointData& scoreData
 //***************************************************************************************
 //Only call this on a temporary object, prior to temporary room preview in the front-end.
 //Returns: whether prep operation succeeded
-bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
+bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID, bool initialState)
 {
 	this->bRoomDisplayOnly = true;
 
@@ -8702,7 +8702,7 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 	const bool bPlayerHasted = this->pPlayer->bHasted;
 	const bool bPlayerInvisible = this->pPlayer->bInvisible;
 	CCueEvents Ignored;
-	RestartRoom(Ignored);
+	RestartRoomForPreview(!initialState);
 	this->pPlayer->bHasted = bPlayerHasted;
 	this->pPlayer->bInvisible = bPlayerInvisible;
 
@@ -8718,6 +8718,30 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 	this->pRoom->SetSwordsSheathed();
 
 	return true;
+}
+
+//*****************************************************************************
+void CCurrentGame::RestartRoomForPreview(bool bLoadExploration)
+//Restarts the current room.
+//Only call this on a temporary object, as part setting up tempory room view
+{
+	//Move the player back to the beginning of the room.
+	//We need to set up player stats before monsters are loaded, as the stats include
+	//the monster HP multiplier value
+	SetPlayerToRoomStart();
+
+	//Return room to the state it had on entry.
+	ASSERT(this->pRoom);
+	this->pRoom->Reload();
+	CDbSavedGame::ReloadMonsterList();
+	if (bLoadExploration) {
+		RetrieveExploredRoomData(*this->pRoom);
+	}
+
+	//Do post-load processing
+	CCueEvents Ignored;
+	SetMembersAfterRoomLoad(Ignored);
+	ProcessCommand_EndOfTurnEventHandling(Ignored);
 }
 
 //***************************************************************************************
