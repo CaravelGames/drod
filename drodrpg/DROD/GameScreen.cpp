@@ -8543,6 +8543,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents, bool& initialS
 
 	UINT newShowRoomID = 0;
 	const UINT originalRoomID = pRoom->dwRoomID;
+	bool bRefresh = true; //Set to false when showing/unshowing initial room state to avoid flicker
 
 	this->pTempRoomWidget->HidePlayer();
 	VERIFY(this->pTempRoomWidget->LoadFromRoom(pRoom));
@@ -8612,6 +8613,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents, bool& initialS
 					if (initialState && !(nCommand == -1 || nCommand == CMD_BATTLE_KEY)) {
 						initialState = false;
 						bShow = false;
+						bRefresh = false;
 						newShowRoomID = this->pTempRoomWidget->pRoom->dwRoomID;
 						break;
 					}
@@ -8646,6 +8648,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents, bool& initialS
 								initialState = true;
 								newShowRoomID = this->pTempRoomWidget->pRoom->dwRoomID;
 								bShow = false;
+								bRefresh = false;
 							}
 						}
 						break;
@@ -8676,18 +8679,22 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents, bool& initialS
 		RequestPaint();
 	}
 
-	this->pTempRoomWidget->Hide();
+	if (bRefresh) {
+		this->pTempRoomWidget->Hide();
+	}
 	this->pTempRoomWidget->pCurrentGame = NULL;
 
 	if (this->bShowingBigMap)
 		this->pBigMapWidget->Show();
 
 	//Reload graphics for current room.
-	this->pRoomWidget->Show();
-	this->pRoomWidget->LoadRoomImages();
-	this->pRoomWidget->UpdateFromCurrentGame();
-	UpdateSign();
-	Paint();
+	if (bRefresh) {
+		this->pRoomWidget->Show();
+		this->pRoomWidget->LoadRoomImages();
+		this->pRoomWidget->UpdateFromCurrentGame();
+		UpdateSign();
+		Paint();
+	}
 
 	//Show a new room?
 	return newShowRoomID;
