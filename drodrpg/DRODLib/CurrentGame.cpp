@@ -8723,7 +8723,7 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID, bool initialSta
 //*****************************************************************************
 void CCurrentGame::RestartRoomForPreview(bool bLoadExploration)
 //Restarts the current room.
-//Only call this on a temporary object, as part setting up tempory room view
+//Only call this on a temporary object, as part setting up temporary room view
 {
 	//Move the player back to the beginning of the room.
 	//We need to set up player stats before monsters are loaded, as the stats include
