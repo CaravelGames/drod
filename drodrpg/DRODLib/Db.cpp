@@ -321,6 +321,10 @@ bool CDb::ValidateMoveSequence(
 	pGame->bNoSaves = pGame->bValidatingPlayback = true;
 	pGame->FreezeCommands();
 
+	{
+		pGame->ActivateLogging();
+	}
+
 	//Play through all moves in the game session.
 	bool bGood = true;
 	UINT wX, wY;
@@ -430,6 +434,12 @@ bool CDb::ValidateMoveSequence(
 		pGame->ProcessCommand(CMD_ADVANCE_COMBAT, CueEvents);
 		if (!ValidateMoveSequenceCheckCueEvents(CueEvents, pGame, CMD_ADVANCE_COMBAT, bGood, scoresData))
 			break;
+	}
+
+	{
+		CBaseGameLogger* logger = pGame->GetLogger();
+		logger->output();
+		logger->writeToFile(L"D:/thing/testlog.txt");
 	}
 
 	delete pGame;

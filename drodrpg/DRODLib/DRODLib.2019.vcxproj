@@ -421,6 +421,7 @@
     <ClCompile Include="EvilEye.cpp" />
     <ClCompile Include="FluffBaby.cpp" />
     <ClCompile Include="GameConstants.cpp" />
+    <ClCompile Include="GameEvents.cpp" />
     <ClCompile Include="Goblin.cpp" />
     <ClCompile Include="GreenSerpent.cpp" />
     <ClCompile Include="Guard.cpp" />
@@ -452,6 +453,7 @@
     <ClCompile Include="Spider.cpp" />
     <ClCompile Include="Splitter.cpp" />
     <ClCompile Include="Stalwart.cpp" />
+    <ClCompile Include="StandardGameLogger.cpp" />
     <ClCompile Include="Swordsman.cpp" />
     <ClCompile Include="TarBaby.cpp" />
     <ClCompile Include="TarMother.cpp" />
@@ -464,6 +466,7 @@
     <ClInclude Include="..\Texts\MIDs.h" />
     <ClInclude Include="Ant.h" />
     <ClInclude Include="AntHill.h" />
+    <ClInclude Include="BaseGameLogger.h" />
     <ClInclude Include="BlueSerpent.h" />
     <ClInclude Include="Brain.h" />
     <ClInclude Include="Briar.h" />
@@ -503,6 +506,7 @@
     <ClInclude Include="EvilEye.h" />
     <ClInclude Include="FluffBaby.h" />
     <ClInclude Include="GameConstants.h" />
+    <ClInclude Include="GameEvents.h" />
     <ClInclude Include="Goblin.h" />
     <ClInclude Include="GreenSerpent.h" />
     <ClInclude Include="Guard.h" />
@@ -530,6 +534,7 @@
     <ClInclude Include="RoachQueen.h" />
     <ClInclude Include="RockGiant.h" />
     <ClInclude Include="RoomData.h" />
+    <ClInclude Include="StandardGameLogger.h" />
     <ClInclude Include="TotalMapStates.h" />
     <ClInclude Include="Seep.h" />
     <ClInclude Include="Serpent.h" />

@@ -752,6 +752,8 @@ bool CCombat::Advance(
 							//Keep track of which monster just died.
 							this->pDefeatedMonster = pMonsterBeingFought;
 
+							pGame->GetLogger()->endCombat(int(ps.HP - this->plStartingHP), monGOLD, monXP);
+
 							//If other monsters are queued to fight, set up to handle next one.
 							BeginFightingNextQueuedMonster(CueEvents);
 						}
@@ -935,6 +937,7 @@ bool CCombat::BeginFightingNextQueuedMonster(CCueEvents& CueEvents)
 
 //	ASSERT(combat.pMonster != this->pDefeatedMonster); //no -- it's possible to hit monsters from multiple tiles, so this check should be handled when the monster is queued up
 	CueEvents.Add(CID_MonsterEngaged, combat.pMonster);
+	pGame->GetLogger()->beginCombat(combat.pMonster->GetName(), combat.wX, combat.wY);
 	this->bFightNextMonsterInQueue = true; //next time this method is called
 
 	return true;
@@ -997,6 +1000,7 @@ void CCombat::MonsterAttacksPlayerOnce(CCueEvents& CueEvents)
 		DecrementUINT(ps.HP, delta);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&player, CET_HARM, delta), true);
 		CueEvents.Add(CID_SwordsmanAfraid);
+		pGame->GetLogger()->monsterAttack(pMonster->GetName(), player.wX, player.wY, delta);
 	}
 
 	//Process special instructions when the monster attacks,

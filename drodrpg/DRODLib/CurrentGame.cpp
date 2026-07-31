@@ -171,6 +171,7 @@ CCurrentGame::CCurrentGame()
 {
 	//Zero resource members before calling Clear().
 	this->pPlayer = new CSwordsman(this);
+	this->logger = std::make_unique<CBaseGameLogger>();
 
 	Clear();
 }
@@ -262,6 +263,14 @@ void CCurrentGame::activateCustomEquipment(
 
 	//Set up the equipment's properties by running the script.
 	pCharacter->Process(CMD_WAIT, CueEvents);
+}
+
+//*****************************************************************************
+void CCurrentGame::ActivateLogging()
+//Activates logging of game events by setting the logging pointer to a logger
+//that does something. Be aware that any existing logger is discarded.
+{
+	this->logger = std::make_unique<CStandardGameLogger>();
 }
 
 //*****************************************************************************
@@ -526,6 +535,34 @@ const
 		break;
 		default: break;
 	}
+}
+
+//*****************************************************************************
+WSTRING CCurrentGame::getEquipmentName(const UINT type) const
+//Gets the name of the equipment type wielded by the player.
+{
+	const CCharacter* pCharacter = getCustomEquipment(type);
+	if (pCharacter) {
+		return pCharacter->GetName();
+	}
+
+	PlayerStats& st = this->pPlayer->st;
+	WSTRING wstr;
+	switch (type)
+	{
+		case ScriptFlag::Weapon:
+			wstr = g_pTheDB->GetMessageText(GetSwordMID(st.sword));
+		break;
+		case ScriptFlag::Armor:
+			wstr = g_pTheDB->GetMessageText(GetShieldMID(st.shield));
+		break;
+		case ScriptFlag::Accessory:
+			wstr = g_pTheDB->GetMessageText(GetAccessoryMID(st.accessory));
+		break;
+		default: break;
+	}
+
+	return wstr;
 }
 
 //*****************************************************************************
@@ -902,6 +939,10 @@ void CCurrentGame::ExitCurrentRoom()
 
 	//Save info for room being exited.
 	SaveExploredRoomData(*this->pRoom, true);
+
+	//log stuff
+	logger->output();
+	logger->clear();
 
 	this->PreviouslyExploredRooms -= this->pRoom->dwRoomID; //can forget this room was previewed for the rest of this game
 }
@@ -2648,6 +2689,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			ASSERT(!this->pPlayer->IsInvisible());
 			this->pPlayer->bInvisible = true;
 			CueEvents.Add(CID_DrankPotion);
+			logger->useAccessory(g_pTheDB->GetMessageText(GetAccessoryMID(InvisibilityPotion)),
+				this->pPlayer->wX, this->pPlayer->wY);
 //			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
 		break;
 		case SpeedPotion:
@@ -2655,6 +2698,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			ASSERT(!this->pPlayer->IsHasted());
 			this->pPlayer->bHasted = true;
 			CueEvents.Add(CID_DrankPotion);
+			logger->useAccessory(g_pTheDB->GetMessageText(GetAccessoryMID(SpeedPotion)),
+				this->pPlayer->wX, this->pPlayer->wY);
 //			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
 		break;
 
@@ -2677,6 +2722,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 					(exp->wX != wX) || (exp->wY != wY)); //explosion does not hurt self, so don't make one at the origin
 
 			CueEvents.Add(CID_BombExploded, new CMoveCoord(wX, wY, 0), true);
+			logger->useAccessory(g_pTheDB->GetMessageText(GetAccessoryMID(HandBomb)),
+				this->pPlayer->wX, this->pPlayer->wY);
 
 			//If bombs were set off, explode them now.
 			//These could harm the player.
@@ -2700,6 +2747,7 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 					T_FLOOR;
 			this->pRoom->Plot(destX, destY, replacementTile);
 			CueEvents.Add(CID_CrumblyWallDestroyed, new CMoveCoord(destX, destY, wO), true); 
+			logger->breakWallWithPickaxe(destX, destY);
 		}
 		break;
 		case PortableOrb:
@@ -2712,6 +2760,7 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			ASSERT(bIsDoor(oTile));
 			this->pRoom->OpenDoor(destX, destY);
 			CueEvents.Add(CID_PortableOrbActivated);
+			logger->openDoorWithPortableOrb(oTile, destX, destY);
 		}
 		break;
 
@@ -2720,6 +2769,7 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp to reflected room coord.
 			const UINT reflectX = this->pRoom->wRoomCols - this->pPlayer->wX - 1;
 			const UINT reflectY = this->pRoom->wRoomRows - this->pPlayer->wY - 1;
+			logger->useWarpToken(this->pPlayer->wX, this->pPlayer->wY, reflectX, reflectY);
 
 			const UINT wTTileNo = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
 			const bool bWasOnSameScroll = wTTileNo == T_SCROLL;
@@ -2739,6 +2789,7 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp ahead two tiles in the direction faced.
 			const UINT destX = this->pPlayer->wX + nGetOX(this->pPlayer->wO) * 2;
 			const UINT destY = this->pPlayer->wY + nGetOY(this->pPlayer->wO) * 2;
+			logger->useWallWaking(this->pPlayer->wX, this->pPlayer->wY, destX, destY);
 
 			const UINT wTTileNo = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
 			const bool bWasOnSameScroll = wTTileNo == T_SCROLL;
@@ -2760,6 +2811,7 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			CCharacter *pCharacter = getCustomEquipment(ScriptFlag::Accessory);
 			if (pCharacter) {
 				const UINT wX = this->pPlayer->wX, wY = this->pPlayer->wY;
+				logger->useAccessory(pCharacter->GetName(), wX, wY);
 				pCharacter->ProcessAfterUse(CueEvents);
 				if (this->pPlayer->wX != wX || this->pPlayer->wY != wY)
 					return true; //show this movement; don't override in ProcessPlayer:MakeMove
@@ -3475,6 +3527,9 @@ void CCurrentGame::InitiateCombat(
 		delete this->pCombat;
 		this->pCombat = new CCombat(this, pMonster, bPlayerHitsFirst, wFromX, wFromY, wX, wY, bDefeatToStabTarTile);
 		bBlockedSwordHit = bPlayerHitsFirst && !this->pCombat->PlayerCanHarmMonster(pMonster) && this->pCombat->MonsterCanHarmPlayer(pMonster);
+		if (!bBlockedSwordHit) {
+			logger->beginCombat(pMonster->GetName(), wX, wY);
+		}
 	}
 
 	if (bBlockedSwordHit)
@@ -3509,6 +3564,7 @@ void CCurrentGame::MonsterInitiatesCombat(
 		if (this->pCombat->MonsterCanHarmPlayer(pMonster))
 		{
 			CueEvents.Add(CID_MonsterEngaged, pMonster); //new combat instantiated
+			logger->beginCombat(pMonster->GetName(), wX, wY);
 			if (!this->pCombat->PlayerCanHarmMonster(pMonster))
 				CueEvents.Add(CID_MonsterKilledPlayer, pMonster);
 		} 
@@ -5409,9 +5465,12 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 			{
 				--ps.yellowKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, YellowKey), true);
+				logger->openDoorWithKey(YellowKey, wX, wY);
 			} else if (ps.skeletonKeys) {
 				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					return false;
+				} else {
+					logger->openDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -5422,9 +5481,12 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 			{
 				--ps.greenKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, GreenKey), true);
+				logger->openDoorWithKey(GreenKey, wX, wY);
 			} else if (ps.skeletonKeys) {
 				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					return false;
+				} else {
+					logger->openDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -5435,9 +5497,12 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 			{
 				--ps.blueKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, BlueKey), true);
+				logger->openDoorWithKey(BlueKey, wX, wY);
 			} else if (ps.skeletonKeys) {
 				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					return false;
+				} else {
+					logger->openDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -5450,9 +5515,12 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 			{
 				incintValueWithBounds(ps.GOLD, -cost); //gold may go negative
 				CueEvents.Add(CID_EntityAffected, new CCombatEffect(this->pPlayer, CET_GOLD, -cost), true);
+				logger->openDoorWithMoney(cost, wX, wY);
 			} else if (ps.skeletonKeys) {
 				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					return false;
+				} else {
+					logger->openDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -5494,11 +5562,14 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			{
 				--ps.yellowKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, YellowKey), true);
+				logger->closeDoorWithKey(YellowKey, wX, wY);
 			}
 			else if (ps.skeletonKeys)
 			{
 				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					return false;
+				} else {
+					logger->closeDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -5509,11 +5580,14 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			{
 				--ps.greenKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, GreenKey), true);
+				logger->closeDoorWithKey(GreenKey, wX, wY);
 			}
 			else if (ps.skeletonKeys)
 			{
 				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					return false;
+				} else {
+					logger->closeDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -5524,11 +5598,14 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			{
 				--ps.blueKeys;
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, BlueKey), true);
+				logger->closeDoorWithKey(BlueKey, wX, wY);
 			}
 			else if (ps.skeletonKeys)
 			{
 				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					return false;
+				} else {
+					logger->closeDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -5542,9 +5619,12 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			{
 				incintValueWithBounds(ps.GOLD, -cost); //gold may go negative
 				CueEvents.Add(CID_EntityAffected, new CCombatEffect(this->pPlayer, CET_GOLD, -cost), true);
+				logger->closeDoorWithMoney(cost, wX, wY);
 			} else if (ps.skeletonKeys) {
 				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					return false;
+				} else {
+					logger->closeDoorWithKey(SkeletonKey, wX, wY);
 				}
 			}
 			else
@@ -6242,8 +6322,10 @@ void CCurrentGame::ProcessPlayer(
 			if (!MayUseItem(ScriptFlag::Weapon))
 				break;
 			CCharacter *pCharacter = getCustomEquipment(ScriptFlag::Weapon);
-			if (pCharacter)
+			if (pCharacter) {
+				logger->useWeapon(pCharacter->GetName(), p.wX, p.wY);
 				pCharacter->ProcessAfterUse(CueEvents);
+			}
 		}
 		break;
 		case CMD_USE_ARMOR:
@@ -6252,8 +6334,10 @@ void CCurrentGame::ProcessPlayer(
 			if (!MayUseItem(ScriptFlag::Armor))
 				break;
 			CCharacter *pCharacter = getCustomEquipment(ScriptFlag::Armor);
-			if (pCharacter)
+			if (pCharacter) {
+				logger->useShield(pCharacter->GetName(), p.wX, p.wY);
 				pCharacter->ProcessAfterUse(CueEvents);
+			}
 		}
 		break;
 		case CMD_USE_ACCESSORY:
@@ -6651,8 +6735,10 @@ CheckMonsterLayer:
 				if (bDigging) {
 					const UINT destX = wOldX + dx, destY = wOldY + dy;
 					ASSERT(p.st.shovels >= this->pLevel->getItemAmount(room.GetOSquare(destX, destY)));
-					p.st.shovels -= this->pLevel->getItemAmount(room.GetOSquare(destX, destY));
+					UINT shovelCost = this->pLevel->getItemAmount(room.GetOSquare(destX, destY));
+					p.st.shovels -= shovelCost;
 					room.Dig(destX, destY, nMovementO, CueEvents);
+					logger->digDirt(shovelCost, destX, destY);
 				}
 
 				if (bJumping)
@@ -6764,8 +6850,11 @@ MakeMove:
 			if (bStayedOnHotFloor)
 			{
 				const UINT damage = p.Damage(CueEvents, p.st.hotTileVal, CID_ExplosionKilledPlayer);
-				if (damage) //only display effect if player is actually damaged
+				if (damage) {
+					//only display effect if player is actually damaged
 					CueEvents.Add(CID_PlayerBurned);
+					logger->tileDamage(T_HOT, p.wX, p.wY, damage);
+				}
 			}
 		break;
 		default: break;
@@ -6812,6 +6901,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK, atk), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
 		CueEvents.Add(CID_ReceivedATK, new CAttachableWrapper<UINT>(wNewTSquare), true);
+		logger->collectATK(atk);
 	}
 	break;
 
@@ -6822,6 +6912,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF, def), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
 		CueEvents.Add(CID_ReceivedDEF, new CAttachableWrapper<UINT>(wNewTSquare), true);
+		logger->collectDEF(def);
 	}
 	break;
 
@@ -6836,6 +6927,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		}
 		room.Plot(p.wX, p.wY, T_EMPTY);
 		CueEvents.Add(CID_ReceivedHP, new CAttachableWrapper<UINT>(wNewTSquare), true);
+		logger->collectHP(heal);
 	}
 	break;
 
@@ -6845,6 +6937,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		incUINTValueWithBounds(p.st.shovels, shovels);
 		room.Plot(p.wX, p.wY, T_EMPTY);
 		CueEvents.Add(CID_ReceivedShovel, new CAttachableWrapper<UINT>(wNewTSquare), true);
+		logger->collectShovels(shovels);
 	}
 	break;
 
@@ -6874,6 +6967,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		}
 		room.Plot(p.wX, p.wY, T_EMPTY);
 		CueEvents.Add(CID_ReceivedKey, new CAttachableWrapper<BYTE>(tParam), true);
+		logger->collectKey((KeyType)tParam);
 	}
 	break;
 	case T_SWORD:
@@ -7806,6 +7900,10 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	delete this->pCombat;
 	this->pCombat = NULL;
 	this->pBlockedSwordHit = NULL;
+
+	//Clear game log, then log room entry
+	logger->clear();
+	logger->enterRoom(this->pRoom);
 }
 
 //*****************************************************************************
@@ -8256,6 +8354,7 @@ void CCurrentGame::TradeAccessory(
 
 	int oldATKstat, oldDEFstat;
 	getEquipmentStats(ScriptFlag::Accessory, oldATKstat, oldDEFstat);
+	WSTRING oldName = getEquipmentName(ScriptFlag::Accessory);
 
 	//Remove old custom item from global scripts and add the new one.
 	if (changingInventory(CueEvents, ScriptFlag::Accessory, newEquipment))
@@ -8267,12 +8366,15 @@ void CCurrentGame::TradeAccessory(
 
 		int newATKstat, newDEFstat;
 		getEquipmentStats(ScriptFlag::Accessory, newATKstat, newDEFstat);
+		WSTRING newName = getEquipmentName(ScriptFlag::Accessory);
 
 		if (bShowStatChanges) {
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK,
 					newATKstat - oldATKstat), true);
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF,
 					newDEFstat - oldDEFstat), true);
+
+			logger->swapEquipment(ScriptFlag::Accessory, oldName, newName, p.wX, p.wY);
 		}
 	}
 }
@@ -8306,6 +8408,7 @@ void CCurrentGame::TradeArmor(
 
 	int oldATKstat, oldDEFstat;
 	getEquipmentStats(ScriptFlag::Armor, oldATKstat, oldDEFstat);
+	WSTRING oldName = getEquipmentName(ScriptFlag::Armor);
 
 	//Remove old custom item from global scripts and add the new one.
 	if (changingInventory(CueEvents, ScriptFlag::Armor, newEquipment))
@@ -8317,12 +8420,15 @@ void CCurrentGame::TradeArmor(
 
 		int newATKstat, newDEFstat;
 		getEquipmentStats(ScriptFlag::Armor, newATKstat, newDEFstat);
+		WSTRING newName = getEquipmentName(ScriptFlag::Armor);
 
 		if (bShowStatChanges) {
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK,
 					newATKstat - oldATKstat), true);
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF,
 					newDEFstat - oldDEFstat), true);
+
+			logger->swapEquipment(ScriptFlag::Armor, oldName, newName, p.wX, p.wY);
 		}
 	}
 }
@@ -8356,6 +8462,7 @@ void CCurrentGame::TradeWeapon(
 
 	int oldATKstat, oldDEFstat;
 	getEquipmentStats(ScriptFlag::Weapon, oldATKstat, oldDEFstat);
+	WSTRING oldName = getEquipmentName(ScriptFlag::Weapon);
 
 	//Remove old custom item from global scripts and add the new one.
 	if (changingInventory(CueEvents, ScriptFlag::Weapon, newEquipment))
@@ -8367,12 +8474,15 @@ void CCurrentGame::TradeWeapon(
 
 		int newATKstat, newDEFstat;
 		getEquipmentStats(ScriptFlag::Weapon, newATKstat, newDEFstat);
+		WSTRING newName = getEquipmentName(ScriptFlag::Weapon);
 
 		if (bShowStatChanges) {
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK,
 					newATKstat - oldATKstat), true);
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF,
 					newDEFstat - oldDEFstat), true);
+
+			logger->swapEquipment(ScriptFlag::Weapon, oldName, newName, p.wX, p.wY);
 		}
 
 		SetPlayerSwordSheathed();

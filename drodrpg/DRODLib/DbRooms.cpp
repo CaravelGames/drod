@@ -3771,6 +3771,7 @@ void CDbRoom::DamageMonster(CMonster* pMonster, int damageVal, CCueEvents& CueEv
 		}
 		if (bVulnerable)
 		{
+			GetLogger()->monsterKilled(pMonster);
 			KillMonster(pMonster, CueEvents);
 		}
 	}
@@ -4044,17 +4045,20 @@ void CDbRoom::DoExplode(
 	static const UINT POWDER_KEG_RADIUS = 1;
 
 	CCoordSet explosion; //what tiles are affected following explosion
+	CBaseGameLogger* logger = GetLogger();
 
 	//Each iteration explodes one bomb.
 	for (;;) {
 		UINT wCol, wRow;
 		if (bombs.PopBottom(wCol, wRow)) { //process as queue
 			DoExplodeTile(CueEvents, bombs, powder_kegs, explosion, wCol, wRow, BOMB_RADIUS);
+			logger->bombExploded(wCol, wRow);
 			continue;
 		}
 
 		if (powder_kegs.PopBottom(wCol, wRow)) {
 			DoExplodeTile(CueEvents, bombs, powder_kegs, explosion, wCol, wRow, POWDER_KEG_RADIUS);
+			logger->kegExploded(wCol, wRow);
 			continue;
 		}
 
@@ -4332,6 +4336,7 @@ void CDbRoom::LightFuse(
 		else
 			this->LitFuses.insert(wCol, wRow);
 		CueEvents.Add(CID_FuseBurning, new CMoveCoord(wCol, wRow, NO_ORIENTATION), true);
+		GetLogger()->lightFuse(wCol, wRow);
 	}
 }
 
@@ -5704,6 +5709,14 @@ void CDbRoom::GetPositionInLevel(int& dx, int& dy) const
 }
 
 //*****************************************************************************
+CBaseGameLogger* CDbRoom::GetLogger()
+//Returns: A pointer to the active game's game logger.
+{
+	ASSERT(this->pCurrentGame);
+	return this->pCurrentGame->GetLogger();
+}
+
+//*****************************************************************************
 CPlatform* CDbRoom::GetPlatformAt(
 //Returns: platform with a piece at (wX,wY), or NULL if none.
 //
@@ -6271,6 +6284,7 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 		UINT delta = player.CalcDamage(damageVal);
 		player.DecHealth(CueEvents, delta, CID_ExplosionKilledPlayer);
 		CueEvents.Add(CID_FiretrapHit, new CCoord(wX, wY));
+		GetLogger()->tileDamage(T_FIRETRAP, wX, wY, delta);
 	}
 
 	CMonster* pMonster = this->GetMonsterAtSquare(wX, wY);

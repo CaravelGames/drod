@@ -2416,7 +2416,7 @@ bool CMonster::GetNextGaze(
 	UINT& cx, UINT& cy, int& dx, int& dy)	//(cx,cy) + (dx,dy)
 {
 	ASSERT(pRoom);
-	const CCurrentGame *pCurrentGame = pRoom->GetCurrentGame();
+	CCurrentGame *pCurrentGame = pRoom->GetCurrentGame();
 	ASSERT(pCurrentGame);
 	if (!pRoom->IsValidColRow(cx, cy))
 		return false;
@@ -2551,6 +2551,7 @@ bool CMonster::GetNextGaze(
 					player.DecHealth(CueEvents, delta, CID_MonsterKilledPlayer);
 
 					CueEvents.Add(CID_PlayerFrozen, &player);
+					pCurrentGame->GetLogger()->beamDamage(cx, cy, delta);
 				}
 			}
 		}

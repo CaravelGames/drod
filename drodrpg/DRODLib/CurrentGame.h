@@ -81,6 +81,7 @@
 #include "PlayerDouble.h"
 #include "PlayerStats.h"
 #include "TotalMapStates.h"
+#include "StandardGameLogger.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/AttachableObject.h>
 #include <BackEndLib/Coord.h>
@@ -227,6 +228,7 @@ public:
 
 	WSTRING  AbbrevRoomLocation();
 	void     activateCustomEquipment(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
+	void     ActivateLogging();
 	void     ActivateTokenAt(const UINT wX, const UINT wY);
 	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO, const bool bMakeCharacterVisible=false);
@@ -259,7 +261,9 @@ public:
 //	UINT     GetAutoSaveOptions() const {return this->dwAutoSaveOptions;}
 	CCharacter* GetCharacterWithScriptID(const UINT scriptID);
 	UINT     GetChecksum() const;
+	CBaseGameLogger* GetLogger() { return this->logger.get(); }
 	void     getEquipmentStats(const UINT type, int& ATKstat, int &DEFstat) const;
+	WSTRING  getEquipmentName(const UINT type) const;
 	float    GetGlobalStatModifier(ScriptVars::StatModifiers statType) const;
 	float    GetTotalStatModifier(ScriptVars::StatModifiers statType) const;
 	UINT     getNewScriptID();
@@ -554,6 +558,8 @@ private:
 */
 
 	CIDSet   PreviouslyExploredRooms; //cache values
+
+	std::unique_ptr<CBaseGameLogger> logger;
 
 	void     InitializeTotalMapStates(const bool forceLoading = false);
 };

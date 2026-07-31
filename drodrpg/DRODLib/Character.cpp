@@ -898,41 +898,53 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 				const UINT oldVal = st.getVar(ScriptVars::Predefined(varIndex));
 				int delta = int(newVal) - int(oldVal);
 				CombatEffectType type = CET_NODAMAGE;
+				CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+				CBaseGameLogger* logger = pGame->GetLogger();
 				switch (varIndex)
 				{
 					case (UINT)ScriptVars::P_HP:
 						if (int(newVal) <= 0 && this->pCurrentGame->wTurnNo == 0) //forbid killing player on turn 0 (avoids respawn loop)
 							return false;
 						type = delta < 0 ? CET_HARM : CET_HEAL;
+						logger->scriptChangeHP(delta, this->pCurrentGame->wTurnNo);
 						if (delta < 0)
 							delta = -delta;
 					break;
 					case (UINT)ScriptVars::P_ATK:
 						type = CET_ATK;
+						logger->scriptChangeATK(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_DEF:
 						type = CET_DEF;
+						logger->scriptChangeDEF(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_GOLD:
 						type = CET_GOLD;
+						logger->scriptChangeGR(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_XP:
 						type = CET_XP;
+						logger->scriptChangeXP(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_YKEY:
 						type = CET_YKEY;
+						logger->scriptChangeYKey(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_GKEY:
 						type = CET_GKEY;
+						logger->scriptChangeGKey(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_BKEY:
 						type = CET_BKEY;
+						logger->scriptChangeBKey(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_SKEY:
 						type = CET_SKEY;
+						logger->scriptChangeSKey(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_SHOVEL:
 						type = CET_SHOVEL;
+						logger->scriptChangeShovels(delta, this->pCurrentGame->wTurnNo);
 					break;
 					case (UINT)ScriptVars::P_MONSTER_ATK_MULT:
 					case (UINT)ScriptVars::P_MONSTER_DEF_MULT:
@@ -3366,6 +3378,8 @@ void CCharacter::Process(
 						//Creating a score during turn processing can cause problems with validation, as
 						//we don't know if this turn will finish yet - it might have to be rewound due to
 						//blocked or stalled combat. (or the player might die)
+						//Logging doesn't have the same restriction
+						pGame->GetLogger()->scoreCheckpoint(command.label, CCurrentGame::GetScore(stats));
 					}
 				}
 				bProcessNextCommand = true;
