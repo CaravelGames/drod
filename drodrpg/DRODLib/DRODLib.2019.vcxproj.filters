@@ -13,6 +13,9 @@
     <Filter Include="DBs">
       <UniqueIdentifier>{3a5dc181-7d1b-4b97-adb3-fafd26ba5e7c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameLogging">
+      <UniqueIdentifier>{fe45f9d9-6984-4e4d-856f-6261f592b507}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Combat.cpp">
@@ -242,6 +245,12 @@
     </ClCompile>
     <ClCompile Include="TotalMapStates.cpp">
       <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEvents.cpp">
+      <Filter>GameLogging</Filter>
+    </ClCompile>
+    <ClCompile Include="StandardGameLogger.cpp">
+      <Filter>GameLogging</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -494,6 +503,15 @@
     </ClInclude>
     <ClInclude Include="TotalMapStates.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseGameLogger.h">
+      <Filter>GameLogging</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEvents.h">
+      <Filter>GameLogging</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardGameLogger.h">
+      <Filter>GameLogging</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

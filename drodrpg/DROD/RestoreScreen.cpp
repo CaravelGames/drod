@@ -367,7 +367,7 @@ CRestoreScreen::~CRestoreScreen()
 //******************************************************************************
 bool CRestoreScreen::IsCommandSupported(int command) const
 {
-	return command == CMD_EXTRA_EDITOR_DELETE;
+	return command == CMD_EXTRA_EDITOR_DELETE || command == CMD_USE_ACCESSORY;
 }
 
 //******************************************************************************
@@ -542,6 +542,19 @@ void CRestoreScreen::OnKeyDown(
 						SelectFirstWidget();
 						Paint();
 					}
+				}
+			}
+		}
+		break;
+		case CMD_USE_ACCESSORY:
+		{
+			if (ShowYesNoMessage(L"Do a transcription test?") == TAG_YES) {
+				CIDSet savedGameIDs = this->pSaveListBoxWidget->GetSelectedItems();
+				if (savedGameIDs.size() == 1) {
+					UINT id = savedGameIDs.getFirst();
+					std::vector<ScoreCheckpointData> scores;
+					g_pTheDB->ValidateSavedGame(id, scores);
+					ShowOkMessage(L"Done");
 				}
 			}
 		}

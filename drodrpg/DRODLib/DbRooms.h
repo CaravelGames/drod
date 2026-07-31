@@ -59,6 +59,7 @@
 #include <list>
 
 //******************************************************************************************
+class CBaseGameLogger;
 class CCharacter;
 class CDbHold;
 class CDbLevel;
@@ -263,6 +264,7 @@ public:
 	CDbLevel*      GetLevel() const;
 	void           GetLevelPositionDescription(WSTRING &wstrDescription,
 			const bool bAbbreviate=false);
+	CBaseGameLogger* GetLogger();
 	void           GetDoubleSwordCoords(CCoordIndex &DoubleSwordCoords,
 			CMonster *pIgnore=NULL) const;
 	UINT           GetFSquare(const UINT wX, const UINT wY) const;
