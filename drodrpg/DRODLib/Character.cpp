@@ -6128,6 +6128,58 @@ string CCharacter::ExportXMLSpeech(
 }
 
 //*****************************************************************************
+WSTRING CCharacter::GetName() const
+{
+	WSTRING wstr;
+
+	bool bCharacterName = false;
+	if (GetCustomName() != DefaultCustomCharacterName) {
+		bCharacterName = true;
+		wstr += GetCustomName();
+	} else if (this->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
+		//Show custom character name.
+		ASSERT(this->pCurrentGame->pHold);
+		HoldCharacter* pCustomChar = this->pCurrentGame->pHold->GetCharacter(this->wLogicalIdentity);
+		if (pCustomChar) {
+			bCharacterName = true;
+			wstr += pCustomChar->charNameText;
+		} else {
+			//custom character type was deleted, and this NPC's type left dangling
+			wstr += wszQuestionMark;
+		}
+	} else if (this->wIdentity >= CHARACTER_FIRST) {
+		bCharacterName = true;
+		UINT eMID = MID_UNKNOWN;
+		switch (this->wIdentity)
+		{
+			case M_NEGOTIATOR: eMID = MID_Negotiator; break;
+			case M_CITIZEN1: eMID = MID_Citizen1; break;
+			case M_CITIZEN2: eMID = MID_Citizen2; break;
+			case M_INSTRUCTOR: eMID = MID_Instructor; break;
+			case M_MUDCOORDINATOR: eMID = MID_MudCoordinator; break;
+			case M_TARTECHNICIAN: eMID = MID_TarTechnician; break;
+			case M_BEETHRO: eMID = MID_Beethro; break;
+			case M_CITIZEN3: eMID = MID_Citizen3; break;
+			case M_CITIZEN4: eMID = MID_Citizen4; break;
+			case M_STALWART: eMID = MID_Stalwart; break;
+			case M_ARCHIVIST: eMID = MID_Archivist; break;
+			case M_ARCHITECT: eMID = MID_Architect; break;
+			case M_PATRON: eMID = MID_Patron; break;
+			case M_ROACHIE: eMID = MID_Roachie; break;
+			default: ASSERT(!"Unrecognized character"); break;
+		}
+		wstr += eMID == MID_UNKNOWN ? wszQuestionMark : g_pTheDB->GetMessageText(eMID);
+	}
+
+	if (!bCharacterName) {
+		if (IsValidMonsterType(this->wLogicalIdentity))
+			wstr += g_pTheDB->GetMessageText(TILE_MID[this->wLogicalIdentity + M_OFFSET]);
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
 UINT CCharacter::GetNextSpeechID()
 //Returns: speechID of next speech record referenced in character script,
 //or 0 if there are no more

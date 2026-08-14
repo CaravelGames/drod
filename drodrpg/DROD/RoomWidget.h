@@ -277,7 +277,6 @@ public:
 	WSTRING        GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY, bool bFullCombat) const;
 	WSTRING        GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const;
 	WSTRING        GetMonsterAbility(CMonster* pMonster) const;
-	WSTRING        GetMonsterName(CMonster* pMonster) const;
 //	UINT*          GetMonsterTile(const UINT wCol, const UINT wRow);
 	UINT           GetMoveDuration() const {return this->dwMoveDuration;}
 	CDbRoom*       GetRoom() const {return this->pRoom;}

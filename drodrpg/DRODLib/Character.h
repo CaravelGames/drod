@@ -117,6 +117,7 @@ public:
 	std::set<WSTRING> GetCustomWeaknesses() const;
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetLogicalIdentity() const {return this->wLogicalIdentity;}
+	virtual WSTRING GetName() const;
 	UINT           GetNextSpeechID();
 	virtual UINT   GetResolvedIdentity() const;
 	virtual UINT   GetSpawnType(UINT defaultMonsterID) const;
