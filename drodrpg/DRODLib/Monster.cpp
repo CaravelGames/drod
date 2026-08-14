@@ -127,6 +127,7 @@ void CMonster::SetStatsFromOther(const CMonster& other)
 //Set monster's combat and color stats from another monster.
 {
 	this->HP = other.HP;
+	this->ATK = other.ATK;
 	this->DEF = other.DEF;
 	this->GOLD = other.GOLD;
 	this->HP = other.HP;
