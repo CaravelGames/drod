@@ -558,7 +558,7 @@ void CGameScreen::RedrawStats(
 			case 4: val = ps.yellowKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.yellowKeys; break;
 			case 5: val = ps.greenKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.greenKeys ; break;
 			case 6: val = ps.blueKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.blueKeys; break;
-			case 7: wstr = (bCombat ? this->pRoomWidget->GetMonsterName(pCombat->pMonster) : wszEmpty); break;
+			case 7: wstr = (bCombat ? pCombat->pMonster->GetName() : wszEmpty); break;
 			case 8:
 				if (pCombat)
 				{

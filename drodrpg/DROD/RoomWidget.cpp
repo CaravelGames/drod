@@ -1817,7 +1817,7 @@ WSTRING CRoomWidget::GetMonsterNameAndAbility(CMonster* pMonster) const
 	if (!pMonster)
 		return wstr;
 	
-	wstr = GetMonsterName(pMonster);
+	wstr = pMonster->GetName();
 
 	const WSTRING ability = GetMonsterAbility(pMonster);
 	if (!ability.empty())
@@ -2341,7 +2341,7 @@ WSTRING CRoomWidget::GetInvisibleCharacterInfo(const UINT wX, const UINT wY) con
 			wstr += wszCRLF;
 		}
 
-		wstr += GetMonsterName(pMonster);
+		wstr += pMonster->GetName();
 
 		if (pCharacter->HasCustomDescription()) {
 			vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
@@ -2373,66 +2373,6 @@ WSTRING CRoomWidget::GetInvisibleCharacterInfo(const UINT wX, const UINT wY) con
 		pMonster = pMonster->pNext;
 	}
 
-	return wstr;
-}
-
-//*****************************************************************************
-WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
-{
-	ASSERT(pMonster);
-
-	WSTRING wstr;
-	if (pMonster->wType != M_CHARACTER)
-	{
-		//Get base monster name.
-		wstr += g_pTheDB->GetMessageText(TILE_MID[pMonster->wType + M_OFFSET]);
-	} else {
-		//Get NPC type name.
-		CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-		bool bCharacterName = false;
-		if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
-			bCharacterName = true;
-			wstr += pCharacter->GetCustomName();
-		} else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
-			//Show custom character name.
-			ASSERT(this->pCurrentGame->pHold);
-			HoldCharacter *pCustomChar = this->pCurrentGame->pHold->GetCharacter(pCharacter->wLogicalIdentity);
-			if (pCustomChar) {
-				bCharacterName = true;
-				wstr += pCustomChar->charNameText;
-			} else {
-				//custom character type was deleted, and this NPC's type left dangling
-				wstr += wszQuestionMark;
-			}
-		} else if (pCharacter->wIdentity >= CHARACTER_FIRST) {
-			bCharacterName = true;
-			UINT eMID = MID_UNKNOWN;
-			switch (pCharacter->wIdentity)
-			{
-				case M_NEGOTIATOR: eMID = MID_Negotiator; break;
-				case M_CITIZEN1: eMID = MID_Citizen1; break;
-				case M_CITIZEN2: eMID = MID_Citizen2; break;
-				case M_INSTRUCTOR: eMID = MID_Instructor; break;
-				case M_MUDCOORDINATOR: eMID = MID_MudCoordinator; break;
-				case M_TARTECHNICIAN: eMID = MID_TarTechnician; break;
-				case M_BEETHRO: eMID = MID_Beethro; break;
-				case M_CITIZEN3: eMID = MID_Citizen3; break;
-				case M_CITIZEN4: eMID = MID_Citizen4; break;
-				case M_STALWART: eMID = MID_Stalwart; break;
-				case M_ARCHIVIST: eMID = MID_Archivist; break;
-				case M_ARCHITECT: eMID = MID_Architect; break;
-				case M_PATRON: eMID = MID_Patron; break;
-				case M_ROACHIE: eMID = MID_Roachie; break;
-				default: ASSERT(!"Unrecognized character"); break;
-			}
-			wstr += eMID == MID_UNKNOWN ? wszQuestionMark : g_pTheDB->GetMessageText(eMID);
-		}
-
-		if (!bCharacterName) {
-			if (IsValidMonsterType(pCharacter->wLogicalIdentity))
-				wstr += g_pTheDB->GetMessageText(TILE_MID[pCharacter->wLogicalIdentity + M_OFFSET]);
-		}
-	}
 	return wstr;
 }
 

@@ -201,6 +201,7 @@ public:
 			const bool bIncludeNonTarget=false) const;
 	virtual UINT  GetIdentity() const {return this->wType;}
 	virtual UINT  GetLogicalIdentity() const {return this->wType;}
+	virtual WSTRING GetName() const;
 	static  bool  GetNextGaze(CCueEvents &CueEvents, CMonster *pCaster, CDbRoom *pRoom,
 			const int elevation, UINT& cx, UINT& cy, int& dx, int& dy);
 	UINT          GetOrientationFacingTarget(const UINT wX, const UINT wY) const;

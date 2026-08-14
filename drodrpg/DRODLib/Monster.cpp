@@ -31,6 +31,7 @@
 #include "Monster.h"
 #include "MonsterFactory.h"
 #include "MonsterPiece.h"
+#include "Db.h"
 #include "PlayerDouble.h"
 #include "Character.h"
 #include "Combat.h"
@@ -2389,6 +2390,13 @@ bool CMonster::IsTileAboveMe(const UINT wTX, const UINT wTY) const
 	//If the target tile is elevated, then it is above me if my tile is not elevated.
 	const UINT wMyOTile = this->pCurrentGame->pRoom->GetOSquare(this->wX,this->wY);
 	return !bIsElevatedTile(wMyOTile);
+}
+
+//*****************************************************************************************
+WSTRING CMonster::GetName() const
+//Returns: the monster's name
+{
+	return g_pTheDB->GetMessageText(TILE_MID[this->wType + M_OFFSET]);
 }
 
 //*****************************************************************************************
