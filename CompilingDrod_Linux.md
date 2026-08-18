@@ -1,22 +1,6 @@
 # Building DROD
 
-1. Install Docker.
-2. Run the script `./Scripts/Linux/build.sh all`
-3. This will build a release version of DROD in `./Master/Linux/builds/custom.release.x86_64/drod` and DROD RPG in `./drodrpg/Master/Linux/builds/custom.release.x86_64/drod`
-4. Copy appropriate `drod5_0.dat` files
-5. Copy `libSDL2-2.0.so.0` into the game directory for redistribution
-
-# Building Steam DROD
-
-1. Steam SDK needs to be unpacked into Master/Linux/steam
-2. `./Scripts/Linux/build.sh docker-up`
-3. `./Scripts/Linux/build.sh build-deps`
-4. `./Scripts/Linux/build.sh docker-bar` — this will open bash in the docker container in which:
-    1. `cd Master/Linux`
-    2. `./ninjamaker -steam -64` — Generate script for compiling DROD:GATEB
-    3. `./ninjamaker -steam-tss -64` — Generate script for compiling DROD:TSS
-    4. `ninja -f build.steam.release.x86_64.ninja` — Builds DROD:GATEB for Steam
-    4. `ninja -f build.steam-tss.release.x86_64.ninja` — Builds DROD:TSS for Steam
+See [Docs/Linux_Compilation.md](./Docs/Linux_Compilation.md) for details on how to build DROD on Linux.
 
 # Building new releases
 This is to whoever is tasked with making the proper, official builds. Step by step, all things:
@@ -86,64 +70,22 @@ ninja -f build.steam.release.x86_64.ninja
 2. Replace `steam_appid.txt` with the one from the Gunthro's local files on Steam (VERY IMPORTANT!)
 3. Replace binary `Bin/linux-x86_64` with the compiled file from `Master/Linux/builds/steam.release.x86_64/drod`
 
-# CLion on Linux
-Below are steps and tips to get the project working correctly using Docker builds with full debugging support in CLion on Linux.
+## Old readme
 
-### Custom Build Target
-1. Open _Settings &rarr; Custom Build Targets_.
-2. Create a new target, call it **"Custom Debug Build"**.
-3. Under **Build** click on "&hellip;" and add a new **External Tool**
-   1. Name the new tool **"Custom Debug Build (Docker)"**.
-   2. In **Program to Run** put `Scripts/Linux/build.sh`
-   3. In **Arguments** put `build-drod --mode=custom --debug`
-   4. In **Working Directory** put `Scripts/Linux/`
-4. Select **"Custom Debug Build (Docker)"** as the build command for the tool.
+Below is archived information about Linux builds from Readme.
 
-### Build configuration
-1. Open _Menu &rarr; Run &rarr; Edit configurations..._.
-2. Add a new configuration of type **Custom Build Application** and call it **"Custom Debug"**.
-3. For **Target** select **Custom Debug Build**.
-4. In **Executable** put `Master/Linux/builds/custom.debug.x86_64/drod` (the file won't exist unless you have already build the game once).
-5. In **Working Directory** put `Master/Linux/builds/caravel.debug.x86_64`
+Ninja generator and build files for Linux are included in Master/Linux. cd to Master/Linux and run './ninjamaker' then './build' or './build -clean' for clean rebuild.
 
-### Code completion
-For code completion to work you need to create `CMakeLists.txt` in the root directory:
+When debugging build issues edit the build file from 'ninja -k 0' to 'ninja -k N' so ninja stops building after N jobs fail.
 
-```cmake
-cmake_minimum_required(VERSION 3.20)
-project(DrodCPP)
+>Options are passed to scons as 'option=value' (without the quotes), separated by spaces.
+>For example, if you wanted to build DROD with FMOD audio for amd64/x86-64 (which wouldn't work since >FMOD 3.x doesn't exist for amd64, but hey, let's ignore such trifling details), you would do:
+>
+>`scons audio=fmod arch=amd64`
+>
+>The dist option should be left at the default (none).
 
-set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_CXX_STANDARD 11)
+It is possible to build DROD on a Raspberry Pi 4 (or probably 5), although this will require increasing the amount of swap space available for lower memory units (e.g. less than 4Gb). Failure to provide sufficient swap space will result in the Pi crashing. Increased swap space is not required to run DROD once built.
 
-# Point to your compile_commands.json
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+To build, run `./ninjamaker -arch aarch64 -no-static` followed by `./build` in the `Master/Linux` directory. You will need to have built and installed Metakit before doing this, else it will fail when linking.
 
-# Dummy target so CLion is happy
-file(GLOB_RECURSE ALL_SOURCES "*.cpp" "*.h")
-add_executable(dummy_for_clion ${ALL_SOURCES})
-target_compile_options(dummy_for_clion PRIVATE -x c++)
-target_compile_options(dummy_for_clion PRIVATE -std=c++11)
-target_include_directories(dummy_for_clion PRIVATE
-        ./
-        ./FrontEndLib
-        ./BackEndLib
-        ./DROD
-        ./DRODLib
-        ./DRODLibTests
-        ./CaravelNet
-        ./metakit/include
-)
-```
-
-### Breakpoints and debugging
-In order for path mapping to work correctly in CLion create file `~/.gdbinit` (in your home directory) with the following contents:
-
-```text
-set substitute-path /drod <ABSOLUTE PATH TO YOUR PROJECT FOLDER>
-```
-
-Update `<ABSOLUTE PATH TO YOUR PROJECT FOLDER>` to point to your project folder, its root specifically, no trailing slash.
-
-### Finally
-You should now be able to build DROD and debug it in CLion using its native build capabilities.
