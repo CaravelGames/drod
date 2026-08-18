@@ -96,6 +96,8 @@ void CGridEffect::Draw(SDL_Surface& destSurface)
 	this->pOwnerWidget->GetRect(OwnerRect);
 
 	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
+	ASSERT(pRoom);
+
 	const CDbRoom &room = *pRoom;
 	UINT yPixel = OwnerRect.y;
 	for (UINT wY=0; wY<room.wRoomRows; ++wY, yPixel += CBitmapManager::CY_TILE) {
