@@ -8957,7 +8957,9 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 	case CCharacterCommand::CC_SetNPCAppearance:
 		parseMandatoryOption(pCommand->x, this->pAddCommandGraphicListBox, bFound);
-		parseNumber(pCommand->y);
+		// 5.2 added Keep Behavior flag; we still support old script format pasting
+		skipWhitespace;
+		parseOptionalNumber(pCommand->y);
 	break;
 
 	case CCharacterCommand::CC_SetPlayerWeapon:
