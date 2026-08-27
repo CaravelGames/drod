@@ -867,6 +867,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Command_ToggleSkeletonGuard: strText = "Skeleton Key Guard"; break;
 		case MID_SkeletonGuardBlock: strText = "Skeleton key guard prevents spending skeleton key"; break;
 		case MID_Command_ShowInitialRoom: strText = "Show Initial Room"; break;
+		case MID_TextExt: strText = "txt"; break;
+		case MID_TextExtDesc: strText = "Text file (.txt)"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

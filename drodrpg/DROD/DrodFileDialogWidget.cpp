@@ -48,7 +48,8 @@ const MESSAGE_ID fileExtension[FileExtension::EXT_COUNT] =
 	MID_Data,
 	MID_XML,
 	MID_Ogg,
-	MID_SaveExt
+	MID_SaveExt,
+	MID_TextExt
 };
 
 const MESSAGE_ID fileExtensionDesc[FileExtension::EXT_COUNT] =
@@ -64,7 +65,8 @@ const MESSAGE_ID fileExtensionDesc[FileExtension::EXT_COUNT] =
 	MID_DataDesc,
 	MID_XMLDesc,
 	MID_TheoraDesc,
-	MID_SaveExtDesc
+	MID_SaveExtDesc,
+	MID_TextExtDesc
 };
 
 //*****************************************************************************
