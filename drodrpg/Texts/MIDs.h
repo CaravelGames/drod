@@ -565,6 +565,9 @@ enum MID_CONSTANT {
   MID_HoldTextSaved = 1363,
   MID_ScoresUploaded = 1364,
   MID_ScoresNotUploaded = 1365,
+  MID_GameLogPath = 2197,
+  MID_GeneratingGameLog = 2198,
+  MID_LogComplete = 2199,
 
   //Messages from FileAccess.uni:
   MID_CurrentDirectory = 425,
@@ -1158,6 +1161,9 @@ enum MID_CONSTANT {
   MID_GameSortChronological = 1797,
   MID_GameSortAlphabetical = 1798,
   MID_Scorepoints = 1804,
+  MID_SavesOrGameLog = 2200,
+  MID_ExportSaves = 2192,
+  MID_CreateGameLog = 2201,
 
   //Messages from SelectScreens.uni:
   MID_HoldManagementTitle = 1207,

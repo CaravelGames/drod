@@ -48,6 +48,8 @@ UINT CDb::dwCurrentHoldID = 0L;
 UINT CDb::dwCurrentPlayerID = 0L;
 bool CDb::bFreezeTimeStamps = false;
 
+WSTRING CDb::wstrValidationLogFilePath = WS("");
+
 //
 //CDb public methods.
 //
@@ -258,6 +260,18 @@ CCurrentGame *CDb::GetNewTestGame(
 }
 
 //*******************************************************************************
+void CDb::ClearValidationLogFilePath()
+{
+	CDb::wstrValidationLogFilePath.clear();
+}
+
+//*******************************************************************************
+void CDb::SetValidationLogFilePath(const WSTRING& filePath)
+{
+	CDb::wstrValidationLogFilePath = filePath;
+}
+
+//*******************************************************************************
 bool CDb::ValidateSavedGame(
 //Validates a saved game for correctness (play sequence is still valid) and stats.
 //
@@ -321,6 +335,7 @@ bool CDb::ValidateMoveSequence(
 	pGame->bNoSaves = pGame->bValidatingPlayback = true;
 	pGame->FreezeCommands();
 
+	if (!CDb::wstrValidationLogFilePath.empty())
 	{
 		pGame->ActivateLogging();
 	}
@@ -436,10 +451,11 @@ bool CDb::ValidateMoveSequence(
 			break;
 	}
 
+	if (!CDb::wstrValidationLogFilePath.empty())
 	{
 		CBaseGameLogger* logger = pGame->GetLogger();
 		logger->output();
-		logger->writeToFile(L"D:/thing/testlog.txt");
+		logger->writeToFile(CDb::wstrValidationLogFilePath);
 	}
 
 	delete pGame;

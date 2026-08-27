@@ -86,6 +86,8 @@ public:
 	static bool    FreezingTimeStamps() {return bFreezeTimeStamps;}
 	static void    FreezeTimeStamps(const bool bFlag) {bFreezeTimeStamps = bFlag;}
 
+	void        ClearValidationLogFilePath();
+	void        SetValidationLogFilePath(const WSTRING& filePath);
 	bool        ValidateSavedGame(const UINT savedGameID, std::vector<ScoreCheckpointData>& scoresData);
 	bool        ValidateMoveSequence(const UINT holdID, const CStretchyBuffer& moves,
 			 std::vector<ScoreCheckpointData>& scoresData);
@@ -148,6 +150,7 @@ private:
 
 	static UINT      dwCurrentHoldID, dwCurrentPlayerID;
 	static bool       bFreezeTimeStamps;
+	static WSTRING   wstrValidationLogFilePath;
 };
 
 //Define global pointer to the one and only CDb object.

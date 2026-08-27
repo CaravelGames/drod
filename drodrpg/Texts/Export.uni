@@ -141,3 +141,15 @@ Scores uploaded.
 [MID_ScoresNotUploaded]
 [eng]
 No scores were uploaded.
+
+[MID_GameLogPath]
+[eng]
+Please give the filename to save the game log to.
+
+[MID_GeneratingGameLog]
+[eng]
+Generating game log...
+
+[MID_LogComplete]
+[eng]
+Game log saved.
