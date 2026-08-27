@@ -869,6 +869,12 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Command_ShowInitialRoom: strText = "Show Initial Room"; break;
 		case MID_TextExt: strText = "txt"; break;
 		case MID_TextExtDesc: strText = "Text file (.txt)"; break;
+		case MID_SavesOrGameLog: strText = "Export saved games or create a game log?"; break;
+		case MID_ExportSaves: strText = "&Export Saves"; break;
+		case MID_CreateGameLog: strText = "&Create game log"; break;
+		case MID_GameLogPath: strText = "Please give the filename to save the game log to."; break;
+		case MID_GeneratingGameLog: strText = "Generating game log..."; break;
+		case MID_LogComplete: strText = "Game log saved."; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

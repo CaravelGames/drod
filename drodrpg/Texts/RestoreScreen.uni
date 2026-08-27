@@ -101,3 +101,15 @@ Name
 [MID_Scorepoints]
 [eng]
 Scorepoints
+
+[MID_SavesOrGameLog]
+[eng]
+Export saved games or create a game log?
+
+[MID_ExportSaves]
+[eng]
+&Export Saves
+
+[MID_CreateGameLog]
+[eng]
+&Create game log

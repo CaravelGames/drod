@@ -51,6 +51,7 @@ private:
 	void     ChooseSavedGame(const UINT dwSavedGameID);
 	void     ClearState();
 	void     DisplayScorepointsDialog();
+	void     ExportGameLog();
 	void     InitScorepointQuery();
 	virtual void   OnClick(const UINT dwTagNo);
 	virtual void   OnDoubleClick(const UINT dwTagNo);

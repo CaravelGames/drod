@@ -367,7 +367,7 @@ CRestoreScreen::~CRestoreScreen()
 //******************************************************************************
 bool CRestoreScreen::IsCommandSupported(int command) const
 {
-	return command == CMD_EXTRA_EDITOR_DELETE || command == CMD_USE_ACCESSORY;
+	return command == CMD_EXTRA_EDITOR_DELETE;
 }
 
 //******************************************************************************
@@ -424,10 +424,16 @@ void CRestoreScreen::OnClick(
 
 		case TAG_EXPORT:
 		{
-			CIDSet savedGameIDs = this->pSaveListBoxWidget->GetSelectedItems();
-			const bool bResult = SaveGamesToDisk(savedGameIDs);
-			if (bResult)
-				ShowOkMessage(MID_SavedGamesSaved);
+			UINT type = ShowYesNoMessage(
+				MID_SavesOrGameLog, MID_ExportSaves, MID_CreateGameLog);
+			if (type == TAG_YES) {
+				CIDSet savedGameIDs = this->pSaveListBoxWidget->GetSelectedItems();
+				const bool bResult = SaveGamesToDisk(savedGameIDs);
+				if (bResult)
+					ShowOkMessage(MID_SavedGamesSaved);
+			} else if (type == TAG_NO) {
+				ExportGameLog();
+			}
 		}
 		break;
 
@@ -546,20 +552,6 @@ void CRestoreScreen::OnKeyDown(
 			}
 		}
 		break;
-		case CMD_USE_ACCESSORY:
-		{
-			if (ShowYesNoMessage(L"Do a transcription test?") == TAG_YES) {
-				CIDSet savedGameIDs = this->pSaveListBoxWidget->GetSelectedItems();
-				if (savedGameIDs.size() == 1) {
-					UINT id = savedGameIDs.getFirst();
-					std::vector<ScoreCheckpointData> scores;
-					g_pTheDB->ValidateSavedGame(id, scores);
-					ShowOkMessage(L"Done");
-				}
-			}
-		}
-		break;
-
 		default: break;
 	}
 }
@@ -625,6 +617,26 @@ void CRestoreScreen::DisplayScorepointsDialog()
 	}
 
 	this->pScorepointsDialog->Display();
+}
+
+//*****************************************************************************
+void CRestoreScreen::ExportGameLog()
+{
+	CIDSet savedGameIDs = this->pSaveListBoxWidget->GetSelectedItems();
+	UINT id = savedGameIDs.getFirst();
+	WSTRING wstrExportFile = this->pSaveListBoxWidget->GetTextForKey(id);
+	if (ExportSelectFile(MID_GameLogPath, wstrExportFile, EXT_TXT))
+	{
+		std::vector<ScoreCheckpointData> scores;
+		SetCursor(CUR_Wait);
+		ShowStatusMessage(MID_GeneratingGameLog);
+		g_pTheDB->SetValidationLogFilePath(wstrExportFile);
+		g_pTheDB->ValidateSavedGame(id, scores);
+		g_pTheDB->ClearValidationLogFilePath();
+		HideStatusMessage();
+		SetCursor();
+		ShowOkMessage(g_pTheDB->GetMessageText(MID_LogComplete));
+	}
 }
 
 //*****************************************************************************
