@@ -48,6 +48,7 @@ namespace FileExtension
 		XML=9,
 		THEORA=10,
 		SAVE=11,
+		TXT=12,
 		EXT_COUNT,
 		MAX_EXTENSIONS=32 //bits
 	};
@@ -65,6 +66,7 @@ namespace FileExtension
 #define EXT_XML    (1 << FileExtension::XML)
 #define EXT_THEORA (1 << FileExtension::THEORA)
 #define EXT_SAVE   (1 << FileExtension::SAVE)
+#define EXT_TXT    (1 << FileExtension::TXT)
 
 class CDrodFileDialogWidget : public CFileDialogWidget
 {

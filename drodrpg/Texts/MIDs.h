@@ -595,6 +595,8 @@ enum MID_CONSTANT {
   MID_TheoraDesc = 1256,
   MID_SaveExt = 1344,
   MID_SaveExtDesc = 1345,
+  MID_TextExt = 2189,
+  MID_TextExtDesc = 2190,
 
   //Messages from GameScreen.uni:
   MID_LevelComplete = 446,

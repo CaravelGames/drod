@@ -125,3 +125,11 @@ drs
 [MID_SaveExtDesc]
 [eng]
 DROD RPG save file (.drs)
+
+[MID_TextExt]
+[eng]
+txt
+
+[MID_TextExtDesc]
+[eng]
+Text file (.txt)
