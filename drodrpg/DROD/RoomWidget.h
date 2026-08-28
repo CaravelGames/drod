@@ -261,9 +261,6 @@ public:
 	static UINT    GetKeyMID(const UINT param);
 	static UINT    GetOrbMID(const UINT type);
 	static UINT    GetPressurePlateMID(const UINT type);
-	static UINT    GetSwordMID(const UINT param);
-	static UINT    GetShieldMID(const UINT param);
-	static UINT    GetAccessoryMID(const UINT param);
 	UINT           GetTextureIndexForTile(const UINT tileNo, const bool bForceBaseImage) const;
 	static UINT    GetTokenMID(const UINT param);
 	UINT           GetCustomEntityTile(const UINT wLogicalIdentity,

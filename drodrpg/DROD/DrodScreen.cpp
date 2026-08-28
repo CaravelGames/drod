@@ -825,7 +825,7 @@ WSTRING CDrodScreen::getStatsText(
 				}
 			}
 			if (!bCustomDesc)
-				wstr += g_pTheDB->GetMessageText(CRoomWidget::GetSwordMID(st.sword));
+				wstr += g_pTheDB->GetMessageText(GetSwordMID(st.sword));
 			if (bHasShield || bHasAccessory)
 			{
 				wstr += wszSpace;
@@ -855,7 +855,7 @@ WSTRING CDrodScreen::getStatsText(
 				}
 			}
 			if (!bCustomDesc)
-				wstr += g_pTheDB->GetMessageText(CRoomWidget::GetShieldMID(st.shield));
+				wstr += g_pTheDB->GetMessageText(GetShieldMID(st.shield));
 			if (bHasAccessory)
 			{
 				wstr += wszSpace;
@@ -885,7 +885,7 @@ WSTRING CDrodScreen::getStatsText(
 				}
 			}
 			if (!bCustomDesc)
-				wstr += g_pTheDB->GetMessageText(CRoomWidget::GetAccessoryMID(st.accessory));
+				wstr += g_pTheDB->GetMessageText(GetAccessoryMID(st.accessory));
 		}
 	}
 

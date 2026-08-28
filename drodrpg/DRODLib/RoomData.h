@@ -300,6 +300,86 @@ static inline bool bIsValidStandardWeapon(const UINT t) { return t < SwordCount 
 static inline bool bIsValidStandardShield(const UINT t) { return t < ShieldCount && t != ArmorSlot; }
 static inline bool bIsValidStandardAccessory(const UINT t) { return t < AccessoryCount && t != AccessorySlot; }
 
+static UINT getKeyStatMID(KeyType param) {
+	switch (param) {
+		default:
+		case YellowKey: return MID_YKEYStat;
+		case GreenKey: return MID_GKEYStat;
+		case BlueKey: return MID_BKEYStat;
+		case SkeletonKey: return MID_SKEYStat;
+	}
+}
+
+//*****************************************************************************
+static UINT GetSwordMID(const UINT param)
+//Returns: messageID corresponding to sword type
+{
+	switch (param)
+	{
+	default:
+	case NoSword: return MID_None;
+
+	case WoodenBlade: return MID_Sword1;
+	case ShortSword: return MID_Sword2;
+	case GoblinSword: return MID_Sword6;
+	case LongSword: return MID_Sword3;
+	case HookSword: return MID_Sword4;
+	case ReallyBigSword: return MID_Sword5;
+	case LuckySword: return MID_Sword7;
+	case SerpentSword: return MID_Sword8;
+	case BriarSword: return MID_Sword9;
+	case WeaponSlot: return MID_Sword10;
+	case Dagger: return MID_Sword11;
+	case Staff: return MID_Sword12;
+	case Spear: return MID_Sword13;
+	}
+}
+
+//*****************************************************************************
+static UINT GetShieldMID(const UINT param)
+//Returns: messageID corresponding to shield type
+{
+	switch (param)
+	{
+	default:
+	case NoShield: return MID_None;
+
+	case WoodenShield: return MID_Shield1;
+	case BronzeShield: return MID_Shield2;
+	case SteelShield: return MID_Shield3;
+	case KiteShield: return MID_Shield4;
+	case OremiteShield: return MID_Shield5;
+	case ArmorSlot: return MID_Shield6;
+	case MirrorShield: return MID_Shield7;
+	case LeatherShield: return MID_Shield8;
+	case AluminumShield: return MID_Shield9;
+	}
+}
+
+//*****************************************************************************
+static UINT GetAccessoryMID(const UINT param)
+//Returns: messageID corresponding to accessory type
+{
+	switch (param)
+	{
+		default:
+		case NoAccessory: return MID_None;
+
+		case GrapplingHook: return MID_Accessory1;
+		case WaterBoots: return MID_Accessory2;
+		case InvisibilityPotion: return MID_Accessory3;
+		case SpeedPotion: return MID_Accessory4;
+		case HandBomb: return MID_Accessory5;
+		case PickAxe: return MID_Accessory6;
+		case WarpToken: return MID_Accessory7;
+		case PortableOrb: return MID_Accessory8;
+		case LuckyGold: return MID_Accessory9;
+		case WallWalking: return MID_Accessory10;
+		case XPDoubler: return MID_Accessory11;
+		case AccessorySlot: return MID_Accessory12;
+	}
+}
+
 //******************************************************************************************
 //Environmental weather conditions.
 //Currently, this is completely aesthetic, not affecting game logic in any way.
