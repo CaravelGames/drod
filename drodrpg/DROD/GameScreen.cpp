@@ -583,9 +583,9 @@ void CGameScreen::RedrawStats(
 					hasValue = false;
 				}
 			break;
-			case 11: val = ps.sword != NoSword ? CRoomWidget::GetSwordMID(ps.sword) : (UINT)MID_NoText; break;
-			case 12: val = ps.shield != NoShield ? CRoomWidget::GetShieldMID(ps.shield) : (UINT)MID_NoText; break;
-			case 13: val = ps.accessory != NoAccessory ? CRoomWidget::GetAccessoryMID(ps.accessory) : (UINT)MID_NoText; break;
+			case 11: val = ps.sword != NoSword ? GetSwordMID(ps.sword) : (UINT)MID_NoText; break;
+			case 12: val = ps.shield != NoShield ? GetShieldMID(ps.shield) : (UINT)MID_NoText; break;
+			case 13: val = ps.accessory != NoAccessory ? GetAccessoryMID(ps.accessory) : (UINT)MID_NoText; break;
 			case 14: val = ps.skeletonKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.skeletonKeys; break;
 			case 15: val = ps.XP; break;
 			case 16:

@@ -7232,13 +7232,13 @@ void CEditRoomScreen::SetItemLabelText(const UINT wObject)
 			wMID = this->pRoomWidget->GetKeyMID(this->wSelKeyType);
 		break;
 		case T_SWORD:
-			wMID = this->pRoomWidget->GetSwordMID(this->wSelSwordType);
+			wMID = GetSwordMID(this->wSelSwordType);
 		break;
 		case T_SHIELD:
-			wMID = this->pRoomWidget->GetShieldMID(this->wSelShieldType);
+			wMID = GetShieldMID(this->wSelShieldType);
 		break;
 		case T_ACCESSORY:
-			wMID = this->pRoomWidget->GetAccessoryMID(this->wSelAccessoryType);
+			wMID = GetAccessoryMID(this->wSelAccessoryType);
 		break;
 		default:
 			wMID = TILE_MID[wObject];
