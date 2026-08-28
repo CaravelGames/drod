@@ -1,0 +1,95 @@
+[MID_GameLog_Collected]
+[eng]
+Collected items
+
+[MID_GameLog_OpenedDoor]
+[eng]
+Opened door at %position%
+
+[MID_GameLog_ClosedDoor]
+[eng]
+Closed door at %position%
+
+[MID_GameLog_DugDirt]
+[eng]
+Dug up dirt at %position%
+
+[MID_GameLog_LitFuse]
+[eng]
+Lit fuse at %position%
+
+[MID_GameLog_TileExploded]
+[eng]
+%tile% exploded at %position%
+
+[MID_GameLog_FoughtMonster]
+[eng]
+Fought %monster% at %position%
+
+[MID_GameLog_AttackByMonster]
+[eng]
+Attacked by %monster% at %position%
+
+[MID_GameLog_HitByBeam]
+[eng]
+Hit by beam at %position%
+
+[MID_GameLog_HurtByTile]
+[eng]
+Hurt by %tile% at %position%
+
+[MID_GameLog_MonsterKilled]
+[eng]
+%monster% at %position% killed by damage
+
+[MID_GameLog_SwapWeapon]
+[eng]
+Swapped weapon %old% for %new% at %position%
+
+[MID_GameLog_SwapShield]
+[eng]
+Swapped shield %old% for %new% at %position%
+
+[MID_GameLog_SwapAccessory]
+[eng]
+Swapped accessory %old% for %new% at %position%
+
+[MID_GameLog_UseWeapon]
+[eng]
+Used weapon %equipment% at %position%
+
+[MID_GameLog_UseShield]
+[eng]
+Used shield %equipment% at %position%
+
+[MID_GameLog_UseEquipment]
+[eng]
+Used %equipment% at %position%
+
+[MID_GameLog_UsePickaxe]
+[eng]
+Destroyed wall at %position% using Pickaxe
+
+[MID_GameLog_UsePortableOrb]
+[eng]
+Opened %tile% at %position% using Portable Orb
+
+[MID_GameLog_UseWarpToken]
+[eng]
+Warped from %start% to %destination% with Warp Token
+
+[MID_GameLog_UseWallWalking]
+[eng]
+Moved from %start% to %destination% with Wall Walking
+
+[MID_GameLog_WarpWithAccessory]
+[eng]
+Used accessory to move from %start% to %destination%
+
+[MID_GameLog_ScriptChangedStats]
+[eng]
+Script changed stats:
+
+[MID_GameLog_ScoreCheckpoint]
+[eng]
+Achievied score checkpoint:

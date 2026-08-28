@@ -875,6 +875,30 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_GameLogPath: strText = "Please give the filename to save the game log to."; break;
 		case MID_GeneratingGameLog: strText = "Generating game log..."; break;
 		case MID_LogComplete: strText = "Game log saved."; break;
+		case MID_GameLog_Collected: strText = "Collected items"; break;
+		case MID_GameLog_OpenedDoor: strText = "Opened door at %position%"; break;
+		case MID_GameLog_ClosedDoor: strText = "Closed door at %position%"; break;
+		case MID_GameLog_DugDirt: strText = "Dug up dirt at %position%"; break;
+		case MID_GameLog_LitFuse: strText = "Lit fuse at %position%"; break;
+		case MID_GameLog_TileExploded: strText = "%tile% exploded at %position%"; break;
+		case MID_GameLog_FoughtMonster: strText = "Fought %monster% at %position%"; break;
+		case MID_GameLog_AttackByMonster: strText = "Attacked by %monster% at %position%"; break;
+		case MID_GameLog_HitByBeam: strText = "Hit by beam at %position%"; break;
+		case MID_GameLog_HurtByTile: strText = "Hurt by %tile% at %position%"; break;
+		case MID_GameLog_MonsterKilled: strText = "%monster% at %position% killed by damage"; break;
+		case MID_GameLog_SwapWeapon: strText = "Swapped weapon %old% for %new% at %position%"; break;
+		case MID_GameLog_SwapShield: strText = "Swapped shield %old% for %new% at %position%"; break;
+		case MID_GameLog_SwapAccessory: strText = "Swapped accessory %old% for %new% at %position%"; break;
+		case MID_GameLog_UseWeapon: strText = "Used weapon %equipment% at %position%"; break;
+		case MID_GameLog_UseShield: strText = "Used shield %equipment% at %position%"; break;
+		case MID_GameLog_UseEquipment: strText = "Used %equipment% at %position%"; break;
+		case MID_GameLog_UsePickaxe: strText = "Destroyed wall at %position% using Pickaxe"; break;
+		case MID_GameLog_UsePortableOrb: strText = "Opened %tile% at %position% using Portable Orb"; break;
+		case MID_GameLog_UseWarpToken: strText = "Warped from %start% to %destination% with Warp Token"; break;
+		case MID_GameLog_UseWallWalking: strText = "Moved from %start% to %destination% with Wall Walking"; break;
+		case MID_GameLog_WarpWithAccessory: strText = "Used accessory to move from %start% to %destination%"; break;
+		case MID_GameLog_ScriptChangedStats: strText = "Script changed stats:"; break;
+		case MID_GameLog_ScoreCheckpoint: strText = "Achievied score checkpoint:"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
