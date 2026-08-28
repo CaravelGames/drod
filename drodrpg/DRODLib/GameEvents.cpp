@@ -278,7 +278,7 @@ CCollectedItemEvent::CCollectedItemEvent()
 //*****************************************************************************
 WSTRING CCollectedItemEvent::toText() const
 {
-	WSTRING wstr = L"Collected";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_Collected);
 	wstr += wszSpace;
 	wstr += CStatChangeEvent::toText();
 	return wstr;
@@ -292,8 +292,8 @@ CUseKeyOnDoorEvent::CUseKeyOnDoorEvent(KeyType type, UINT x, UINT y, bool opened
 //*****************************************************************************
 WSTRING CUseKeyOnDoorEvent::toText() const
 {
-	WSTRING wstr = this->opened ? L"Opened door at %position%" :
-		L"Closed door at %position%";
+	WSTRING wstr = this->opened ? g_pTheDB->GetMessageText(MID_GameLog_OpenedDoor) :
+		g_pTheDB->GetMessageText(MID_GameLog_ClosedDoor);
 
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 	wstr += wszSpace;
@@ -315,8 +315,8 @@ CUseMoneyOnDoorEvent::CUseMoneyOnDoorEvent(int cost, UINT x, UINT y, bool opened
 //*****************************************************************************
 WSTRING CUseMoneyOnDoorEvent::toText() const
 {
-	WSTRING wstr = this->opened ? L"Opened door at %position%" :
-		L"Closed door at %position%";
+	WSTRING wstr = this->opened ? g_pTheDB->GetMessageText(MID_GameLog_OpenedDoor) :
+		g_pTheDB->GetMessageText(MID_GameLog_ClosedDoor);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 
 	wstr += wszSpace;
@@ -340,7 +340,7 @@ CDigDirtEvent::CDigDirtEvent(UINT cost, UINT x, UINT y)
 //*****************************************************************************
 WSTRING CDigDirtEvent::toText() const
 {
-	WSTRING wstr = L"Dug up dirt at %position%";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_DugDirt);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 
 	wstr += wszSpace;
@@ -361,7 +361,7 @@ CLightFuseEvent::CLightFuseEvent(const UINT wX, const UINT wY)
 //*****************************************************************************
 WSTRING CLightFuseEvent::toText() const
 {
-	WSTRING wstr = L"Lit fuse at %position%";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_LitFuse);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 	return wstr;
 }
@@ -375,7 +375,7 @@ CExplosiveExplodedEvent::CExplosiveExplodedEvent(
 //*****************************************************************************
 WSTRING CExplosiveExplodedEvent::toText() const
 {
-	WSTRING wstr = L"%tile% exploded at %position%";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_TileExploded);
 	wstr = WCSReplace(wstr, wstrTile, g_pTheDB->GetMessageText(TILE_MID[this->tileType]));
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 	return wstr;
@@ -398,7 +398,7 @@ void CCombatEvent::setResults(const int hpDelta, const int grDelta, const int xp
 //*****************************************************************************
 WSTRING CCombatEvent::toText() const
 {
-	WSTRING wstr = L"Fought %monster% at %position%";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_FoughtMonster);
 	wstr = WCSReplace(wstr, wstrMonster, this->monsterName);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 
@@ -448,7 +448,7 @@ CMonsterAttackEvent::CMonsterAttackEvent(
 //*****************************************************************************
 WSTRING CMonsterAttackEvent::toText() const
 {
-	WSTRING wstr = L"Hit by %monster% at %position%";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_AttackByMonster);
 	wstr = WCSReplace(wstr, wstrMonster, this->monsterName);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 
@@ -471,7 +471,7 @@ CBeamDamageEvent::CBeamDamageEvent(
 //*****************************************************************************
 WSTRING CBeamDamageEvent::toText() const
 {
-	WSTRING wstr = L"Hit by beam at %position%";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_HitByBeam);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 
 	wstr += wszSpace;
@@ -494,7 +494,7 @@ CTileDamageEvent::CTileDamageEvent(
 //*****************************************************************************
 WSTRING CTileDamageEvent::toText() const
 {
-	WSTRING wstr = L"Stepped on %tile% at %position%";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_HurtByTile);
 	wstr = WCSReplace(wstr, wstrTile, g_pTheDB->GetMessageText(TILE_MID[this->tileType]));
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 
@@ -518,7 +518,7 @@ CMonsterKilledEvent::CMonsterKilledEvent(
 //*****************************************************************************
 WSTRING CMonsterKilledEvent::toText() const
 {
-	WSTRING wstr = L"%monster% at %position% killed by damage";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_MonsterKilled);
 	wstr = WCSReplace(wstr, wstrMonster, this->monsterName);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 	return wstr;
@@ -548,9 +548,9 @@ WSTRING CSwapEquipmentEvent::toText() const
 WSTRING CSwapEquipmentEvent::getBaseString() const
 {
 	switch (this->equipType) {
-		case ScriptFlag::Weapon: return L"Swapped sword %old% for %new% at %position%";
-		case ScriptFlag::Armor: return L"Swapped shield %old% for %new% at %position%";
-		case ScriptFlag::Accessory: return L"Swapped accessory %old% for %new% at %position%";
+		case ScriptFlag::Weapon: return g_pTheDB->GetMessageText(MID_GameLog_SwapWeapon);
+		case ScriptFlag::Armor: return g_pTheDB->GetMessageText(MID_GameLog_SwapShield);
+		case ScriptFlag::Accessory: return g_pTheDB->GetMessageText(MID_GameLog_SwapAccessory);
 		default: return WS("");
 	}
 }
@@ -578,10 +578,10 @@ WSTRING CUseEquipmentEvent::toText() const
 WSTRING CUseEquipmentEvent::getBaseString() const
 {
 	switch (this->equipType) {
-	case ScriptFlag::Weapon: return L"Used weapon %equipment% at %position%";
-	case ScriptFlag::Armor: return L"Used shield %equipment% at %position%";
+	case ScriptFlag::Weapon: return g_pTheDB->GetMessageText(MID_GameLog_UseWeapon);
+	case ScriptFlag::Armor: return g_pTheDB->GetMessageText(MID_GameLog_UseShield);
 	case ScriptFlag::Accessory:
-	default: return L"Used %equipment% at %position%";
+	default: return g_pTheDB->GetMessageText(MID_GameLog_UseEquipment);
 	}
 }
 
@@ -593,7 +593,7 @@ CUsePickaxeOnWallEvent::CUsePickaxeOnWallEvent(const UINT wX, const UINT wY)
 //*****************************************************************************
 WSTRING CUsePickaxeOnWallEvent::toText() const
 {
-	WSTRING wstr = L"Destroyed wall at %position% using Pickaxe";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_UsePickaxe);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(position));
 	return wstr;
 }
@@ -607,7 +607,7 @@ CUsePortableOrbOnDoorEvent::CUsePortableOrbOnDoorEvent(
 //*****************************************************************************
 WSTRING CUsePortableOrbOnDoorEvent::toText() const
 {
-	WSTRING wstr = L"Opened %tile% at %position% using Portable Orb";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_UsePortableOrb);
 	wstr = WCSReplace(wstr, wstrTile, g_pTheDB->GetMessageText(TILE_MID[this->tileType]));
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
 	return wstr;
@@ -636,9 +636,9 @@ WSTRING CUseWarpAccessoryEvent::toText() const
 WSTRING CUseWarpAccessoryEvent::getBaseString() const
 {
 	switch (accessoryType) {
-		case AccessoryType::WarpToken: return L"Warped from %start% to %destination% with Warp Token";
-		case AccessoryType::WallWalking: return L"Moved from %start% to %destination% with Wall Walking";
-		default: return L"Use accessory to move from %start% to %destination%";
+		case AccessoryType::WarpToken: return g_pTheDB->GetMessageText(MID_GameLog_UseWarpToken);
+		case AccessoryType::WallWalking: return g_pTheDB->GetMessageText(MID_GameLog_UseWallWalking);
+		default: return g_pTheDB->GetMessageText(MID_GameLog_WarpWithAccessory);
 	}
 }
 
@@ -651,7 +651,7 @@ CScriptedStatChangeEvent::CScriptedStatChangeEvent(UINT turn)
 //*****************************************************************************
 WSTRING CScriptedStatChangeEvent::toText() const
 {
-	WSTRING wstr = L"Script changed stats:";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_ScriptChangedStats);
 	wstr += wszSpace;
 	wstr += CStatChangeEvent::toText();
 	return wstr;
@@ -665,7 +665,7 @@ CScoreCheckpointEvent::CScoreCheckpointEvent(const WSTRING& name, int score)
 //*****************************************************************************
 WSTRING CScoreCheckpointEvent::toText() const
 {
-	WSTRING wstr = L"Achievied score checkpoint:";
+	WSTRING wstr = g_pTheDB->GetMessageText(MID_GameLog_ScoreCheckpoint);
 	wstr += wszSpace;
 	wstr += this->scoreCheckpointName;
 	wstr += wszSpace;
