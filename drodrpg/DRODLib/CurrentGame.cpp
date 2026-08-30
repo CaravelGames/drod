@@ -5467,10 +5467,10 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, YellowKey), true);
 				logger->openDoorWithKey(YellowKey, wX, wY);
 			} else if (ps.skeletonKeys) {
-				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					logger->openDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
@@ -5483,10 +5483,10 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, GreenKey), true);
 				logger->openDoorWithKey(GreenKey, wX, wY);
 			} else if (ps.skeletonKeys) {
-				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					logger->openDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
@@ -5499,10 +5499,10 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				CueEvents.Add(CID_ItemUsed, new CMoveCoord(wX, wY, BlueKey), true);
 				logger->openDoorWithKey(BlueKey, wX, wY);
 			} else if (ps.skeletonKeys) {
-				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					logger->openDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
@@ -5517,10 +5517,10 @@ bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT 
 				CueEvents.Add(CID_EntityAffected, new CCombatEffect(this->pPlayer, CET_GOLD, -cost), true);
 				logger->openDoorWithMoney(cost, wX, wY);
 			} else if (ps.skeletonKeys) {
-				if (!SpendSkeletonKey(CueEvents, wX, wY, ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY, ps)) {
 					logger->openDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
@@ -5566,10 +5566,10 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			}
 			else if (ps.skeletonKeys)
 			{
-				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					logger->closeDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
@@ -5584,10 +5584,10 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			}
 			else if (ps.skeletonKeys)
 			{
-				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					logger->closeDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
@@ -5602,10 +5602,10 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 			}
 			else if (ps.skeletonKeys)
 			{
-				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					logger->closeDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
@@ -5621,10 +5621,10 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 				CueEvents.Add(CID_EntityAffected, new CCombatEffect(this->pPlayer, CET_GOLD, -cost), true);
 				logger->closeDoorWithMoney(cost, wX, wY);
 			} else if (ps.skeletonKeys) {
-				if (!SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
-					return false;
-				} else {
+				if (SpendSkeletonKey(CueEvents, wX, wY - (wY > 0 ? 1 : -1), ps)) {
 					logger->closeDoorWithKey(SkeletonKey, wX, wY);
+				} else {
+					return false;
 				}
 			}
 			else
