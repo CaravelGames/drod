@@ -5388,7 +5388,7 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 			ASSERT(pCommand->pSpeech);
 			pCommand->pSpeech->MessageText = pCmd->text.c_str(); //get interpolated text
 			UINT& characterType = pCommand->pSpeech->wCharacter;
-			WSTRING customName = DefaultCustomCharacterName;
+			WSTRING customName;
 
 			if (characterType == Speaker_Self)
 			{

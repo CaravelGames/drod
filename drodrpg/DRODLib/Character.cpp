@@ -67,8 +67,6 @@ const UINT MAX_ANSWERS = 9;
 #define EachUseStr "EachUse"
 #define EachVictoryStr "EachVictory"
 
-#define CustomNameStr "Name"
-
 #define ParamXStr "XParam"
 #define ParamYStr "YParam"
 #define ParamWStr "WParam"
@@ -6147,7 +6145,7 @@ WSTRING CCharacter::GetName() const
 	WSTRING wstr;
 
 	bool bCharacterName = false;
-	if (GetCustomName() != DefaultCustomCharacterName) {
+	if (HasCustomName()) {
 		bCharacterName = true;
 		wstr += GetCustomName();
 	} else if (this->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
@@ -7021,8 +7019,6 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->eachUseLabelIndex = vars.GetVar(EachUseStr, this->eachUseLabelIndex);
 	this->eachVictoryLabelIndex = vars.GetVar(EachVictoryStr, this->eachVictoryLabelIndex);
 
-	this->customName = vars.GetVar(CustomNameStr, this->customName.c_str());
-
 	//Imperatives.
 	this->bVulnerable = vars.GetVar(VulnerableStr, this->bVulnerable);
 	this->bMissionCritical = vars.GetVar(MissionCriticalStr, this->bMissionCritical);
@@ -7158,9 +7154,6 @@ const
 		vars.SetVar(EachUseStr, this->eachUseLabelIndex);
 	if (this->eachVictoryLabelIndex != NO_LABEL)
 		vars.SetVar(EachVictoryStr, this->eachVictoryLabelIndex);
-
-	if (!this->customName.empty())
-		vars.SetVar(CustomNameStr, this->customName.c_str());
 
 	//Imperatives.
 	if (!this->bVulnerable)

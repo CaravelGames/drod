@@ -56,7 +56,6 @@
 #include <vector>
 using std::vector;
 
-#define DefaultCustomCharacterName wszEmpty
 #define ParamProcessSequenceStr "ProcessSequenceParam"
 #define ParamSpeechColorStr "SpeechColorParam"
 #define GhostImageStr "GhostImage"
@@ -133,7 +132,6 @@ public:
 	virtual UINT   getDEF() const;   //allow "negative" values to be returned
 	virtual UINT   getSword() const;
 
-	WSTRING        GetCustomName() const { return this->customName; }
 	UINT           GetCustomSpeechColor() const { return this->customSpeechColor; }
 	void           getCommandParams(const CCharacterCommand& command,
 			UINT& x, UINT& y, UINT& w, UINT& h, UINT& f) const;
@@ -361,8 +359,6 @@ private:
 	bool bIfNot; // should if result be inverted
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
 	int  eachVictoryLabelIndex; //if set, jump script execution here on each combat victory
-
-	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
 
 	UINT customSpeechColor; //Value to represent custom speech color. empty means use default color
 
