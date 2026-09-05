@@ -447,7 +447,7 @@ void CEntranceSelectDialogWidget::PopulateList(const DATATYPE datatype) //[defau
 				string colorUnused;
 				const UINT dwSpeakerTextID = getSpeakerNameText(characterType, colorUnused);
 				WSTRING charText;
-				if (speech[wIndex].customName != DefaultCustomCharacterName) {
+				if (!speech[wIndex].customName.empty()) {
 					charText = speech[wIndex].customName;
 				} else if (pCustomChar) {
 					charText = pCustomChar->charNameText.c_str();

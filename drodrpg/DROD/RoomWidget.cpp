@@ -1366,7 +1366,7 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						newATK = pCharacter->getATK();
 						newDEF = pCharacter->getDEF();
 						ability = EquipmentDescription::GetEquipmentAbility(pCharacter, equipType, wszCommaSpace);
-						if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+						if (pCharacter->HasCustomName()) {
 							customName = pCharacter->GetCustomName();
 						}
 

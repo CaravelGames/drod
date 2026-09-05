@@ -202,6 +202,8 @@ public:
 	virtual UINT  GetIdentity() const {return this->wType;}
 	virtual UINT  GetLogicalIdentity() const {return this->wType;}
 	virtual WSTRING GetName() const;
+	virtual WSTRING GetCustomName() const { return this->customName; }
+	virtual void  SetCustomName(const WSTRING& name) { this->customName = name; }
 	static  bool  GetNextGaze(CCueEvents &CueEvents, CMonster *pCaster, CDbRoom *pRoom,
 			const int elevation, UINT& cx, UINT& cy, int& dx, int& dy);
 	UINT          GetOrientationFacingTarget(const UINT wX, const UINT wY) const;
@@ -225,6 +227,7 @@ public:
 	virtual int   getXP() const; //may be negative
 	virtual std::array<float, 3> getHSV() const;
 
+	virtual bool  HasCustomName() const;
 	virtual bool  HasCustomWeakness() const {return false;}
 	virtual bool  HasGoblinWeakness() const {return false;}
 	virtual bool  HasNoEnemyDefense() const {return false;}
@@ -329,6 +332,8 @@ protected:
 	UINT          RotationalDistanceCO(const UINT wTargetO) const;
 
 	UINT color, hue, saturation; //cosmetic details
+
+	WSTRING customName; // Custom name for this monster, used for any display purpose, empty means use the default monster name
 
 	const CCurrentGame * pCurrentGame;
 	CCoordStack pathToDest; //sequence of squares that lead to preferred goal coord

@@ -48,6 +48,9 @@
 #define XPStr "XP"
 
 #define EggSpawnStr "EggSpawn"
+#define CustomNameStr "Name"
+
+#define DefaultCustomMonsterName wszEmpty
 
 CCoordIndex_T<USHORT> CMonster::room;
 CCoordIndex CMonster::swordsInRoom;
@@ -137,6 +140,7 @@ void CMonster::SetStatsFromOther(const CMonster& other)
 	this->color = other.color;
 	this->hue = other.hue;
 	this->saturation = other.saturation;
+	this->customName = other.customName;
 }
 
 //*****************************************************************************
@@ -2150,6 +2154,9 @@ void CMonster::Save(
 	if (this->saturation)
 		this->ExtraVars.SetVar(SaturationStr, this->saturation);
 
+	if (!this->customName.empty())
+		this->ExtraVars.SetVar(CustomNameStr, this->customName.c_str());
+
 	UINT dwExtraVarsSize;
 	BYTE *pbytExtraVarsBytes = this->ExtraVars.GetPackedBuffer(dwExtraVarsSize);
 	ASSERT(pbytExtraVarsBytes);
@@ -2196,6 +2203,7 @@ void CMonster::SetMembers(const CDbPackedVars& vars)
 	this->color = vars.GetVar(ColorStr, this->color);
 	this->hue = vars.GetVar(HueStr, this->hue);
 	this->saturation = vars.GetVar(SaturationStr, this->saturation);
+	this->customName = vars.GetVar(CustomNameStr, this->customName.c_str());
 }
 
 //
@@ -2396,7 +2404,17 @@ bool CMonster::IsTileAboveMe(const UINT wTX, const UINT wTY) const
 WSTRING CMonster::GetName() const
 //Returns: the monster's name
 {
+	if (HasCustomName()) {
+		return this->customName;
+	}
+
 	return g_pTheDB->GetMessageText(TILE_MID[this->wType + M_OFFSET]);
+}
+
+//*****************************************************************************************
+bool CMonster::HasCustomName() const
+{
+	return this->customName != DefaultCustomMonsterName;
 }
 
 //*****************************************************************************************

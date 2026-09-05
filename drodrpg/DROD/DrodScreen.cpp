@@ -811,7 +811,7 @@ WSTRING CDrodScreen::getStatsText(
 				if (pGame && pGame->pHold)
 				{
 					CCharacter* pChar = pGame->getCustomEquipment(ScriptFlag::Weapon);
-					if (pChar && pChar->GetCustomName() != DefaultCustomCharacterName) {
+					if (pChar && pChar->HasCustomName()) {
 						wstr += pChar->GetCustomName();
 						bCustomDesc = true;
 					} else {
@@ -841,7 +841,7 @@ WSTRING CDrodScreen::getStatsText(
 				if (pGame && pGame->pHold)
 				{
 					CCharacter* pChar = pGame->getCustomEquipment(ScriptFlag::Armor);
-					if (pChar && pChar->GetCustomName() != DefaultCustomCharacterName) {
+					if (pChar && pChar->HasCustomName()) {
 						wstr += pChar->GetCustomName();
 						bCustomDesc = true;
 					} else {
@@ -871,7 +871,7 @@ WSTRING CDrodScreen::getStatsText(
 				if (pGame && pGame->pHold)
 				{
 					CCharacter* pChar = pGame->getCustomEquipment(ScriptFlag::Accessory);
-					if (pChar && pChar->GetCustomName() != DefaultCustomCharacterName) {
+					if (pChar && pChar->HasCustomName()) {
 						wstr += pChar->GetCustomName();
 						bCustomDesc = true;
 					} else {

@@ -636,7 +636,7 @@ void CGameScreen::RedrawStats(
 					if (this->pCurrentGame->pHold)
 					{
 						CCharacter *pChar = this->pCurrentGame->getCustomEquipment(equipType);
-						if (pChar && pChar->GetCustomName() != DefaultCustomCharacterName) {
+						if (pChar && pChar->HasCustomName()) {
 							pLabel->SetText(pChar->GetCustomName().c_str());
 							break;
 						} else {
