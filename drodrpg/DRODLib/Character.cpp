@@ -1101,6 +1101,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_SetMonsterName:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_SetWallLight:
@@ -1167,6 +1168,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_SetMonsterName:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_SetWallLight:
@@ -1234,6 +1236,7 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_SetMonsterName:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_SetWallLight:
@@ -3275,6 +3278,18 @@ void CCharacter::Process(
 					}
 				}
 				bProcessNextCommand = true;
+			break;
+
+			case CCharacterCommand::CC_SetMonsterName:
+			{
+				getCommandXY(command, px, py);
+				CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+				if (pMonster) {
+					pMonster->SetCustomName(pGame->ExpandText(command.label.c_str(), this));
+				}
+				
+				bProcessNextCommand = true;
+			}
 			break;
 
 			case CCharacterCommand::CC_AttackTile:

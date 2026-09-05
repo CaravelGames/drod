@@ -4186,6 +4186,19 @@ const
 				wstr += _itoW(command.h, temp, 10);
 		}
 		break;
+		case CCharacterCommand::CC_SetMonsterName:
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_To);
+			wstr += wszSpace;
+			wstr += command.label;
+		break;
 
 		case CCharacterCommand::CC_AttackTile:
 			wstr += _itoW(command.w, temp, 10);
@@ -4490,6 +4503,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_CountItemGroup:
 		case CCharacterCommand::CC_PopFromArrayVar:
 		case CCharacterCommand::CC_ArrayVarRange:
+		case CCharacterCommand::CC_SetMonsterName:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -4711,6 +4725,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMapIcon, g_pTheDB->GetMessageText(MID_SetMapIcon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, g_pTheDB->GetMessageText(MID_SetMovementType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMonsterVar, g_pTheDB->GetMessageText(MID_SetMonsterVar));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMonsterName, g_pTheDB->GetMessageText(MID_SetMonsterName));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
 //	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerSword, g_pTheDB->GetMessageText(MID_SetPlayerSword));
@@ -5832,6 +5847,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_LogicalWaitNOR
 		NO_WIDGETS,         //CC_IfNot
 		NO_WIDGETS,         //CC_IfElseIfNot
+		TEXTBOX,            //CC_SetMonsterName
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -5988,6 +6004,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LogicalWaitNOR
 		NO_LABELS,          //CC_IfNot
 		NO_LABELS,          //CC_IfElseIfNot
+		NO_LABELS,          //CC_SetMonsterName
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -7060,6 +7077,16 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			QueryXY();
 		}
 		break;
+		case CCharacterCommand::CC_SetMonsterName:
+		{
+			CTextBoxWidget* pLabelText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
+			ASSERT(pLabelText);
+			WSTRING text = pLabelText->GetText();
+			this->pCommand->label = text.empty() ? to_WSTRING(1) : text;
+			QueryXY();
+		}
+		break;
 
 		case CCharacterCommand::CC_AttackTile:
 		{
@@ -7623,6 +7650,14 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 				this->pSpeechText->SetText(this->pCommand->label.c_str());
 			else
 				this->pSpeechText->SetText(_itoW(this->pCommand->h, temp, 10));
+		}
+		break;
+		case CCharacterCommand::CC_SetMonsterName:
+		{
+			CTextBoxWidget* pText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
+			ASSERT(pText);
+			pText->SetText(this->pCommand->label.c_str());
 		}
 		break;
 
@@ -8403,6 +8438,11 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			pCommand->h = _Wtoi(pText + pos); //get number
 		else
 			pCommand->label = pText + pos; //get text expression
+	break;
+	case CCharacterCommand::CC_SetMonsterName:
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y); skipComma;
+		pCommand->label = pText + pos;
 	break;
 
 	case CCharacterCommand::CC_AttackTile:
@@ -9242,6 +9282,11 @@ WSTRING CCharacterDialogWidget::toText(
 		else
 			concatNum(c.h);
 	}
+	break;
+	case CCharacterCommand::CC_SetMonsterName:
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		wstr += c.label;
 	break;
 
 	case CCharacterCommand::CC_AttackTile:

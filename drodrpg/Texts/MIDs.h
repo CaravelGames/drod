@@ -1862,6 +1862,7 @@ enum MID_CONSTANT {
   MID_LogicalWaitNOR = 2180,
   MID_IfNot = 2181,
   MID_IfElseIfNot = 2182,
+  MID_SetMonsterName = 2226,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

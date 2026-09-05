@@ -406,6 +406,7 @@ public:
 		CC_LogicalWaitNOR,      //Begins a logical wait block. Waits until all conditions are false.
 		CC_IfNot,               //Begin a conditional block if next command is not satisfied.
 		CC_IfElseIfNot,         //Else combined with if not to reduce code nesting
+		CC_SetMonsterName,      //Change the custome name of monster at (x,y) to label value
 		CC_Count
 	};
 
