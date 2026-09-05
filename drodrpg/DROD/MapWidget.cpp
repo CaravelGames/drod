@@ -70,7 +70,7 @@ enum MapColor
 	MAP_MEDRED,
 	MAP_LTRED,
 	MAP_MAGENTA,
-	MAP_LTBROWN,
+	MAP_BROWN,
 	MAP_BROWN1,
 	MAP_BROWN2,
 	MAP_BROWN3,
@@ -1009,7 +1009,7 @@ void CMapWidget::InitMapColors()
 	m_arrColor[MAP_MEDRED] =   GetSurfaceColor(this->pMapSurface, 255,64, 64);
 	m_arrColor[MAP_LTRED] =    GetSurfaceColor(this->pMapSurface, 255,128,128);
 	m_arrColor[MAP_MAGENTA] =  GetSurfaceColor(this->pMapSurface, 128,0,  128);
-	m_arrColor[MAP_LTBROWN] = GetSurfaceColor(this->pMapSurface, 194, 194, 0);
+	m_arrColor[MAP_BROWN] = GetSurfaceColor(this->pMapSurface, 128, 128, 0);
 	m_arrColor[MAP_BROWN1] = GetSurfaceColor(this->pMapSurface, 182, 162, 0);
 	m_arrColor[MAP_BROWN2] = GetSurfaceColor(this->pMapSurface, 160, 140, 0);
 	m_arrColor[MAP_BROWN3] = GetSurfaceColor(this->pMapSurface, 138, 118, 0);
@@ -1627,7 +1627,7 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 		case T_PLATFORM_P:
 			return m_arrColor[MAP_DKORANGE];
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
-			return m_arrColor[MAP_LTBROWN];
+			return m_arrColor[MAP_BROWN];
 		case T_DOOR_MONEY:
 			return m_arrColor[MAP_ORANGE];
 		default:
