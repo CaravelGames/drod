@@ -1887,3 +1887,7 @@ If Not ...
 [MID_IfElseIfNot]
 [eng]
 Else If Not
+
+[MID_SetMonsterName]
+[eng]
+Set monster name
