@@ -70,8 +70,11 @@ CGameEvent::CGameEvent(GameEventType type)
 {}
 
 //*****************************************************************************
-CEnterRoomEvent::CEnterRoomEvent(CDbRoom* pRoom)
+CEnterRoomEvent::CEnterRoomEvent(CDbRoom* pRoom, const PlayerStats& ps)
 	: CGameEvent(GameEventType::GE_EnterRoom), locationDescription()
+	, hp (ps.HP), atk(ps.ATK), def(ps.DEF), gr(ps.GOLD), xp(ps.XP)
+	, yellowKey(ps.yellowKeys), greenKey(ps.greenKeys), blueKey(ps.blueKeys)
+	, skeletonKey(ps.skeletonKeys), shovels(ps.shovels)
 {
 	CDbLevel* pLevel = pRoom->GetCurrentGame()->pLevel;
 	this->locationDescription = (const WCHAR*)pLevel->NameText;
@@ -85,7 +88,65 @@ CEnterRoomEvent::CEnterRoomEvent(CDbRoom* pRoom)
 //*****************************************************************************
 WSTRING CEnterRoomEvent::toText() const
 {
-	return this->locationDescription;
+	WSTRING wstr;
+	wstr = this->locationDescription;
+	wstr += wszCRLF;
+
+	wstr += wszLeftBracket;
+	wstr += intToText(this->hp, false);
+	wstr += wszSpace;
+	wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
+	wstr += wszCommaSpace;
+	wstr += intToText(this->atk, false);
+	wstr += wszSpace;
+	wstr += g_pTheDB->GetMessageText(MID_ATKStat);
+	wstr += wszCommaSpace;
+	wstr += intToText(this->def, false);
+	wstr += wszSpace;
+	wstr += g_pTheDB->GetMessageText(MID_DEFStat);
+
+	if (this->gr != 0) {
+		wstr += wszCommaSpace;
+		wstr += intToText(this->gr, false);
+		wstr += wszSpace;
+		wstr += g_pTheDB->GetMessageText(MID_GRStat);
+	}
+	if (this->xp != 0) {
+		wstr += wszCommaSpace;
+		wstr += intToText(this->xp, false);
+		wstr += wszSpace;
+		wstr += g_pTheDB->GetMessageText(MID_XPStat);
+	}
+
+	wstr += wszCommaSpace;
+	wstr += intToText(this->yellowKey, false);
+	wstr += wszSpace;
+	wstr += g_pTheDB->GetMessageText(MID_YKEYStat);
+	wstr += wszCommaSpace;
+	wstr += intToText(this->greenKey, false);
+	wstr += wszSpace;
+	wstr += g_pTheDB->GetMessageText(MID_GKEYStat);
+	wstr += wszCommaSpace;
+	wstr += intToText(this->blueKey, false);
+	wstr += wszSpace;
+	wstr += g_pTheDB->GetMessageText(MID_BKEYStat);
+	if (this->skeletonKey != 0) {
+		wstr += wszCommaSpace;
+		wstr += intToText(this->skeletonKey, false);
+		wstr += wszSpace;
+		wstr += g_pTheDB->GetMessageText(MID_SKEYStat);
+	}
+
+	if (this->shovels != 0) {
+		wstr += wszCommaSpace;
+		wstr += intToText(this->shovels, false);
+		wstr += wszSpace;
+		wstr += g_pTheDB->GetMessageText(MID_ShovelsStat);
+	}
+
+	wstr += wszRightBracket;
+
+	return wstr;
 }
 
 //*****************************************************************************

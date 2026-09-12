@@ -41,7 +41,7 @@ public:
 	CStandardGameLogger() = default;
 	~CStandardGameLogger();
 
-	virtual void enterRoom(CDbRoom* room) override;
+	virtual void enterRoom(CDbRoom* room, const PlayerStats& ps) override;
 
 	virtual void collectHP(const int amount) override;
 	virtual void collectATK(const int amount) override;

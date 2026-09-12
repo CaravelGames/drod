@@ -34,12 +34,13 @@
 //*****************************************************************************
 class CDbRoom;
 class CMonster;
+class PlayerStats;
 class CBaseGameLogger {
 public:
 	CBaseGameLogger() = default;
 	~CBaseGameLogger() = default;
 
-	virtual void enterRoom(CDbRoom* room) {}
+	virtual void enterRoom(CDbRoom* room, const PlayerStats& ps) {}
 
 	virtual void collectHP(const int amount) {}
 	virtual void collectATK(const int amount) {}

@@ -40,9 +40,9 @@ CStandardGameLogger::~CStandardGameLogger()
 }
 
 //*****************************************************************************
-void CStandardGameLogger::enterRoom(CDbRoom* room)
+void CStandardGameLogger::enterRoom(CDbRoom* room, const PlayerStats& ps)
 {
-	this->gameEvents.push_back(std::make_unique<CEnterRoomEvent>(room));
+	this->gameEvents.push_back(std::make_unique<CEnterRoomEvent>(room, ps));
 }
 
 //*****************************************************************************
