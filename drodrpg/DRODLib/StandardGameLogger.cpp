@@ -390,6 +390,8 @@ void CStandardGameLogger::output()
 		str += NEWLINE;
 		this->outputBuffer += str.c_str();
 	}
+
+	this->outputBuffer += NEWLINE;
 }
 
 //*****************************************************************************
