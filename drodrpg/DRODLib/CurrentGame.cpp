@@ -7842,6 +7842,10 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pCombat = NULL;
 	this->pBlockedSwordHit = NULL;
 
+	//Clear game log, then log room entry before turn zero processing
+	logger->clear();
+	logger->enterRoom(this->pRoom, this->pPlayer->st);
+
 	//Process the swordsman's movement onto the first square.
 	bool bProcessedPlayerWait = false;
 	if (this->pPlayer->IsInRoom() && !this->pPlayer->bHasTeleported) {
@@ -7900,10 +7904,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	delete this->pCombat;
 	this->pCombat = NULL;
 	this->pBlockedSwordHit = NULL;
-
-	//Clear game log, then log room entry
-	logger->clear();
-	logger->enterRoom(this->pRoom, this->pPlayer->st);
 }
 
 //*****************************************************************************
