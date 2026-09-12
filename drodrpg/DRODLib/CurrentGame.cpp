@@ -7903,7 +7903,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	//Clear game log, then log room entry
 	logger->clear();
-	logger->enterRoom(this->pRoom);
+	logger->enterRoom(this->pRoom, this->pPlayer->st);
 }
 
 //*****************************************************************************

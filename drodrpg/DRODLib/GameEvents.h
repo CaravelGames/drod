@@ -30,6 +30,7 @@
 #include <BackEndLib/Wchar.h>
 #include <string>
 
+#include "PlayerStats.h"
 #include "RoomData.h"
 
 enum GameEventType {
@@ -71,13 +72,18 @@ private:
 //*****************************************************************************
 class CEnterRoomEvent : public CGameEvent {
 public:
-	CEnterRoomEvent(CDbRoom* pRoom);
+	CEnterRoomEvent(CDbRoom* pRoom, const PlayerStats& ps);
 	~CEnterRoomEvent() = default;
 
 	virtual WSTRING toText() const override;
 
 private:
 	WSTRING locationDescription;
+
+	//Stats on room entry
+	UINT hp;
+	int atk, def, gr, xp;
+	UINT yellowKey, greenKey, blueKey, skeletonKey, shovels;
 };
 
 //*****************************************************************************
