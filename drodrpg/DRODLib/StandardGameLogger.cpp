@@ -219,11 +219,11 @@ void CStandardGameLogger::monsterKilled(const CMonster* pMonster)
 void CStandardGameLogger::swapEquipment(
 	const ScriptFlag::EquipmentType type,
 	const WSTRING& oldEquipmentName, const WSTRING& newEquipmentName,
-	const UINT wX, const UINT wY
+	const UINT wX, const UINT wY, const int atkDelta, const int defDelta
 )
 {
 	unique_ptr<CSwapEquipmentEvent> event = make_unique<CSwapEquipmentEvent>(
-		type, oldEquipmentName, newEquipmentName, wX, wY
+		type, oldEquipmentName, newEquipmentName, wX, wY, atkDelta, defDelta
 	);
 	this->gameEvents.push_back(std::move(event));
 }

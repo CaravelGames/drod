@@ -588,11 +588,11 @@ WSTRING CMonsterKilledEvent::toText() const
 //*****************************************************************************
 CSwapEquipmentEvent::CSwapEquipmentEvent(const ScriptFlag::EquipmentType equipType,
 	const WSTRING& oldEquipmentName, const WSTRING& newEquipmentName,
-	const UINT wX, const UINT wY
+	const UINT wX, const UINT wY, const int atkDelta, const int defDelta
 )
 	: CGameEvent(GE_SwapEquipment) , equipType(equipType)
 	, oldEquipmentName(oldEquipmentName), newEquipmentName(newEquipmentName)
-	, position(wX, wY)
+	, position(wX, wY), atkDelta(atkDelta), defDelta(defDelta)
 {}
 
 //*****************************************************************************
@@ -602,6 +602,29 @@ WSTRING CSwapEquipmentEvent::toText() const
 	wstr = WCSReplace(wstr, wstrOld, this->oldEquipmentName);
 	wstr = WCSReplace(wstr, wstrNew, this->newEquipmentName);
 	wstr = WCSReplace(wstr, wstrPosition, coordinateToWSTRING(this->position));
+
+	if (atkDelta != 0 || defDelta != 0) {
+		bool needSpace = false;
+		wstr += wszSpace;
+		wstr += wszLeftParen;
+
+		if (atkDelta != 0) {
+			wstr += intToText(atkDelta, true);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_ATKStat);
+			needSpace = true;
+		}
+		if (defDelta != 0) {
+			if (needSpace) {
+				wstr += wszCommaSpace;
+			}
+			wstr += intToText(defDelta, true);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_DEFStat);
+		}
+		wstr += wszRightParen;
+	}
+
 	return wstr;
 }
 

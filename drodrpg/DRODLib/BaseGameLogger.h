@@ -71,7 +71,7 @@ public:
 	virtual void swapEquipment(
 		const ScriptFlag::EquipmentType type,
 		const WSTRING& oldEquipmentName, const WSTRING& newEquipmentName,
-		const UINT wX, const UINT wY) {}
+		const UINT wX, const UINT wY, const int atkDelta, const int defDelta) {}
 
 	virtual void breakWallWithPickaxe(const UINT wX, const UINT wY) {}
 	virtual void openDoorWithPortableOrb(const UINT tileType, const UINT wX, const UINT wY) {}
