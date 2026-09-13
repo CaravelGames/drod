@@ -268,7 +268,7 @@ class CSwapEquipmentEvent : public CGameEvent {
 public:
 	CSwapEquipmentEvent(const ScriptFlag::EquipmentType equipType,
 		const WSTRING& oldEquipmentName, const WSTRING& newEquipmentName,
-		const UINT wX, const UINT wY);
+		const UINT wX, const UINT wY, const int atkDelta, const int defDelta);
 	~CSwapEquipmentEvent() = default;
 
 	virtual WSTRING toText() const override;
@@ -280,6 +280,8 @@ private:
 	WSTRING oldEquipmentName;
 	WSTRING newEquipmentName;
 	CCoord position;
+	int atkDelta;
+	int defDelta;
 };
 
 //*****************************************************************************

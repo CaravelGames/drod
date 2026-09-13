@@ -72,7 +72,7 @@ public:
 	virtual void swapEquipment(
 		const ScriptFlag::EquipmentType type,
 		const WSTRING& oldEquipmentName, const WSTRING& newEquipmentName,
-		const UINT wX, const UINT wY) override;
+		const UINT wX, const UINT wY, const int atkDelta, const int defDelta) override;
 
 	virtual void breakWallWithPickaxe(const UINT wX, const UINT wY) override;
 	virtual void openDoorWithPortableOrb(const UINT tileType, const UINT wX, const UINT wY) override;

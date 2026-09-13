@@ -8374,7 +8374,8 @@ void CCurrentGame::TradeAccessory(
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF,
 					newDEFstat - oldDEFstat), true);
 
-			logger->swapEquipment(ScriptFlag::Accessory, oldName, newName, p.wX, p.wY);
+			logger->swapEquipment(ScriptFlag::Accessory, oldName, newName, p.wX, p.wY,
+				newATKstat - oldATKstat, newDEFstat - oldDEFstat);
 		}
 	}
 }
@@ -8428,7 +8429,8 @@ void CCurrentGame::TradeArmor(
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF,
 					newDEFstat - oldDEFstat), true);
 
-			logger->swapEquipment(ScriptFlag::Armor, oldName, newName, p.wX, p.wY);
+			logger->swapEquipment(ScriptFlag::Armor, oldName, newName, p.wX, p.wY,
+				newATKstat - oldATKstat, newDEFstat - oldDEFstat);
 		}
 	}
 }
@@ -8482,7 +8484,8 @@ void CCurrentGame::TradeWeapon(
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF,
 					newDEFstat - oldDEFstat), true);
 
-			logger->swapEquipment(ScriptFlag::Weapon, oldName, newName, p.wX, p.wY);
+			logger->swapEquipment(ScriptFlag::Weapon, oldName, newName, p.wX, p.wY,
+				newATKstat - oldATKstat, newDEFstat - oldDEFstat);
 		}
 
 		SetPlayerSwordSheathed();
