@@ -138,6 +138,7 @@ public:
 	//player stats
 	int plATK, plDEF;
 	UINT plStartingHP, nonSimulatedPlayerHP;
+	UINT totalDamageToPlayer;
 
 	//monster stats
 	CMonster *pMonster;
