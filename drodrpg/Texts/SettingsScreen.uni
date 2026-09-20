@@ -673,3 +673,7 @@ Skeleton Key Guard
 [MID_Command_ShowInitialRoom]
 [eng]
 Show Initial Room
+
+[MID_Command_TogglePreviewValues]
+[eng]
+c

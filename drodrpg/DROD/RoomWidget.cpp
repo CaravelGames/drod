@@ -2809,6 +2809,12 @@ void CRoomWidget::ShowVarUpdates(const bool bVal)
 }
 
 //*****************************************************************************
+void CRoomWidget::ToggleDamagePreview()
+{
+	this->bShowDamagePreview = !this->bShowDamagePreview;
+}
+
+//*****************************************************************************
 void CRoomWidget::ToggleFrameRate()
 //Shows/hides frame rate.
 {

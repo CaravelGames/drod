@@ -900,6 +900,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_GameLog_ScriptChangedStats: strText = "Script changed stats:"; break;
 		case MID_GameLog_ScoreCheckpoint: strText = "Achieved score checkpoint:"; break;
 		case MID_SetMonsterName: strText = "Set monster name"; break;
+		case MID_Command_TogglePreviewValues: strText = "Toggle Preview Values"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

@@ -2629,6 +2629,7 @@ void CGameScreen::OnDeactivate()
 		//Save chat preference.
 		vars.SetVar(Settings::EnableChatInGame, this->bEnableChat);
 		vars.SetVar(Settings::ReceiveWhispersOnlyInGame, this->bReceiveWhispersOnly);
+		vars.SetVar(Settings::DamagePreview, pRoomWidget->IsShowingDamagePreview());
 
 		pCurrentPlayer->Update();
 
@@ -2754,6 +2755,12 @@ void CGameScreen::OnKeyDown(
 
 		case CMD_EXTRA_SKELETON_KEY_GUARD:
 			ToggleSkeletonKeyGuard();
+		break;
+
+		case CMD_EXTRA_TOGGLE_PREVIEW_VALUES:
+			this->pRoomWidget->ToggleDamagePreview();
+			this->pTempRoomWidget->ToggleDamagePreview();
+			this->Paint();
 		break;
 
 		//Skip cutscene/clear playing speech.
