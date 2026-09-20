@@ -854,7 +854,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 		},
 		{
 			DCMD_Battle, DCMD_ShowScore, DCMD_ShowMap, DCMD_SkeletonKeyGuard,
-			DCMD_ShowInitialRoom,
+			DCMD_ShowInitialRoom, DCMD_TogglePreviewValues,
 			NO_COMMAND
 		},
 		{

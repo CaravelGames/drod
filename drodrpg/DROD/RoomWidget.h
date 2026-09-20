@@ -290,6 +290,7 @@ public:
 	bool           IsMoveAnimating() const {return this->dwMovementStepsLeft != 0;}
 	virtual bool   IsPlayerLightRendered() const;
 	bool           IsPlayerLightShowing() const;
+	bool           IsShowingDamagePreview() const { return this->bShowDamagePreview; }
 	bool           IsShowingMoveCount() const { return this->bShowMoveCount; }
 	bool           IsWeatherRendered() const;
 	bool           LoadFromCurrentGame(CCurrentGame *pSetCurrentGame, const bool bLoad=true);
@@ -347,6 +348,7 @@ public:
 	void           StopSleeping();
 	bool           SubtitlesHas(CSubtitleEffect *pEffect) const;
 	UINT           AdvanceAnimationFrame(const UINT wCol, const UINT wRow);
+	void           ToggleDamagePreview();
 	void           ToggleFrameRate();
 	void           ToggleMoveCount();
 	void           ToggleVarDisplay();

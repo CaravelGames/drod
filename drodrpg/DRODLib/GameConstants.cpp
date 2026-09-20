@@ -95,6 +95,7 @@ namespace InputCommands
 		keyDefinitions[DCMD_ShowMap] = new KeyDefinition(CMD_EXTRA_SHOW_MAP, "Key_ShowMap", MID_Command_ShowMap, SDLK_m);
 		keyDefinitions[DCMD_SkeletonKeyGuard] = new KeyDefinition(CMD_EXTRA_SKELETON_KEY_GUARD, "Key_ToggleSkeletonGuard", MID_Command_ToggleSkeletonGuard, BuildInputKey(0, true, false, false));
 		keyDefinitions[DCMD_ShowInitialRoom] = new KeyDefinition(CMD_EXTRA_SHOW_INITIAL_ROOM, "Key_ShowInitialRoom", MID_Command_ShowInitialRoom, BuildInputKey(SDLK_i, false, false, true));
+		keyDefinitions[DCMD_TogglePreviewValues] = new KeyDefinition(CMD_EXTRA_TOGGLE_PREVIEW_VALUES, "Key_TogglePreviewValues", MID_Command_TogglePreviewValues, BuildInputKey(SDLK_p, false, false, false));
 
 		keyDefinitions[DCMD_SkipSpeech] = new KeyDefinition(CMD_EXTRA_SKIP_SPEECH, "Key_SkipSpeech", MID_SkipSpeech, SDLK_SPACE);
 		keyDefinitions[DCMD_OpenChat] = new KeyDefinition(CMD_EXTRA_OPEN_CHAT, "Key_OpenChat", MID_Command_OpenChat, SDLK_RETURN);
