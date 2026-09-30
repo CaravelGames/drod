@@ -272,6 +272,7 @@ public:
 	WSTRING  getStringVar(const UINT varIndex) const;
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;
+	UINT     getPredefinedArrayValue(const ScriptVars::PredefinedArray var, const int arrayIndex) const;
 	void     GetVarValues(VARMAP& vars);
 	void     GetArrayVarValues(VARMAP& vars);
 	WSTRING  GetArrayVarAsString(const UINT varID);

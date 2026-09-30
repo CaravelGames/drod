@@ -901,6 +901,12 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_GameLog_ScoreCheckpoint: strText = "Achieved score checkpoint:"; break;
 		case MID_SetMonsterName: strText = "Set monster name"; break;
 		case MID_Command_TogglePreviewValues: strText = "Toggle Preview Values"; break;
+		case MID_ArrayVarXY: strText = ":XY"; break;
+		case MID_ArrayVarMonsterXY: strText = ":MyXY"; break;
+		case MID_ArrayVarStats: strText = ":Stats"; break;
+		case MID_ArrayVarMonsterStats: strText = ":MyStats"; break;
+		case MID_ArrayVarMyScript: strText = ":MyScript"; break;
+		case MID_ArrayVarMonsterSpeechColor: strText = ":MySpeechColor"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

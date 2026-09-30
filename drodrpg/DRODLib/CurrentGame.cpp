@@ -1182,7 +1182,7 @@ WSTRING CCurrentGame::ExpandText(
 							if (CCharacter::IsValidExpression(wEscapeStr.c_str(), index, this->pHold))
 							{
 								index=0;
-								const int nVal = CCharacter::parseExpression(wEscapeStr.c_str(), index, this);
+								const int nVal = CCharacter::parseExpression(wEscapeStr.c_str(), index, this, pCharacter);
 								wStr += _itoW(nVal, wIntText, 10);
 							}
 						}
@@ -1622,6 +1622,43 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 
 		default:
 			return player.st.getVar(ScriptVars::Predefined(varIndex));
+	}
+}
+
+//*****************************************************************************
+UINT CCurrentGame::getPredefinedArrayValue(
+	const ScriptVars::PredefinedArray var, //[in] array identifier
+	const int arrayIndex //[in] array index
+) const
+//Returns: value of game data interfaced by predefined array var.
+{
+	ASSERT(!ScriptVars::IsCharacterPredefinedArray(var));
+
+	switch (var) {
+		case ScriptVars::PA_Player_XY: {
+			switch (arrayIndex) {
+				case 0: return this->pPlayer->wX;
+				case 1: return this->pPlayer->wY;
+				default: return 0;
+			}
+		}
+		case ScriptVars::PA_Player_Stats: {
+			//Map index to stat type value
+			ScriptFlag::StatType stat = ScriptFlag::StatType(arrayIndex);
+			const PlayerStats& ps = this->pPlayer->st;
+			switch (stat) {
+				case ScriptFlag::HP: return ps.HP;
+				case ScriptFlag::ATK: return ps.ATK;
+				case ScriptFlag::DEF: return ps.DEF;
+				case ScriptFlag::GOLD: return ps.GOLD;
+				case ScriptFlag::XP: return ps.XP;
+				case ScriptFlag::Color: return ps.color;
+				case ScriptFlag::Hue: return ps.hue;
+				case ScriptFlag::Saturation: return ps.saturation;
+				default: return 0;
+			}
+		}
+		default: return 0;
 	}
 }
 
