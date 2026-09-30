@@ -1972,6 +1972,12 @@ enum MID_CONSTANT {
   MID_VarColor = 2183,
   MID_VarHue = 2184,
   MID_VarSaturation = 2185,
+  MID_ArrayVarXY = 2228,
+  MID_ArrayVarMonsterXY = 2229,
+  MID_ArrayVarStats = 2230,
+  MID_ArrayVarMonsterStats = 2231,
+  MID_ArrayVarMyScript = 2232,
+  MID_ArrayVarMonsterSpeechColor = 2233,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

@@ -170,6 +170,20 @@ namespace ScriptVars
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
+	//Predefined groupings of global and relative game state vars as script arrays
+	//As above, do not reorder
+	enum PredefinedArray {
+		PA_NoVar = 0,
+		PA_Player_XY = -1,
+		PA_Monster_XY = -2,
+		PA_Player_Stats = -3,
+		PA_Monster_Stats = -4,
+		PA_MyScript = -5,
+		PA_Monster_Speech_Color = -6,
+		FirstPredefinedArrayVar = PA_Monster_Speech_Color, //set this to the last var in the enumeration
+		PredefinedArrayVarCount = -int(FirstPredefinedArrayVar)
+	};
+
 	//Predefined functions (that take a set of arguments to calculate a value)
 	//
 	//To add new primitives, add a new enumeration here and in the following locations:
@@ -235,6 +249,8 @@ namespace ScriptVars
 	bool IsStringVar(Predefined val);
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
+	PredefinedArray parsePredefinedArrayVar(const string& str);
+	PredefinedArray parsePredefinedArrayVar(const WSTRING& wstr);
 
 	PrimitiveType parsePrimitive(const string& str);
 	UINT getPrimitiveRequiredParameters(PrimitiveType eType);
@@ -242,13 +258,16 @@ namespace ScriptVars
 
 	bool IsCharacterArrayVar(const WSTRING& wstr);
 	bool IsCharacterArrayVar(const WCHAR* wstr);
+	bool IsCharacterPredefinedArray(const PredefinedArray eVar);
 
 	bool IsIndexInArrayRange(const int index);
 
 	//All predefined vars.
 	extern const char predefinedVarTexts[PredefinedVarCount][16];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
+	extern const UINT predefinedArrayVarMIDs[PredefinedArrayVarCount];
 	extern string midTexts[PredefinedVarCount];
+	extern string midArrayTexts[PredefinedArrayVarCount];
 	extern const char primitiveNames[PrimitiveCount][15]; //expand buffer size as needed
 
 	//Global game var subset quick reference.

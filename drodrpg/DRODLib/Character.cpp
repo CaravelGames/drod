@@ -611,6 +611,67 @@ WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
 }
 
 //*****************************************************************************
+UINT CCharacter::getPredefinedArrayValue(
+	const ScriptVars::PredefinedArray var, //[in] array identifier
+	const int arrayIndex //[in] array index
+) const
+//Returns: value of character data interfaced by predefined array var.
+{
+	ASSERT(ScriptVars::IsCharacterPredefinedArray(var));
+
+	switch (var)
+	{
+		case ScriptVars::PA_Monster_XY:
+		{
+			switch (arrayIndex) {
+				case 0: return this->wX;
+				case 1: return this->wY;
+				default: return 0;
+			}
+		}
+		case ScriptVars::PA_Monster_Stats:
+		{
+			//Map index to stat type value
+			ScriptFlag::StatType stat = ScriptFlag::StatType(arrayIndex);
+			switch (stat) {
+				case ScriptFlag::HP: return this->HP;
+				case ScriptFlag::ATK: return this->ATK;
+				case ScriptFlag::DEF: return this->DEF;
+				case ScriptFlag::GOLD: return this->GOLD;
+				case ScriptFlag::XP: return this->XP;
+				case ScriptFlag::Color: return this->color;
+				case ScriptFlag::Hue: return this->hue;
+				case ScriptFlag::Saturation: return this->saturation;
+				default: return 0;
+			}
+		}
+		case ScriptVars::PA_MyScript:
+		{
+			switch (arrayIndex)
+			{
+				case 0: return this->paramX;
+				case 1: return this->paramY;
+				case 2: return this->paramW;
+				case 3: return this->paramH;
+				case 4: return this->paramF;
+				default: return 0;
+			}
+		}
+		case ScriptVars::PA_Monster_Speech_Color:
+		{
+			switch (arrayIndex)
+			{
+				case 0: return (this->customSpeechColor >> 16) & 255; //red
+				case 1: return (this->customSpeechColor >> 8) & 255; //green
+				case 2: return this->customSpeechColor & 255; //blue
+				default: return 0;
+			}
+		}
+		default: return 0;
+	}
+}
+
+//*****************************************************************************
 int CCharacter::getArrayValue(
 	const ScriptArrayMap& scriptArrays, //[in] map of variable ids to script arrays
 	const UINT& varId, //[in] id of script array to read
@@ -1495,7 +1556,7 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		//Unrecognized identifier.
 		return false;
 	}
-	else if (pwStr[index] == W_t('#')) {
+	else if (pwStr[index] == W_t('#') || pwStr[index] == W_t(':')) {
 		//Check that array variable has index
 		//Find spot where var identifier ends.
 		int endIndex = index + 1;
@@ -1512,8 +1573,9 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		const WSTRING wVarName(pwStr + index, endIndex - index - spcTrail);
 		index = endIndex;
 
-		//Is it a hold var?
-		if (!pHold->GetVarID(wVarName.c_str()))
+		//Is it a hold var or predefined array?
+		if (!pHold->GetVarID(wVarName.c_str()) &&
+			ScriptVars::parsePredefinedArrayVar(wVarName) == ScriptVars::PA_NoVar)
 			return false;
 
 		if (pwStr[index] != W_t('['))
@@ -1789,7 +1851,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 
 		//else: unrecognized identifier -- just return a zero value below
 	}
-	else if (pwStr[index] == W_t('#')) {
+	else if (pwStr[index] == W_t('#') || pwStr[index] == W_t(':')) {
 		//Parse array index, then look up the value if the index if valid
 		//Find spot where var identifier ends.
 		int endIndex = index + 1;
@@ -1817,6 +1879,20 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		{
 			//parse error -- return the current value
 			LogParseError(pwStr, "Parse error (missing close bracket)");
+		}
+
+		//Is it a predefined array var?
+		const ScriptVars::PredefinedArray eVar = ScriptVars::parsePredefinedArrayVar(wVarName);
+		if (eVar != ScriptVars::PA_NoVar) {
+			if (ScriptVars::IsCharacterPredefinedArray(eVar)) {
+				if (!pNPC) {
+					return 0;
+				}
+
+				return pNPC->getPredefinedArrayValue(eVar, arrayIndex);
+			}
+
+			return pGame->getPredefinedArrayValue(eVar, arrayIndex);
 		}
 
 		UINT varId = pGame->pHold->GetVarID(wVarName.c_str());

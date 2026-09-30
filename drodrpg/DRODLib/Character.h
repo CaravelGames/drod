@@ -145,6 +145,7 @@ public:
 	WSTRING getPredefinedVar(const UINT varIndex) const;
 	UINT getPredefinedVarInt(const UINT varIndex) const;
 	WSTRING getPredefinedVarString(const UINT varIndex) const;
+	UINT    getPredefinedArrayValue(const ScriptVars::PredefinedArray var, const int arrayIndex) const;
 
 	static int getArrayValue(const ScriptArrayMap& scriptArrays, const UINT& varId, const int arrayIndex);
 

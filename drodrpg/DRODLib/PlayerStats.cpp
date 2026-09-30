@@ -92,7 +92,14 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarColor, MID_VarHue, MID_VarSaturation
 };
 
+const UINT ScriptVars::predefinedArrayVarMIDs[PredefinedArrayVarCount] = {
+	MID_ArrayVarXY, MID_ArrayVarMonsterXY,
+	MID_ArrayVarStats, MID_ArrayVarMonsterStats,
+	MID_ArrayVarMyScript, MID_ArrayVarMonsterSpeechColor
+};
+
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
+string ScriptVars::midArrayTexts[PredefinedArrayVarCount]; //inited on first call
 
 //*****************************************************************************
 //Global game vars.  A subset of the predefined vars.
@@ -334,6 +341,19 @@ void ScriptVars::init()
 		}
 		ASSERT(!midTexts[0].empty());
 	}
+
+	index = 0;
+	if (midArrayTexts[0].empty())
+	{
+		for (int i = -1; i >= FirstPredefinedArrayVar; --i, ++index)
+		{
+			//Get user-readable form of var.
+			ASSERT(index < FirstPredefinedArrayVar);
+			const WCHAR* pText = g_pTheDB->GetMessageText(predefinedArrayVarMIDs[index]);
+			midArrayTexts[index] = UnicodeToUTF8(pText);
+		}
+		ASSERT(!midArrayTexts[0].empty());
+	}
 }
 
 //*****************************************************************************
@@ -419,6 +439,32 @@ Predefined ScriptVars::parsePredefinedVar(const string& str)
 }
 
 //*****************************************************************************
+PredefinedArray ScriptVars::parsePredefinedArrayVar(const WSTRING& wstr)
+//Returns: the enumeration for this array variable name, or PA_NoVar if not recognized
+{
+	const string str = UnicodeToUTF8(wstr);
+	return parsePredefinedArrayVar(str);
+}
+
+//*****************************************************************************
+PredefinedArray ScriptVars::parsePredefinedArrayVar(const string& str)
+//Returns: the enumeration for this array variable name, or PA_NoVar if not recognized
+{
+	init();
+
+	const char* pText = str.c_str();
+	UINT index = 0;
+	for (int i = -1; i >= FirstPredefinedArrayVar; --i, ++index)
+	{
+		if (!_stricmp(pText, midArrayTexts[index].c_str())) {
+			return PredefinedArray(i);
+		}
+	}
+
+	return PA_NoVar;
+}
+
+//*****************************************************************************
 bool ScriptVars::IsCharacterArrayVar(const WSTRING& wstr)
 {
 	return IsCharacterArrayVar(wstr.c_str());
@@ -427,6 +473,20 @@ bool ScriptVars::IsCharacterArrayVar(const WSTRING& wstr)
 bool ScriptVars::IsCharacterArrayVar(const WCHAR* wstr)
 {
 	return wstr && wstr[0] == '#';
+}
+
+//*****************************************************************************
+bool ScriptVars::IsCharacterPredefinedArray(const PredefinedArray eVar)
+{
+	switch (eVar) {
+		case PA_Monster_XY:
+		case PA_Monster_Stats:
+		case PA_MyScript:
+		case PA_Monster_Speech_Color:
+			return true;
+		default:
+			return false;
+		}
 }
 
 //*****************************************************************************
