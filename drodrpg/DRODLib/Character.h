@@ -146,6 +146,7 @@ public:
 	UINT getPredefinedVarInt(const UINT varIndex) const;
 	WSTRING getPredefinedVarString(const UINT varIndex) const;
 	UINT    getPredefinedArrayValue(const ScriptVars::PredefinedArray var, const int arrayIndex) const;
+	map<int, int> getPredefinedArray(const CCurrentGame* pGame, const ScriptVars::PredefinedArray var) const;
 
 	static int getArrayValue(const ScriptArrayMap& scriptArrays, const UINT& varId, const int arrayIndex);
 
@@ -284,8 +285,12 @@ private:
 	void SetDefaultMovementType();
 	bool setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
+	void setPredefinedArray(
+		const ScriptVars::PredefinedArray var, CCurrentGame* pGame, map<int, int>& array, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
+	void ChangeScriptArray(CCurrentGame* pGame, map<int, int>& array, int arrayIndex,
+		const vector<WSTRING>& expressions, ScriptVars::Op operation);
 	void SetMapIcon(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 
 	void SyncCustomCharacterData(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
