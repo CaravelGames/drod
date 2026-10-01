@@ -672,6 +672,64 @@ UINT CCharacter::getPredefinedArrayValue(
 }
 
 //*****************************************************************************
+map<int, int> CCharacter::getPredefinedArray(const CCurrentGame* pGame,
+	const ScriptVars::PredefinedArray var) const
+//Return: Map containing all values interfaced by specified predefined array.
+{
+	map<int, int> array;
+	switch (var)
+	{
+		case ScriptVars::PA_Player_XY:
+			array[0] = pGame->pPlayer->wX;
+			array[1] = pGame->pPlayer->wY;
+		break;
+		case ScriptVars::PA_Monster_XY:
+			array[0] = this->wX;
+			array[1] = this->wY;
+		break;
+		case ScriptVars::PA_Player_Stats:
+		{
+			const PlayerStats& ps = pGame->pPlayer->st;
+			//Map index to stat type value
+			array[ScriptFlag::HP] = ps.HP;
+			array[ScriptFlag::ATK] = ps.ATK;
+			array[ScriptFlag::DEF] = ps.DEF;
+			array[ScriptFlag::GOLD] = ps.GOLD;
+			array[ScriptFlag::XP] = ps.XP;
+			array[ScriptFlag::Color] = ps.color;
+			array[ScriptFlag::Hue] = ps.hue;
+			array[ScriptFlag::Saturation] = ps.saturation;
+		}
+		break;
+		case ScriptVars::PA_Monster_Stats:
+			//Map index to stat type value
+			array[ScriptFlag::HP] = this->HP;
+			array[ScriptFlag::ATK] = this->ATK;
+			array[ScriptFlag::DEF] = this->DEF;
+			array[ScriptFlag::GOLD] = this->GOLD;
+			array[ScriptFlag::XP] = this->XP;
+			array[ScriptFlag::Color] = this->color;
+			array[ScriptFlag::Hue] = this->hue;
+			array[ScriptFlag::Saturation] = this->saturation;
+		break;
+		case ScriptVars::PA_MyScript:
+			array[0] = this->paramX;
+			array[1] = this->paramY;
+			array[2] = this->paramW;
+			array[3] = this->paramH;
+			array[4] = this->paramF;
+		break;
+		case ScriptVars::PA_Monster_Speech_Color:
+			array[0] = (this->customSpeechColor >> 16) & 255; //red
+			array[1] = (this->customSpeechColor >> 8) & 255; //green
+			array[2] = this->customSpeechColor & 255; //blue
+		break;
+	}
+
+	return array;
+}
+
+//*****************************************************************************
 int CCharacter::getArrayValue(
 	const ScriptArrayMap& scriptArrays, //[in] map of variable ids to script arrays
 	const UINT& varId, //[in] id of script array to read
@@ -1128,6 +1186,80 @@ void CCharacter::setPredefinedVarString(
 		break;
 	case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
 		this->customDescription = val;
+		break;
+	}
+}
+
+//*****************************************************************************
+void CCharacter::setPredefinedArray(
+	const ScriptVars::PredefinedArray var,
+	CCurrentGame* pGame,
+	map<int, int>& array,
+	CCueEvents& CueEvents)
+//Sets the value of the predefined var with this relative index to the specified value
+{
+	switch (var)
+	{
+		case ScriptVars::PA_Player_XY:
+			pGame->TeleportPlayer(array[0], array[1], CueEvents, true);
+		break;
+		case ScriptVars::PA_Monster_XY:
+		{
+			//Ensure square is valid and available.
+			UINT tX = array[0];
+			UINT tY = array[1];
+			const CDbRoom& room = *(pGame->pRoom);
+			if (room.IsValidColRow(tX, tY) &&
+				(!IsVisible() || (!room.GetMonsterAtSquare(tX, tY) &&
+					!this->pCurrentGame->IsPlayerAt(tX, tY))))
+			{
+				this->wPrevX = this->wX;
+				this->wPrevY = this->wY;
+				TeleportCharacter(tX, tY, CueEvents);
+			}
+		}
+		break;
+		case ScriptVars::PA_Player_Stats:
+		{
+			//Map index to stat type value
+			//Route through setPredefinedVarInt to get game effects
+			setPredefinedVarInt(ScriptVars::P_HP, array[ScriptFlag::HP], CueEvents);
+			setPredefinedVarInt(ScriptVars::P_ATK, array[ScriptFlag::ATK], CueEvents);
+			setPredefinedVarInt(ScriptVars::P_DEF, array[ScriptFlag::DEF], CueEvents);
+			setPredefinedVarInt(ScriptVars::P_GOLD, array[ScriptFlag::GOLD], CueEvents);
+			setPredefinedVarInt(ScriptVars::P_XP, array[ScriptFlag::XP], CueEvents);
+			setPredefinedVarInt(ScriptVars::P_PLAYER_COLOR, array[ScriptFlag::Color], CueEvents);
+			setPredefinedVarInt(ScriptVars::P_PLAYER_HUE, array[ScriptFlag::Hue], CueEvents);
+			setPredefinedVarInt(ScriptVars::P_PLAYER_SATURATION, array[ScriptFlag::Saturation], CueEvents);
+		}
+		break;
+		case ScriptVars::PA_Monster_Stats:
+			//Map index to stat type value
+			//Route setting HP through setPredefinedVarInt to get death handling
+			setPredefinedVarInt(ScriptVars::P_MONSTER_HP, array[ScriptFlag::HP], CueEvents);
+			this->ATK = array[ScriptFlag::ATK];
+			this->DEF = array[ScriptFlag::DEF];
+			this->GOLD = array[ScriptFlag::GOLD];
+			this->XP = array[ScriptFlag::XP];
+			this->color = array[ScriptFlag::Color];
+			this->hue = array[ScriptFlag::Hue];
+			this->saturation = array[ScriptFlag::Saturation];
+		break;
+		case ScriptVars::PA_MyScript:
+			this->paramX = array[0];
+			this->paramY = array[1];
+			this->paramW = array[2];
+			this->paramH = array[3];
+			this->paramF = array[4];
+		break;
+		case ScriptVars::PA_Monster_Speech_Color:
+		{
+			//Rebuild color value
+			UINT r = min((UINT)array[0], 255U);
+			UINT g = min((UINT)array[1], 255U);
+			UINT b = min((UINT)array[2], 255U);
+			this->customSpeechColor = (r << 16) + (g << 8) + b;
+		}
 		break;
 	}
 }
@@ -4373,13 +4505,37 @@ void CCharacter::SetArrayVariable(
 	CCueEvents& CueEvents)
 {
 	const UINT varIndex = command.w;
-	if (pGame->pHold && !pGame->pHold->IsArrayVar(varIndex))
+	const bool bPredefinedVar = varIndex >= UINT(ScriptVars::FirstPredefinedArrayVar);
+
+	if (!bPredefinedVar && pGame->pHold && !pGame->pHold->IsArrayVar(varIndex))
 		return; //Don't set normal var as an array var
 
 	int arrayIndex = (int)(this->paramF == NO_OVERRIDE ? command.flags : this->paramF);
-	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
-
 	vector<WSTRING> expressions = WCSExplode(command.label, *wszSemicolon);
+
+	if (bPredefinedVar) {
+		ScriptVars::PredefinedArray arrayVar = ScriptVars::PredefinedArray(varIndex);
+		map<int, int> array = getPredefinedArray(pGame, arrayVar);
+		ChangeScriptArray(
+			pGame, array, arrayIndex, expressions, ScriptVars::Op(command.h));
+		setPredefinedArray(arrayVar, pGame, array, CueEvents);
+	} else {
+		map<int, int>& array = pGame->scriptArrays[varIndex];
+		ChangeScriptArray(
+			pGame, array, arrayIndex, expressions, ScriptVars::Op(command.h));
+	}
+}
+
+//*****************************************************************************
+//Alter a map corresponding to scripted array var
+void CCharacter::ChangeScriptArray(
+	CCurrentGame* pGame,  //[in] Game state for parsing expressions
+	map<int, int>& array, //[in] Array to change
+	int arrayIndex,       //[in] Index of first value to change
+	const vector<WSTRING>& expressions, //[in] expressions to evaluate
+	ScriptVars::Op operation //[in] Operation to apply
+)
+{
 	for (vector<WSTRING>::const_iterator expression = expressions.begin();
 		expression != expressions.end(); ++expression) {
 		if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
@@ -4388,37 +4544,36 @@ void CCharacter::SetArrayVariable(
 		}
 
 		UINT index = 0;
-		int x = getArrayValue(scriptArrays, varIndex, arrayIndex);
 		//Note: [] operator will initialize missing values. This gives a default of 0.
-		int operand = scriptArrays[varIndex][arrayIndex];
-		operand = parseExpression(expression->c_str(), index, pGame, this);
+		int x = array[arrayIndex];
+		int operand = parseExpression(expression->c_str(), index, pGame, this);
 
-		switch (command.h)
+		switch (operation)
 		{
-		case ScriptVars::Assign:
-			x = operand;
-			break;
-		case ScriptVars::Inc:
-			addWithClamp(x, operand);
-			break;
-		case ScriptVars::Dec:
-			addWithClamp(x, -operand);
-			break;
-		case ScriptVars::MultiplyBy:
-			multWithClamp(x, operand);
-			break;
-		case ScriptVars::DivideBy:
-			if (operand)
-				x /= operand;
-			break;
-		case ScriptVars::Mod:
-			if (operand)
-				x = x % operand;
-			break;
-		default: break;
+			case ScriptVars::Assign:
+				x = operand;
+				break;
+			case ScriptVars::Inc:
+				addWithClamp(x, operand);
+				break;
+			case ScriptVars::Dec:
+				addWithClamp(x, -operand);
+				break;
+			case ScriptVars::MultiplyBy:
+				multWithClamp(x, operand);
+				break;
+			case ScriptVars::DivideBy:
+				if (operand)
+					x /= operand;
+				break;
+			case ScriptVars::Mod:
+				if (operand)
+					x = x % operand;
+				break;
+			default: break;
 		}
 
-		scriptArrays[varIndex][arrayIndex] = x;
+		array[arrayIndex] = x;
 		++arrayIndex;
 	}
 }

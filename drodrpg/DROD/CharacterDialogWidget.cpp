@@ -5506,6 +5506,14 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_XP, g_pTheDB->GetMessageText(MID_VarScoreXP));
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_SHOVEL, g_pTheDB->GetMessageText(MID_VarScoreShovels));
 
+	this->pArrayVarListBox->SortAlphabetically(false);
+	this->pArrayVarListBox->AddItem(ScriptVars::PA_Player_XY, g_pTheDB->GetMessageText(MID_ArrayVarXY));
+	this->pArrayVarListBox->AddItem(ScriptVars::PA_Monster_XY, g_pTheDB->GetMessageText(MID_ArrayVarMonsterXY));
+	this->pArrayVarListBox->AddItem(ScriptVars::PA_Player_Stats, g_pTheDB->GetMessageText(MID_ArrayVarStats));
+	this->pArrayVarListBox->AddItem(ScriptVars::PA_Monster_Stats, g_pTheDB->GetMessageText(MID_ArrayVarMonsterStats));
+	this->pArrayVarListBox->AddItem(ScriptVars::PA_MyScript, g_pTheDB->GetMessageText(MID_ArrayVarMyScript));
+	this->pArrayVarListBox->AddItem(ScriptVars::PA_Monster_Speech_Color, g_pTheDB->GetMessageText(MID_ArrayVarMonsterSpeechColor));
+
 	this->pVarListBox->SortAlphabetically(true);
 	this->pArrayVarListBox->SortAlphabetically(true);
 }
