@@ -490,6 +490,25 @@ bool ScriptVars::IsCharacterPredefinedArray(const PredefinedArray eVar)
 }
 
 //*****************************************************************************
+pair<int, int> ScriptVars::getPredefinedArrayRange(const PredefinedArray eVar)
+{
+	switch (eVar) {
+	case PA_Player_XY:
+	case PA_Monster_XY:
+		return std::make_pair<int, int>(0, 1);
+	case PA_Monster_Stats:
+	case PA_Player_Stats:
+		return std::make_pair<int, int>(0, 7);
+	case PA_MyScript:
+		return std::make_pair<int, int>(0, 4);
+	case PA_Monster_Speech_Color:
+		return std::make_pair<int, int>(0, 2);
+	default:
+		return std::make_pair<int, int>(1, -1);
+	}
+}
+
+//*****************************************************************************
 bool ScriptVars::IsIndexInArrayRange(const int index)
 {
 	return abs(index) <= 50000;
