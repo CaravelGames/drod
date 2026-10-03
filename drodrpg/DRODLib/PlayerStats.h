@@ -260,6 +260,8 @@ namespace ScriptVars
 	bool IsCharacterArrayVar(const WCHAR* wstr);
 	bool IsCharacterPredefinedArray(const PredefinedArray eVar);
 
+	std::pair<int, int> getPredefinedArrayRange(const PredefinedArray eVar);
+
 	bool IsIndexInArrayRange(const int index);
 
 	//All predefined vars.

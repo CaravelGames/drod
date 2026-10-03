@@ -87,6 +87,7 @@ public:
 	void           CheckForCueEvent(CCueEvents &CueEvents);
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
 	int            CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame);
+	int            CountPredefinedArray(const CCharacterCommand& command, const UINT varId, CCurrentGame* pGame);
 	int            CountEntityType(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	int            CountTile(const CCharacterCommand& command) const;
 	int            CountTileGroup(const CCharacterCommand& command) const;
@@ -97,6 +98,7 @@ public:
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
 	bool DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
+	bool DoesPredefinedArraySatisfy(const CCharacterCommand& command, const UINT varId, CCurrentGame* pGame);
 
 	bool EvaluateConditionalCommand(
 		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);

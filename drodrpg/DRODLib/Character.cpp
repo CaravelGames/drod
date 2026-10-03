@@ -5452,6 +5452,10 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* 
 bool CCharacter::DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame)
 {
 	const UINT varId = command.x;
+	if (varId >= UINT(ScriptVars::FirstPredefinedArrayVar)) {
+		return DoesPredefinedArraySatisfy(command, varId, pGame);
+	}
+
 	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
 		return false; //Only for array vars
 
@@ -5483,9 +5487,37 @@ bool CCharacter::DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentG
 }
 
 //*****************************************************************************
+bool CCharacter::DoesPredefinedArraySatisfy(
+	const CCharacterCommand& command, const UINT varId, CCurrentGame* pGame)
+{
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty())
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	const map<int, int>& array =
+		getPredefinedArray(pGame, ScriptVars::PredefinedArray(varId));
+	std::function<bool(int, int)> comparator = getComparator((ScriptVars::Comp)command.y);
+	for (map<int, int>::const_iterator it = array.cbegin(); it != array.cend(); ++it) {
+		if (comparator(it->second, operand)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 int CCharacter::CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame)
 {
 	const UINT varId = command.x;
+	if (varId >= UINT(ScriptVars::FirstPredefinedArrayVar)) {
+		return CountPredefinedArray(command, varId, pGame);
+	}
+
 	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
 		return 0; //Only for array vars
 
@@ -5519,14 +5551,43 @@ int CCharacter::CountArrayVarEntries(const CCharacterCommand& command, CCurrentG
 }
 
 //*****************************************************************************
+int CCharacter::CountPredefinedArray(
+	const CCharacterCommand& command, const UINT varId, CCurrentGame* pGame)
+{
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty())
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	const map<int, int>& array =
+		getPredefinedArray(pGame, ScriptVars::PredefinedArray(varId));
+	std::function<bool(int, int)> comparator = getComparator((ScriptVars::Comp)command.y);
+	int count = 0;
+
+	for (map<int, int>::const_iterator it = array.cbegin(); it != array.cend(); ++it) {
+		if (comparator(it->second, operand)) {
+			count++;
+		}
+	}
+
+	return count;
+}
+
+//*****************************************************************************
 //Returns: highest and lower indices in an array var. If the array is empty or
 //not initialized, return otherwise impossible (1, -1) pair.
 std::pair<int, int> CCharacter::GetArrayRange(
 	const CCharacterCommand& command, CCurrentGame* pGame) const
 {
-	std::pair<int, int> range = std::make_pair<int, int>(1, -1);
-
 	const UINT varId = command.w;
+	if (varId >= UINT(ScriptVars::FirstPredefinedArrayVar)) {
+		return ScriptVars::getPredefinedArrayRange(ScriptVars::PredefinedArray(varId));
+	}
+
+	std::pair<int, int> range = std::make_pair<int, int>(1, -1);
 	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
 		return range; //Not for non-arrays, but we have to return something
 
