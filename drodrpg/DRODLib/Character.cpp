@@ -398,10 +398,15 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_ClearArrayVar:
 				case CCharacterCommand::CC_WaitForArrayEntry:
 				case CCharacterCommand::CC_CountArrayEntries:
+				case CCharacterCommand::CC_PushToArrayVar:
+				case CCharacterCommand::CC_PopFromArrayVar:
+				case CCharacterCommand::CC_ArrayVarRange:
 				{
 					//Update var refs.
 					UINT wRef = c.getVarID();
-					if (wRef >= (UINT)ScriptVars::FirstPredefinedVar)
+					const bool bArray = c.IsArrayCommand();
+					if ((!bArray && wRef >= (UINT)ScriptVars::FirstPredefinedVar) ||
+						(bArray && wRef >= (UINT)ScriptVars::FirstPredefinedArrayVar))
 						break; //predefined var IDs remain the same
 
 					const WCHAR *pVarName = pOldHold->GetVarName(wRef);
