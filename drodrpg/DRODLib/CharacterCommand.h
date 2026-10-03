@@ -457,6 +457,9 @@ public:
 		}
 	}
 
+	// Does the command do things with array vars?
+	bool IsArrayCommand() const;
+
 	/// Labels prefixed with "//" function as comments: they display differently
 	/// in the command list and cannot be selected in the UI in Go To and GoSub
 	/// and other Label-selecting commands.

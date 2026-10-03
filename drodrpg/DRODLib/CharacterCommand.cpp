@@ -120,6 +120,23 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 	}
 }
 
+bool CCharacterCommand::IsArrayCommand() const
+{
+	switch (command) {
+		case CC_ArrayVarSet:
+		case CC_ArrayVarSetAt:
+		case CC_ClearArrayVar:
+		case CC_WaitForArrayEntry:
+		case CC_CountArrayEntries:
+		case CC_PushToArrayVar:
+		case CC_PopFromArrayVar:
+		case CC_ArrayVarRange:
+			return true;
+		default:
+			return false;
+	}
+}
+
 UINT CCharacterCommand::getVarID() const
 {
 	switch (command) {
@@ -132,6 +149,9 @@ UINT CCharacterCommand::getVarID() const
 		case CC_VarSetAt:
 		case CC_ArrayVarSet:
 		case CC_ArrayVarSetAt:
+		case CC_PushToArrayVar:
+		case CC_PopFromArrayVar:
+		case CC_ArrayVarRange:
 			return w;
 		default:
 			return 0;
