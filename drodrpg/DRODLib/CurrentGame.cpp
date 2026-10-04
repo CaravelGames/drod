@@ -7881,7 +7881,12 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	//Clear game log, then log room entry before turn zero processing
 	logger->clear();
-	logger->enterRoom(this->pRoom, this->pPlayer->st);
+	{
+		PlayerStats st = this->pPlayer->st;
+		st.ATK = this->getPlayerATK();
+		st.DEF = this->getPlayerDEF();
+		logger->enterRoom(this->pRoom, st);
+	}
 
 	//Process the swordsman's movement onto the first square.
 	bool bProcessedPlayerWait = false;
