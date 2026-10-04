@@ -55,6 +55,20 @@
 
     <p><u>Clearing arrays</u></p>
     <p>The <b>Clear array var</b> command can be used to clear all entries in an array variable.</p>
+
+    <p><u>Predefined arrays</u></p>
+    <p>There are several predefined array variables that can be set and queried using array var commands. Each predefined array's name begins with a colon (:).
+    All array commands other than <b>Clear array var</b>, <a href="push-to">Push to array var</a> and <a href="pop-from">Pop from array var</a> commands work as normal.
+    Each value in a predefined array maps to a specific game value.</p>
+    <p>Every predefined array has a fixed size. All out of range values are returned as zero, and setting an out of range value has no effect.</p>
+    <ul>
+      <li><a name="my-xy"><b>:MyXY</b></a> - The character's room coordinates. Index 0 maps to <b>_MyX</b> and index 1 to <b>_MyY</b>.</li>
+      <li><a name="xy"><b>:XY</b></a> - The player's room coordinates. Index 0 map to <b>_X</b> and index 1 to <b>_Y</b>.</li>
+      <li><a name="my-stats"><b>:MyStats</b></a> - The monster's combat and appearance statistics. Indexes 0 to 7 map to each stat, using the same mapping as the <a href="script.html#enemystat">_EnemyStat</a> function primitive.</li>
+      <li><a name="stats"><b>:Stats</b></a> - The player's room combat and appearance statistics. Uses the same mapping as <b>:MyStats</b>.</li>
+      <li><a name="stats"><b>:MyScript</b></a> - The character's <a href="script.html#paramoverride">parameter override values</a>. Indexes 0 through 4 map, in order, to <b>_MyScriptX</b>, <b>_MyScriptY</b>, <b>_MyScriptW</b>, <b>_MyScriptH</b> and <b>_MyScriptF</b>.</li>
+      <li><a name="stats"><b>:MySpeechColor</b></a> - The three values that compose a character's <a href="character.html#charoptions">custom speech color</a>. Index 0 maps to the red value, 1 to the green value, and 2 to the blue value.</li>
+</ul>
 <hr />
 <a href="script.html">Command list</a><br />
 <a href="character.html">Character Scripting</a><br />
