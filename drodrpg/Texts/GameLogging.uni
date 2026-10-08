@@ -54,6 +54,30 @@ Swapped shield %old% for %new% at %position%
 [eng]
 Swapped accessory %old% for %new% at %position%
 
+[MID_GameLog_DestroyWeapon]
+[eng]
+Weapon %equipment% was destroyed
+
+[MID_GameLog_DestroyShield]
+[eng]
+Shield %equipment% was destroyed
+
+[MID_GameLog_DestroyAccessory]
+[eng]
+Accessory %equipment% was destroyed
+
+[MID_GameLog_SoldWeapon]
+[eng]
+Sold weapon %equipment%
+
+[MID_GameLog_SoldShield]
+[eng]
+Sold shield %equipment%
+
+[MID_GameLog_SoldAccessory]
+[eng]
+Sold accessory %equipment%
+
 [MID_GameLog_UseWeapon]
 [eng]
 Used weapon %equipment% at %position%
