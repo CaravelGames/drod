@@ -73,6 +73,13 @@ public:
 		const WSTRING& oldEquipmentName, const WSTRING& newEquipmentName,
 		const UINT wX, const UINT wY, const int atkDelta, const int defDelta) {}
 
+	virtual void destroyEquipment(
+		const ScriptFlag::EquipmentType type, const WSTRING& equipmentName,
+		const int atkDelta, const int defDelta) {}
+	virtual void sellEquipment(
+		const ScriptFlag::EquipmentType type, const WSTRING& equipmentName,
+		const int grDelta) {}
+
 	virtual void breakWallWithPickaxe(const UINT wX, const UINT wY) {}
 	virtual void openDoorWithPortableOrb(const UINT tileType, const UINT wX, const UINT wY) {}
 	virtual void useWarpToken(const UINT wX, const UINT wY, const UINT wDestX, const UINT wDestY) {}

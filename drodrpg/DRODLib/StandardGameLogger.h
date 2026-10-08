@@ -74,6 +74,13 @@ public:
 		const WSTRING& oldEquipmentName, const WSTRING& newEquipmentName,
 		const UINT wX, const UINT wY, const int atkDelta, const int defDelta) override;
 
+	virtual void destroyEquipment(
+		const ScriptFlag::EquipmentType type, const WSTRING& equipmentName,
+		const int atkDelta, const int defDelta);
+	virtual void sellEquipment(
+		const ScriptFlag::EquipmentType type, const WSTRING& equipmentName,
+		const int grDelta);
+
 	virtual void breakWallWithPickaxe(const UINT wX, const UINT wY) override;
 	virtual void openDoorWithPortableOrb(const UINT tileType, const UINT wX, const UINT wY) override;
 	virtual void useWarpToken(const UINT wX, const UINT wY, const UINT wDestX, const UINT wDestY) override;
@@ -105,9 +112,14 @@ public:
 protected:
 	CCollectedItemEvent* getCollectedItemEvent();
 	CScriptedStatChangeEvent* getScriptedStatChangeEvent(const UINT turn);
+	CSellEquipmentEvent* getSellEquipmentEvent();
 
 	std::vector<std::unique_ptr<CGameEvent>> gameEvents;
 	CStretchyBuffer outputBuffer;
+
+	//Indicate equipment is being sold, so the next destroy equipment event
+	//should be combined with the previous sell equipment event.
+	bool sellingEquipment;
 
 private:
 	//Disallowing copying of logger objects

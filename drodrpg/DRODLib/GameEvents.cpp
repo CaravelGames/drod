@@ -640,6 +640,119 @@ WSTRING CSwapEquipmentEvent::getBaseString() const
 }
 
 //*****************************************************************************
+CDestroyEquipmentEvent::CDestroyEquipmentEvent(const ScriptFlag::EquipmentType equipType,
+	const WSTRING& equipmentName, const int atkDelta, const int defDelt)
+	: CGameEvent(GE_DestroyEquipment), equipType(equipType), equipmentName(equipmentName)
+	, atkDelta(atkDelta), defDelta(defDelta)
+{}
+
+//*****************************************************************************
+WSTRING CDestroyEquipmentEvent::toText() const
+{
+	WSTRING wstr = getBaseString();
+	wstr = WCSReplace(wstr, wstrEquipment, this->equipmentName);
+
+	if (atkDelta != 0 || defDelta != 0) {
+		bool needSpace = false;
+		wstr += wszSpace;
+		wstr += wszLeftParen;
+
+		if (atkDelta != 0) {
+			wstr += intToText(atkDelta, true);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_ATKStat);
+			needSpace = true;
+		}
+		if (defDelta != 0) {
+			if (needSpace) {
+				wstr += wszCommaSpace;
+			}
+			wstr += intToText(defDelta, true);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_DEFStat);
+		}
+		wstr += wszRightParen;
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CDestroyEquipmentEvent::getBaseString() const
+{
+	switch (this->equipType) {
+		case ScriptFlag::Weapon: return g_pTheDB->GetMessageText(MID_GameLog_DestroyWeapon);
+		case ScriptFlag::Armor: return g_pTheDB->GetMessageText(MID_GameLog_DestroyShield);
+		case ScriptFlag::Accessory: return g_pTheDB->GetMessageText(MID_GameLog_DestroyAccessory);
+		default: return WS("");
+	}
+}
+
+//*****************************************************************************
+CSellEquipmentEvent::CSellEquipmentEvent(const ScriptFlag::EquipmentType equipType,
+	const WSTRING& equipmentName, const int grDelta)
+	: CGameEvent(GE_SellEquipment), equipType(equipType), equipmentName(equipmentName)
+	, atkDelta(0), defDelta(0), grDelta(grDelta)
+{}
+
+//*****************************************************************************
+void CSellEquipmentEvent::setATKDEFDelta(const int atkDelta, const int defDelta)
+{
+	this->atkDelta = atkDelta;
+	this->defDelta = defDelta;
+}
+
+//*****************************************************************************
+WSTRING CSellEquipmentEvent::toText() const
+{
+	WSTRING wstr = getBaseString();
+	wstr = WCSReplace(wstr, wstrEquipment, this->equipmentName);
+
+	if (atkDelta != 0 || defDelta != 0 || grDelta != 0) {
+		bool needSpace = false;
+		wstr += wszSpace;
+		wstr += wszLeftParen;
+
+		if (atkDelta != 0) {
+			wstr += intToText(atkDelta, true);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_ATKStat);
+			needSpace = true;
+		}
+		if (defDelta != 0) {
+			if (needSpace) {
+				wstr += wszCommaSpace;
+			}
+			wstr += intToText(defDelta, true);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_DEFStat);
+		}
+		if (grDelta != 0) {
+			if (needSpace) {
+				wstr += wszCommaSpace;
+			}
+			wstr += intToText(grDelta, true);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_GRStat);
+		}
+		wstr += wszRightParen;
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CSellEquipmentEvent::getBaseString() const
+{
+	switch (this->equipType) {
+		case ScriptFlag::Weapon: return g_pTheDB->GetMessageText(MID_GameLog_SoldWeapon);
+		case ScriptFlag::Armor: return g_pTheDB->GetMessageText(MID_GameLog_SoldShield);
+		case ScriptFlag::Accessory: return g_pTheDB->GetMessageText(MID_GameLog_SoldAccessory);
+		default: return WS("");
+	}
+}
+
+//*****************************************************************************
 CUseEquipmentEvent::CUseEquipmentEvent(
 	const ScriptFlag::EquipmentType equipType,
 	const WSTRING& equipmentName,

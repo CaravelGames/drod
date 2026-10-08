@@ -47,6 +47,8 @@ enum GameEventType {
 	GE_TileDamage,
 	GE_MonsterKilled,
 	GE_SwapEquipment,
+	GE_DestroyEquipment,
+	GE_SellEquipment,
 	GE_UseEquipment,
 	GE_UsePortableOrbOnDoor,
 	GE_UsePickaxeOnWall,
@@ -282,6 +284,43 @@ private:
 	CCoord position;
 	int atkDelta;
 	int defDelta;
+};
+
+//*****************************************************************************
+class CDestroyEquipmentEvent : public CGameEvent {
+public:
+	CDestroyEquipmentEvent(const ScriptFlag::EquipmentType equipType,
+		const WSTRING& equipmentName, const int atkDelta, const int defDelta);
+	~CDestroyEquipmentEvent() = default;
+
+	virtual WSTRING toText() const override;
+
+private:
+	WSTRING getBaseString() const;
+	ScriptFlag::EquipmentType equipType;
+	WSTRING equipmentName;
+	int atkDelta;
+	int defDelta;
+};
+
+//*****************************************************************************
+class CSellEquipmentEvent : public CGameEvent {
+public:
+	CSellEquipmentEvent(const ScriptFlag::EquipmentType equipType,
+		const WSTRING& equipmentName, const int grDelta);
+	~CSellEquipmentEvent() = default;
+
+	void setATKDEFDelta(const int atkDelta, const int defDelta);
+
+	virtual WSTRING toText() const override;
+
+private:
+	WSTRING getBaseString() const;
+	ScriptFlag::EquipmentType equipType;
+	WSTRING equipmentName;
+	int atkDelta;
+	int defDelta;
+	int grDelta;
 };
 
 //*****************************************************************************

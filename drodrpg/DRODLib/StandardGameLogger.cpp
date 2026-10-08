@@ -229,6 +229,36 @@ void CStandardGameLogger::swapEquipment(
 }
 
 //*****************************************************************************
+void CStandardGameLogger::destroyEquipment(
+	const ScriptFlag::EquipmentType type, const WSTRING& equipmentName,
+	const int atkDelta, const int defDelta
+)
+{
+	if (this->sellingEquipment) {
+		CSellEquipmentEvent* sellEvent = getSellEquipmentEvent();
+		ASSERT(sellEvent);
+		sellEvent->setATKDEFDelta(atkDelta, defDelta);
+		this->sellingEquipment = false;
+	} else {
+		unique_ptr<CDestroyEquipmentEvent> event = make_unique<CDestroyEquipmentEvent>(
+			type, equipmentName, atkDelta, defDelta);
+		this->gameEvents.push_back(std::move(event));
+	}
+}
+
+//*****************************************************************************
+void CStandardGameLogger::sellEquipment(
+	const ScriptFlag::EquipmentType type, const WSTRING & equipmentName,
+	const int grDelta
+)
+{
+	unique_ptr<CSellEquipmentEvent> event = make_unique<CSellEquipmentEvent>(
+		type, equipmentName, grDelta);
+	this->gameEvents.push_back(std::move(event));
+	this->sellingEquipment = true;
+}
+
+//*****************************************************************************
 void CStandardGameLogger::breakWallWithPickaxe(const UINT wX, const UINT wY)
 {
 	unique_ptr<CUsePickaxeOnWallEvent> event =
@@ -445,4 +475,20 @@ CScriptedStatChangeEvent* CStandardGameLogger::getScriptedStatChangeEvent(const 
 		DYN_CAST(CScriptedStatChangeEvent*, CGameEvent*, lastEvent);
 
 	return lastScriptedStatChangeEvent;
+}
+
+//*****************************************************************************
+CSellEquipmentEvent* CStandardGameLogger::getSellEquipmentEvent()
+//Returns: A pointer to the CCollectedItem event that is at the end of gameEvents
+//If the last event isn't that kind of event, returns a null pointer
+{
+	if (this->gameEvents.empty() || this->gameEvents.back()->type() != GE_SellEquipment) {
+		return NULL;
+	}
+
+	CGameEvent* lastEvent = this->gameEvents.back().get();
+	CSellEquipmentEvent* lastSellEvent =
+		DYN_CAST(CSellEquipmentEvent*, CGameEvent*, lastEvent);
+
+	return lastSellEvent;
 }

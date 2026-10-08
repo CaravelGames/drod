@@ -8209,6 +8209,7 @@ void CCurrentGame::DestroyInventory(
 	CSwordsman& p = *(this->pPlayer);
 	int oldATKstat, oldDEFstat;
 	getEquipmentStats(type, oldATKstat, oldDEFstat);
+	const WSTRING name = getEquipmentName(type);
 
 	removeGlobalScriptForEquipment(type);
 
@@ -8230,10 +8231,14 @@ void CCurrentGame::DestroyInventory(
 	getEquipmentStats(type, newATKstat, newDEFstat);
 
 	if (bShowStatChanges) {
+		int atkDelta = newATKstat - oldATKstat;
+		int defDelta = newDEFstat - oldDEFstat;
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK,
-				newATKstat - oldATKstat), true);
+			atkDelta), true);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF,
-				newDEFstat - oldDEFstat), true);
+			defDelta), true);
+		this->logger->destroyEquipment(ScriptFlag::EquipmentType(type),
+			name, atkDelta, defDelta);
 	}
 }
 
@@ -8358,8 +8363,10 @@ void CCurrentGame::SellInventory(
 		{
 			const int gold = pCharacter->getGOLD();
 			incintValueWithBounds(p.st.GOLD, gold);
-			if (bShowStatChanges)
+			if (bShowStatChanges) {
 				CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_GOLD, gold), true);
+				logger->sellEquipment(ScriptFlag::EquipmentType(type), pCharacter->GetName(), gold);
+			}
 		}
 		//predefined weapon types have no monetary value
 	}
