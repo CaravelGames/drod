@@ -1891,3 +1891,11 @@ Else If Not
 [MID_SetMonsterName]
 [eng]
 Set monster name
+
+[MID_HideDefaultDescriptions]
+[eng]
+Hide default descriptions
+
+[MID_ShowDefaultDescriptions]
+[eng]
+Show default descriptions

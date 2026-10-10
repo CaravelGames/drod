@@ -1870,6 +1870,8 @@ enum MID_CONSTANT {
   MID_IfNot = 2181,
   MID_IfElseIfNot = 2182,
   MID_SetMonsterName = 2226,
+  MID_HideDefaultDescriptions = 2240,
+  MID_ShowDefaultDescriptions = 2241,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

@@ -236,7 +236,7 @@ CCharacter::CCharacter(
 	, wInitialIdentity(M_NONE)
 	, wLogicalIdentity(M_NONE)
 	, bVisible(false)
-	, bInvisibleInspectable(false)
+	, bInvisibleInspectable(false) , bHideDefaultDescriptions(false)
 	, bScriptDone(false), bReplaced(false), bGlobal(false)
 	, bYesNoQuestion(false)
 	, bPlayerTouchedMe(false)
@@ -3176,6 +3176,14 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::NoInvisibleInspectable:
 						this->bInvisibleInspectable = false;
+					break;
+
+					//Whether only custom description should be shown
+					case ScriptFlag::HideDefaultDescriptions:
+						this->bHideDefaultDescriptions = true;
+					break;
+					case ScriptFlag::ShowDefaultDescriptions:
+						this->bHideDefaultDescriptions = false;
 					break;
 
 					default:

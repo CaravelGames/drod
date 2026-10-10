@@ -138,151 +138,154 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 	const CCharacter* pCharacter,
 	ScriptFlag::EquipmentType equipType,
 	const WSTRING& separator)
-//Returns: string with text of custom equipment ability, or empty string if none
+	//Returns: string with text of custom equipment ability, or empty string if none
 {
 	ASSERT(CCharacterCommand::IsRealEquipmentType(equipType));
 
 	WSTRING text;
 	bool needSeparator = false;
 
-	if (pCharacter->IsMetal())
-	{
-		text += g_pTheDB->GetMessageText(MID_BehaviorMetal);
-		needSeparator = true;
-	}
-	if (pCharacter->HasGoblinWeakness())
-	{
-		if (needSeparator)
-			text += separator;
-		text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Goblin));
-		needSeparator = true;
-	}
-	if (pCharacter->HasSerpentWeakness())
-	{
-		if (needSeparator)
-			text += separator;
-		text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Wyrm));
-		needSeparator = true;
-	}
-	if (pCharacter->HasCustomWeakness())
-	{
-		std::set<WSTRING> weaknesses = pCharacter->GetCustomWeaknesses();
-		for (std::set<WSTRING>::const_iterator iter = weaknesses.cbegin();
-			iter != weaknesses.cend(); ++iter) {
-			const WSTRING weakness = *iter;
+	if (!pCharacter->HideDefaultDescriptions()) {
+		if (pCharacter->IsMetal())
+		{
+			text += g_pTheDB->GetMessageText(MID_BehaviorMetal);
+			needSeparator = true;
+		}
+		if (pCharacter->HasGoblinWeakness())
+		{
 			if (needSeparator)
 				text += separator;
+			text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Goblin));
+			needSeparator = true;
+		}
+		if (pCharacter->HasSerpentWeakness())
+		{
+		if (needSeparator)
+				text += separator;
+			text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Wyrm));
+			needSeparator = true;
+		}
+		if (pCharacter->HasCustomWeakness())
+		{
+			std::set<WSTRING> weaknesses = pCharacter->GetCustomWeaknesses();
+			for (std::set<WSTRING>::const_iterator iter = weaknesses.cbegin();
+				iter != weaknesses.cend(); ++iter) {
+				const WSTRING weakness = *iter;
+				if (needSeparator)
+					text += separator;
 
-			text += MakeStrongAgainstDescription(weakness);
+				text += MakeStrongAgainstDescription(weakness);
 
+				needSeparator = true;
+			}
+		}
+		if (pCharacter->HasRayBlocking())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_BehaviorBeamBlock);
+			needSeparator = true;
+		}
+		if (!pCharacter->DamagedByHotTiles())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_HotTileImmune);
+			needSeparator = true;
+		}
+		if (!pCharacter->DamagedByFiretraps())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_FiretrapImmune);
+			needSeparator = true;
+		}
+		if (pCharacter->IsMistImmune())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_MistImmune);
+			needSeparator = true;
+		}
+		if (pCharacter->CanCutBriar())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_BehaviorBriarCut);
+			needSeparator = true;
+		}
+		if (pCharacter->CanCutTarAnywhere())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_CutTarAnywhere);
+			needSeparator = true;
+		}
+		if (pCharacter->IsLuckyGR())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_BehaviorLuckyGR);
+			needSeparator = true;
+		}
+		if (pCharacter->IsLuckyXP())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_DoubleXP);
+			needSeparator = true;
+		}
+		if (pCharacter->CanAttackFirst())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_AttackFirst);
+			needSeparator = true;
+		}
+		if (pCharacter->CanAttackLast())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_AttackLast);
+			needSeparator = true;
+		}
+		if (pCharacter->RemovesSword() && equipType == ScriptFlag::Weapon)
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_RemovesSword);
+			needSeparator = true;
+		}
+		if (pCharacter->TurnToFacePlayerWhenFighting())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind);
+			needSeparator = true;
+		}
+		if (pCharacter->HasNoEnemyDefense())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
+			needSeparator = true;
+		}
+		if (pCharacter->IsExplosiveSafe())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
+			needSeparator = true;
+		}
+		if (pCharacter->IsWallAndMirrorSafe())
+		{
+			if (needSeparator)
+				text += separator;
+			text += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
 			needSeparator = true;
 		}
 	}
-	if (pCharacter->HasRayBlocking())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_BehaviorBeamBlock);
-		needSeparator = true;
-	}
-	if (!pCharacter->DamagedByHotTiles())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_HotTileImmune);
-		needSeparator = true;
-	}
-	if (!pCharacter->DamagedByFiretraps())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_FiretrapImmune);
-		needSeparator = true;
-	}
-	if (pCharacter->IsMistImmune())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_MistImmune);
-		needSeparator = true;
-	}
-	if (pCharacter->CanCutBriar())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_BehaviorBriarCut);
-		needSeparator = true;
-	}
-	if (pCharacter->CanCutTarAnywhere())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_CutTarAnywhere);
-		needSeparator = true;
-	}
-	if (pCharacter->IsLuckyGR())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_BehaviorLuckyGR);
-		needSeparator = true;
-	}
-	if (pCharacter->IsLuckyXP())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_DoubleXP);
-		needSeparator = true;
-	}
-	if (pCharacter->CanAttackFirst())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_AttackFirst);
-		needSeparator = true;
-	}
-	if (pCharacter->CanAttackLast())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_AttackLast);
-		needSeparator = true;
-	}
-	if (pCharacter->RemovesSword() && equipType == ScriptFlag::Weapon)
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_RemovesSword);
-		needSeparator = true;
-	}
-	if (pCharacter->TurnToFacePlayerWhenFighting())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind);
-		needSeparator = true;
-	}
-	if (pCharacter->HasNoEnemyDefense())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
-		needSeparator = true;
-	}
-	if (pCharacter->IsExplosiveSafe())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
-		needSeparator = true;
-	}
-	if (pCharacter->IsWallAndMirrorSafe())
-	{
-		if (needSeparator)
-			text += separator;
-		text += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
-		needSeparator = true;
-	}
+
 	if (pCharacter->HasCustomDescription()) {
 		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
 
