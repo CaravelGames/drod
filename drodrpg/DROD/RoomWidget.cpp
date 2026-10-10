@@ -2030,6 +2030,11 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	if (pMonster->wType == M_CHARACTER)
 	{
 		CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		if (pCharacter->HideDefaultDescriptions())
+		{
+			return GetCustomAbility(pCharacter, count);
+		}
+
 		bAttackAdj |= pCharacter->AttacksWhenAdjacent();
 		bAttackInFront |= pCharacter->AttacksInFront();
 		bSurprisedBehind |= pCharacter->TurnToFacePlayerWhenFighting();
@@ -2279,20 +2284,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	if (bCustomDescription) {
 		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 		ASSERT(pCharacter);
-		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
-
-		for (size_t i = 0; i < descriptions.size(); ++i) {
-			WSTRING description = descriptions[i];
-			if (description.empty()) continue;
-
-			if(count)
-			{
-				wstr += wszComma;
-				wstr += wszSpace;
-			}
-			wstr += description;
-			++count;
-		}
+		wstr += GetCustomAbility(pCharacter, count);
 	}
 
 	//Unique.
@@ -2311,6 +2303,28 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(mid);
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetCustomAbility(CCharacter* pCharacter, int& count) const
+{
+	WSTRING wstr;
+	vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
+
+	for (size_t i = 0; i < descriptions.size(); ++i) {
+		WSTRING description = descriptions[i];
+		if (description.empty()) continue;
+
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += description;
+		++count;
 	}
 
 	return wstr;

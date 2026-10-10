@@ -1033,7 +1033,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_ONOFFLISTBOX2 = X_ONOFFLISTBOX + CX_ONOFFLISTBOX + CX_SPACE;
 
 	static const UINT CX_IMPERATIVELISTBOX = 260;
-	static const UINT CY_IMPERATIVELISTBOX = 17 * LIST_LINE_HEIGHT + 4; //17 slots
+	static const UINT CY_IMPERATIVELISTBOX = 19 * LIST_LINE_HEIGHT + 4; //19 slots
 	static const int X_IMPERATIVELISTBOX = X_ONOFFLISTBOX;
 	static const int Y_IMPERATIVELISTBOX = Y_ONOFFLISTBOX;
 
@@ -4955,6 +4955,8 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool bDefaultScript
 	this->pImperativeListBox->AddItem(ScriptFlag::NoGhostDisplay, g_pTheDB->GetMessageText(MID_NPCNoGhostDisplay));
 	this->pImperativeListBox->AddItem(ScriptFlag::InvisibleInspectable, g_pTheDB->GetMessageText(MID_InvisibleInspectable));
 	this->pImperativeListBox->AddItem(ScriptFlag::NoInvisibleInspectable, g_pTheDB->GetMessageText(MID_NotInvisibleInspectable));
+	this->pImperativeListBox->AddItem(ScriptFlag::HideDefaultDescriptions, g_pTheDB->GetMessageText(MID_HideDefaultDescriptions));
+	this->pImperativeListBox->AddItem(ScriptFlag::ShowDefaultDescriptions, g_pTheDB->GetMessageText(MID_ShowDefaultDescriptions));
 	this->pImperativeListBox->AddItem(ScriptFlag::RestartScriptOnRoomEntrance, g_pTheDB->GetMessageText(MID_RestartScriptOnRoomEntrance));
 	this->pImperativeListBox->AddItem(ScriptFlag::NoRestartScriptOnRoomEntrance, g_pTheDB->GetMessageText(MID_NoRestartScriptOnRoomEntrance));
 	this->pImperativeListBox->AddItem(ScriptFlag::RunOnCombat, g_pTheDB->GetMessageText(MID_RunOnCombat));

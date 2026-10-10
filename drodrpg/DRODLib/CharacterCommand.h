@@ -119,7 +119,9 @@ namespace ScriptFlag
 		RunOnCombat=16,       //execute script when combat is initiated (default)
 		PauseOnCombat=17,     //do not execute any script commands when combat is initiated,
 		InvisibleInspectable=18, //Appears in right-click tooltip even when invsible
-		NoInvisibleInspectable=19
+		NoInvisibleInspectable=19,
+		HideDefaultDescriptions=20,//Only include custom description in tooltips
+		ShowDefaultDescriptions=21,
 	};
 
 	//Behavior patterns for NPCs/monsters.

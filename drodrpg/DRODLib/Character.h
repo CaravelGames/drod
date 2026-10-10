@@ -129,6 +129,7 @@ public:
 	virtual bool   HasGoblinWeakness() const {return this->bGoblinWeakness;}
 	virtual bool   HasNoEnemyDefense() const {return this->bNoEnemyDEF;}
 	virtual bool   HasSerpentWeakness() const {return this->bSerpentWeakness;}
+	bool           HideDefaultDescriptions() const { return this->bHideDefaultDescriptions; }
 
 	virtual UINT   getATK() const;   //allow "negative" values to be returned
 	virtual UINT   getDEF() const;   //allow "negative" values to be returned
@@ -249,6 +250,7 @@ public:
 	UINT  wLogicalIdentity; //logical ID (might be a hold custom character type)
 	bool  bVisible;         //on screen in room, or not
 	bool  bInvisibleInspectable; //appears in tooltip when invisible
+	bool  bHideDefaultDescriptions; //only show custom description in tooltip
 	bool  bScriptDone;      //true when script has run to completion
 	bool  bReplaced;        //true when script command replaces the character
 									//with a normal monster
