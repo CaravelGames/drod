@@ -907,6 +907,14 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ArrayVarMonsterStats: strText = ":MyStats"; break;
 		case MID_ArrayVarMyScript: strText = ":MyScript"; break;
 		case MID_ArrayVarMonsterSpeechColor: strText = ":MySpeechColor"; break;
+		case MID_GameLog_DestroyWeapon: strText = "Weapon %equipment% was destroyed"; break;
+		case MID_GameLog_DestroyShield: strText = "Shield %equipment% was destroyed"; break;
+		case MID_GameLog_DestroyAccessory: strText = "Accessory %equipment% was destroyed"; break;
+		case MID_GameLog_SoldWeapon: strText = "Sold weapon %equipment%"; break;
+		case MID_GameLog_SoldShield: strText = "Sold shield %equipment%"; break;
+		case MID_GameLog_SoldAccessory: strText = "Sold accessory %equipment%"; break;
+		case MID_HideDefaultDescriptions: strText = "Hide default descriptions"; break;
+		case MID_ShowDefaultDescriptions: strText = "Show default descriptions"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
