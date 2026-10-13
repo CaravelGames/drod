@@ -587,67 +587,28 @@ const
 		p_MessageID(row) = uFirstNonSimpleMessageID;
 	}
 
+	//Import every *.UNI file found at the source path.
 	WSTRING wstrSearchPath = pwzSrcPath;
-#ifdef WIN32
-	 //Concat search path.
-	 const WCHAR wszUNI[] = {{'*'},{'.'},{'u'},{'n'},{'i'},{0}};
-	 wstrSearchPath += wszSlash;
-	 wstrSearchPath += wszUNI;
-
-	 //Import every *.UNI file found at the source path.
-	 WIN32_FIND_DATA FindData;
-	 HANDLE hFindUNI = FindFirstFile(wstrSearchPath.c_str(), &FindData);
-	 if (hFindUNI != INVALID_HANDLE_VALUE)
-	 {
-		 do
-		 {
-			 WSTRING wstrUNIFilepath = pwzSrcPath;
-			 wstrUNIFilepath += wszSlash;
-			 wstrUNIFilepath += FindData.cFileName;
-			 const string szFilename = UnicodeToUTF8(FindData.cFileName);
-#else
-	const string szSearchPath = UnicodeToUTF8(wstrSearchPath);
-	DIR *pdFindUNI = opendir(szSearchPath.c_str());
-	if (pdFindUNI)
-	{
-		struct dirent *pDir;
-		while ((pDir = readdir(pdFindUNI)))
-		{
-			const size_t len = strlen(pDir->d_name);
-			if (len < 4 || strcasecmp(pDir->d_name + len - 4, ".uni"))
-				continue;
-
-			WSTRING wstrUNIFilepath = pwzSrcPath;
-			wstrUNIFilepath += wszSlash;
-			WSTRING wstrFilename;
-			UTF8ToUnicode(pDir->d_name, wstrFilename);
-			wstrUNIFilepath += wstrFilename;
-#endif
+	vector<WSTRING> uniFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"uni", uniFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& uniFilePath : uniFilePaths) {
+			WSTRING fileName = uniFilePath.substr(uniFilePath.find_last_of(wszSlash) + 1);
+			printf("Importing messages from ");
+			wprintf(fileName.c_str());
+			printf(NEWLINE);
 
 			strMIDs +=
-			"" NEWLINE
-			"  //Messages from ";
-#ifdef WIN32
-			strMIDs += szFilename;
-#else
-			strMIDs += pDir->d_name;
-#endif
+				"" NEWLINE
+				"  //Messages from ";
+			strMIDs += UnicodeToUTF8(fileName);
 			strMIDs += ":" NEWLINE;
-
-			if (!ImportUNI(wstrUNIFilepath.c_str(), TextStorage, AssignedMIDs, dwLastMessageID, strMIDs))
+			if (!ImportUNI(uniFilePath.c_str(), TextStorage, AssignedMIDs, dwLastMessageID, strMIDs))
 			{
 				TextStorage.Rollback();
 				return false;
 			}
-#ifdef WIN32
-		} while (FindNextFile(hFindUNI, &FindData));
-
-		FindClose(hFindUNI);
-#else
 		}
-
-		closedir(pdFindUNI);
-#endif
 	}
 
 	//Finish MIDs concatenation.
