@@ -587,6 +587,18 @@ const
 		p_MessageID(row) = uFirstNonSimpleMessageID;
 	}
 
+	auto outputSource = [&strMIDs](const WSTRING& fileName) {
+		printf("Importing messages from ");
+		wprintf(fileName.c_str());
+		printf(NEWLINE);
+
+		strMIDs +=
+			"" NEWLINE
+			"  //Messages from ";
+		strMIDs += UnicodeToUTF8(fileName);
+		strMIDs += ":" NEWLINE;
+	};
+
 	//Import every *.UNI file found at the source path.
 	WSTRING wstrSearchPath = pwzSrcPath;
 	vector<WSTRING> uniFilePaths;
@@ -594,16 +606,23 @@ const
 		printf(NEWLINE);
 		for (const auto& uniFilePath : uniFilePaths) {
 			WSTRING fileName = uniFilePath.substr(uniFilePath.find_last_of(wszSlash) + 1);
-			printf("Importing messages from ");
-			wprintf(fileName.c_str());
-			printf(NEWLINE);
-
-			strMIDs +=
-				"" NEWLINE
-				"  //Messages from ";
-			strMIDs += UnicodeToUTF8(fileName);
-			strMIDs += ":" NEWLINE;
+			outputSource(fileName);
 			if (!ImportUNI(uniFilePath.c_str(), TextStorage, AssignedMIDs, dwLastMessageID, strMIDs))
+			{
+				TextStorage.Rollback();
+				return false;
+			}
+		}
+	}
+
+	//Import every *.xml file found at the source path.
+	vector<WSTRING> xmlFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"xml", xmlFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& xmlFilePath : xmlFilePaths) {
+			WSTRING fileName = xmlFilePath.substr(xmlFilePath.find_last_of(wszSlash) + 1);
+			outputSource(fileName);
+			if (!ImportXML(xmlFilePath.c_str(), TextStorage, AssignedMIDs, dwLastMessageID, strMIDs))
 			{
 				TextStorage.Rollback();
 				return false;
@@ -633,6 +652,19 @@ const
 	//Commit database writes.
 	TextStorage.Commit();
 	return true;
+}
+
+//****************************************************************************************************
+void copyMIDName(const char* nameTag, UINT dwMessageID, string& strMIDs)
+{
+	//In the format "  tagname = tagvalue,".
+	static char szNumBuf[20];
+	strMIDs += "  ";
+	strMIDs += nameTag;
+	strMIDs += " = ";
+	strMIDs += _itoa(dwMessageID, szNumBuf, 10);
+	strMIDs += ",";
+	strMIDs += NEWLINE;
 }
 
 //****************************************************************************************************
@@ -754,16 +786,7 @@ const
 	 }
 
 	 //Copy name to MIDs concatenation.
-	 {
-		  //In the format "  tagname = tagvalue,".
-		  static char szNumBuf[20];
-		  strMIDs += "  ";
-		  strMIDs += szNameTag;
-		  strMIDs += " = ";
-		  strMIDs += _itoa(dwUseMessageID, szNumBuf, 10);
-		  strMIDs += ",";
-		  strMIDs += "" NEWLINE;
-	 }
+	 copyMIDName(szNameTag, dwUseMessageID, strMIDs);
 
 	 //Look for language tags with associated text to store.
 	 pSeek = pTagStart + wTagLen;
@@ -853,6 +876,166 @@ const
 # undef IS_WHITESPACE
 
   return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ImportXML(
+//Imports contents of one XML file into the text dat.
+//
+//Params:
+	const WCHAR* pwzFilepath,        //(in) Full path to XML file.
+	c4_Storage& TextStorage,         //(in) text.dat
+	const ASSIGNEDMIDS& AssignedMIDs,//(in) Already assigned MIDs.
+	UINT& dwLastMessageID,           // (in / out) Accepts last message ID used. Returned with new value
+	                                 //of last message ID used.
+	string& strMIDs                  //(in/out) C++ MID_* enumerations appended to this.
+) const
+{
+	//Read the whole .xml file into a buffer.
+	CStretchyBuffer Source;
+	if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
+
+	//Turn it into a string, otherwise expat gets unhappy when it hits the EOF
+	const string pSource = (const char*)((const BYTE*)Source);
+
+	XML_Parser parser = XML_ParserCreate(NULL);
+	ASSERT(parser);
+	XMLLanguageParseData parseData;
+
+	XML_SetElementHandler(parser, startLanguageElement, endLanguageElement);
+	XML_SetCharacterDataHandler(parser, processLanguageCharData);
+	XML_SetUserData(parser, &parseData);
+
+	XML_Status status = XML_Parse(parser, pSource.c_str(), pSource.size(), true);
+	XML_ParserFree(parser);
+	parser = NULL;
+
+	if (status == XML_STATUS_ERROR) {
+		printf(
+			"Import Parse Error: %s at line %u:%u\n",
+			XML_ErrorString(XML_GetErrorCode(parser)),
+			(UINT)XML_GetCurrentLineNumber(parser),
+			(UINT)XML_GetCurrentColumnNumber(parser));
+		printf(NEWLINE);
+		return false;
+	}
+
+	for (const auto& messageGroup : parseData.parsedMessages) {
+		//Use previously-assigned MID or a new one?
+		UINT dwUseMessageID;
+		string strNameTag = messageGroup.first;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(strNameTag);
+			if (iMID == AssignedMIDs.end())
+				dwUseMessageID = ++dwLastMessageID; //Use new MID.
+			else
+			{
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		copyMIDName(strNameTag.c_str(), dwUseMessageID, strMIDs);
+
+		for (const auto& languageMessage : messageGroup.second) {
+			LANGUAGE eLanguage = languageMessage.first;
+			WSTRING wstr = UTF8ToUnicode(languageMessage.second);
+			AddMessageText(TextStorage, dwUseMessageID, eLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
+void CUtil3_0::startLanguageElement(
+//Consume a starting tag from xml
+//
+//Params:
+	void* userData, //[in/out] Pointer to a XMLLanguageParseData that holds information for processing
+	const char* tag,//[in] The xml tag that has been encountered
+	const char**    //[ignored] xml attributes, which we don't care about
+)
+{
+	XMLLanguageParseData* parseData = static_cast<XMLLanguageParseData*>(userData);
+	const string strTag(tag);
+	//Clean up any message data
+	parseData->currentMessage.clear();
+
+	if (strTag.rfind("MID_", 0) != 0) {
+		//We only care about a starting tag if it defines a message ID
+		return;
+	}
+
+	//Set the active message id. All processed messages will be assigned to it until a message end tag
+	//is encountered.
+	parseData->activeMID = strTag;
+}
+
+//****************************************************************************************************
+void CUtil3_0::endLanguageElement(
+//Consume an ending tag from xml
+//
+//Params:
+	void* userData, //[in/out] Pointer to a XMLLanguageParseData that holds information for processing
+	const char* tag //[in] The xml tag that has been encountered
+)
+{
+	XMLLanguageParseData* parseData = static_cast<XMLLanguageParseData*>(userData);
+	const string strTag(tag);
+
+	if (strTag.rfind("MID_", 0) == 0) {
+		//End of message group. Clear the active id and clean up.
+		parseData->activeMID.clear();
+		parseData->currentMessage.clear();
+		return;
+	}
+
+	if (parseData->activeMID.empty()) {
+		//We don't have an active message ID.
+		parseData->currentMessage.clear();
+		return;
+	}
+
+	LANGUAGE language = Language::Get(strTag.c_str());
+	if (language == Language::Unknown) {
+		//This isn't an end tag for a message, or it isn't a supported language
+		parseData->currentMessage.clear();
+		return;
+	}
+
+	//Add a complete message.
+	string str = parseData->currentMessage;
+	parseData->currentMessage.clear();
+
+	str.erase(std::remove(str.begin(), str.end(), '\t'), str.end()); //remove tabs
+	size_t start = str.find_first_not_of(" \r\n");
+	if (start == string::npos) {
+		return; //all whitespace
+	}
+
+	size_t end = str.find_last_not_of(" \r\n");
+	str = str.substr(start, end - start + 1); //remove leading/trailing whitespace
+
+	parseData->parsedMessages[parseData->activeMID][language] = str;
+}
+
+//****************************************************************************************************
+void CUtil3_0::processLanguageCharData(
+//Processes non-tag xml data.
+//
+//Params:
+	void* userData,     //[in/out] Pointer to a XMLLanguageParseData that holds information for processing
+	const XML_Char* str,//[in] Incoming character data. It is not null-terminated.
+	int length          //[in] Length of incoming character data
+)
+{
+	//Just add any text between tags to the current message. If it's not between language tags, it will
+	//be thrown away later.
+	XMLLanguageParseData* parseData = static_cast<XMLLanguageParseData*>(userData);
+	const string processedStr(str, length);
+	parseData->currentMessage += processedStr;
 }
 
 //****************************************************************************************************
