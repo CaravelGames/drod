@@ -37,6 +37,8 @@ using namespace Language;
 
 #include <BackEndLib/mk4_NoWarnings.h>
 
+#include <expat.h>
+
 #include <list>
 #include <map>
 using std::list;
@@ -46,6 +48,13 @@ class CUtil3_0 : public CUtil
 {
 private:
 	 typedef map<string,UINT> ASSIGNEDMIDS;
+	 typedef map<string, map<Language::LANGUAGE, string>> ParsedMessages;
+
+	struct XMLLanguageParseData {
+		ParsedMessages parsedMessages;
+		string activeMID;
+		string currentMessage;
+	};
 public:
 	CUtil3_0(const WCHAR* pszSetPath) : CUtil(v3_0, pszSetPath) { };
 
@@ -68,6 +77,11 @@ private:
 				const list<UINT> &NeededMessages) const;
 	bool        ImportUNI(const WCHAR *pwzFilepath, c4_Storage &TextStorage, const ASSIGNEDMIDS &AssignedMIDs,
 				UINT &dwLastMessageID, string &strMIDs) const;
+	static void startLanguageElement(void* userData, const char* tag, const char**);
+	static void endLanguageElement(void* userData, const char* tag);
+	static void processLanguageCharData(void* userData, const XML_Char* str, int length);
+	bool        ImportXML(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
+		UINT& dwLastMessageID, string& strMIDs) const;
 };
 
 #endif //...#ifndef UTIL3_0_H
