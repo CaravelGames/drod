@@ -1938,6 +1938,14 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Customizing, INIKey::Windib, "1");
 	AddIfMissing(INISection::Customizing, INIKey::KeepSoundsFromDeletedSpeech, "0");
 
+#ifdef RUSSIAN_BUILD
+	AddIfMissing(INISection::Fonts, INIKey::Font1, "times.ttf");
+	AddIfMissing(INISection::Fonts, INIKey::Font2, "times.ttf");
+#else
+	AddIfMissing(INISection::Fonts, INIKey::Font1, "tomnr.ttf");
+	AddIfMissing(INISection::Fonts, INIKey::Font2, "epilog.ttf");
+#endif
+
 	AddIfMissing(INISection::Graphics, "Clock", "Clock");
 	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");
 	AddIfMissing(INISection::Graphics, "Aboveground", "Aboveground");

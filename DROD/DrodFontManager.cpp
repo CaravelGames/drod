@@ -36,6 +36,7 @@
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
+#include <DRODLib/SettingsKeys.h>
 
 //Holds the only instance of CDrodFontManager for the app.
 CDrodFontManager *g_pTheDFM = NULL;
@@ -95,13 +96,31 @@ bool CDrodFontManager::LoadFonts()
 #endif
 
 	CFiles Files;
-	WSTRING wstrFontFilepath = Files.GetResPath();
-	wstrFontFilepath += wszSlash;
-	wstrFontFilepath += pwzFonts;
-	wstrFontFilepath += wszSlash;
-	WSTRING wstrFont2Filepath = wstrFontFilepath;
-	wstrFontFilepath += pwzFont1;
-	wstrFont2Filepath += pwzFont2;
+	WSTRING wstrFontDirectoryPath = Files.GetResPath();
+	wstrFontDirectoryPath += wszSlash;
+	wstrFontDirectoryPath += pwzFonts;
+	wstrFontDirectoryPath += wszSlash;
+	WSTRING wstrFontFilepath = wstrFontDirectoryPath;
+	WSTRING wstrFont2Filepath = wstrFontDirectoryPath;
+
+	string customFontName;
+	if (CFiles::GetGameProfileString(INISection::Fonts, INIKey::Font1, customFontName)) {
+		wstrFontFilepath += UTF8ToUnicode(customFontName);
+		if (!CFiles::DoesFileExist(wstrFontFilepath.c_str())) {
+			wstrFontFilepath = wstrFontDirectoryPath + pwzFont1;
+		}
+	} else {
+		wstrFontFilepath += pwzFont1;
+	}
+	string customFont2Name;
+	if (CFiles::GetGameProfileString(INISection::Fonts, INIKey::Font2, customFont2Name)) {
+		wstrFont2Filepath += UTF8ToUnicode(customFont2Name);
+		if (!CFiles::DoesFileExist(wstrFontFilepath.c_str())) {
+			wstrFontFilepath = wstrFontDirectoryPath + pwzFont2;
+		}
+	} else {
+		wstrFont2Filepath += pwzFont2;
+	}
 
 	//Note: The entire loaded font array has been zeroed, so it is not necessary
 	//to set every member of LOADEDFONT.
