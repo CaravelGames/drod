@@ -796,7 +796,7 @@ void CTextBoxWidget::DrawText(
 #ifdef RUSSIAN_BUILD
 	static const int Y_OFFSET = 1;   //fonts often draw a bit too low
 #else
-	static const int Y_OFFSET = 4;   //fonts often draw too low
+	static const int Y_OFFSET = g_pTheFM->ApplyFontOffset() ? 4 : 0;   //fonts often draw too low
 #endif
 	const int wX = this->x + nOffsetX + EDGE_OFFSET;
 	const int wY = this->y + nOffsetY - Y_OFFSET;

@@ -84,13 +84,13 @@ bool CDrodFontManager::LoadFonts()
 {
 	static const WCHAR pwzFonts[] = { We('F'),We('o'),We('n'),We('t'),We('s'),We(0) };
 #ifdef RUSSIAN_BUILD
-	static const WCHAR pwzFont1[] = { {'t'},{'i'},{'m'},{'e'},{'s'},{'.'},{'t'},{'t'},{'f'},{0} };
-	static const WCHAR pwzFont2[] = { {'t'},{'i'},{'m'},{'e'},{'s'},{'.'},{'t'},{'t'},{'f'},{0} };
+	static const WSTRING wstrFont1 = WS("times.ttf");
+	static const WSTRING wstrFont2 = WS("times.ttf");
 	static const UINT wHeaderPoint = 20;
 	static const UINT wScrollPoint = 17;
 #else
-	static const WCHAR pwzFont1[] = { We('t'),We('o'),We('m'),We('n'),We('r'),We('.'),We('t'),We('t'),We('f'),We(0) };
-	static const WCHAR pwzFont2[] = { We('e'),We('p'),We('i'),We('l'),We('o'),We('g'),We('.'),We('t'),We('t'),We('f'),We(0) };
+	static const WSTRING wstrFont1 = WS("tomnr.ttf");
+	static const WSTRING wstrFont2 = WS("epilog.ttf");
 	static const UINT wHeaderPoint = 22;
 	static const UINT wScrollPoint = 19;
 #endif
@@ -105,21 +105,24 @@ bool CDrodFontManager::LoadFonts()
 
 	string customFontName;
 	if (CFiles::GetGameProfileString(INISection::Fonts, INIKey::Font1, customFontName)) {
-		wstrFontFilepath += UTF8ToUnicode(customFontName);
+		WSTRING wstrCustomFontName = UTF8ToUnicode(customFontName);
+		wstrFontFilepath += wstrCustomFontName;
 		if (!CFiles::DoesFileExist(wstrFontFilepath.c_str())) {
-			wstrFontFilepath = wstrFontDirectoryPath + pwzFont1;
+			wstrFontFilepath = wstrFontDirectoryPath + wstrFont1;
+		} else if (wstrCustomFontName != wstrFont1) {
+			bApplyFontOffset = false;
 		}
 	} else {
-		wstrFontFilepath += pwzFont1;
+		wstrFontFilepath += wstrFont1;
 	}
 	string customFont2Name;
 	if (CFiles::GetGameProfileString(INISection::Fonts, INIKey::Font2, customFont2Name)) {
 		wstrFont2Filepath += UTF8ToUnicode(customFont2Name);
 		if (!CFiles::DoesFileExist(wstrFontFilepath.c_str())) {
-			wstrFontFilepath = wstrFontDirectoryPath + pwzFont2;
+			wstrFontFilepath = wstrFontDirectoryPath + wstrFont2;
 		}
 	} else {
-		wstrFont2Filepath += pwzFont2;
+		wstrFont2Filepath += wstrFont2;
 	}
 
 	//Note: The entire loaded font array has been zeroed, so it is not necessary

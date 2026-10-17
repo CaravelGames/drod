@@ -268,7 +268,7 @@ void CButtonWidget::DrawButtonText(
 #ifdef RUSSIAN_BUILD
 		static const int DY_TEXT = -1; //kludge for better centering -- this font is drawn a bit too low on button otherwise
 #else
-		static const int DY_TEXT = -4; //kludge for better centering -- this font is drawn too low on button otherwise
+		static const int DY_TEXT = g_pTheFM->ApplyFontOffset() ? -4 : 0; //kludge for better centering -- this font is drawn too low on button otherwise
 #endif
 	yDraw += DY_TEXT;
 

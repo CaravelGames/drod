@@ -56,7 +56,7 @@ public:
 	CLabelWidget(const UINT dwSetTagNo, const int nSetX, const int nSetY, const UINT wSetW,
 			const UINT wSetH, const UINT eSetFontType, const WCHAR *pwczSetText,
 			const bool bResizeToFit=false, const UINT wFirstIndent=0,
-			const WIDGETTYPE eType=WT_Label, const bool bCacheRendering=false, const int y_font_offset=-6);
+			const WIDGETTYPE eType=WT_Label, const bool bCacheRendering=false);
 	virtual ~CLabelWidget();
 
 	UINT           GetFontType() const {return this->eFontType;}
@@ -75,6 +75,7 @@ public:
 	void           SetPrintLeadingSpacesAfterFirstLine(const bool bVal = true) { this->bPrintLeadingSpacesAfterFirstLine = bVal; }
 	void           SetText(const WCHAR *pwczSetText, const bool bResizeToFit=false,
 			const UINT wFirstIndent=0, const bool bFitWidth=false);
+	void           SetYFontOffset(int y_offset) { this->y_font_offset = y_offset; }
 
 private:
 	void           RenderAndCacheText();

@@ -47,13 +47,14 @@ CMenuWidget::CMenuWidget(
 	const UINT eUnselectedFont,            //(in)   Font to use for text.
 	const UINT eMouseOverFont, const UINT eSelectedFont)
 	: CFocusWidget(WT_Menu, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
-	, y_font_offset(-10)
+	, y_font_offset(0)
 	, seid(SOUNDLIB::SEID_BUTTON)
 {
 	clear();
 	this->eFontType[UNSELECTED] = eUnselectedFont;
 	this->eFontType[SELECTED] = eSelectedFont;
 	this->eFontType[MOUSEOVER] = eMouseOverFont;
+	y_font_offset = g_pTheFM->ApplyFontOffset() ? -10 : 0;
 }
 
 //*****************************************************************************
@@ -115,6 +116,9 @@ void CMenuWidget::AddText(const WCHAR* wszText, const UINT dwTag)
 	g_pTheFM->GetTextWidthHeight(this->eFontType[UNSELECTED],
 			textWithoutEscapeChars.c_str(), wW, wH);
 	wW = g_pTheFM->GetHotkeyTextLineWidth(this->eFontType[UNSELECTED], wszText); //correct calculation for hotkey text width
+	if (!g_pTheFM->ApplyFontOffset()) {
+		wH += 10; //If we aren't using the default font, we need a little extra space for descenders
+	}
 	pOption->rect.x = wW >= this->w ? 0 : (this->w - wW) / 2;  //center text
 	pOption->rect.y = this->wNextY;
 	pOption->rect.w = wW;

@@ -98,7 +98,7 @@ CToolTipEffect::CToolTipEffect(
 #ifdef RUSSIAN_BUILD
 	static const int YOFFSET = 0;
 #else
-	static const int YOFFSET = 3;   //this font always draws too low
+	static const int YOFFSET = g_pTheFM->ApplyFontOffset() ? 3 : 0;   //this font always draws too low
 #endif
 
 	g_pTheFM->DrawTextToRect(this->eFontType, this->wstrText.c_str(), 
