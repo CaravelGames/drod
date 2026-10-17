@@ -65,3 +65,4 @@ Fonts:
  - Fonts for each game are initialized in `DRODFontManager.cpp`.
  - DROD uses the Tom's New Roman and Epilog fonts, both created by Tom Murphy 7. These fonts can be obtain from http://fonts.tom7.com/.
  - It is recommended to use the latest version of these fonts when developing, as older versions have visual problems when used with later versions of freetype.
+ - Alternate fonts can be set using the [Fonts] section of Data/drod.ini. `Font1` is used for the UI, `Font2` for text drawn over the game screen. Please note that larger fonts may not display correctly in all locations.
