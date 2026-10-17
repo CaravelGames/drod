@@ -410,7 +410,8 @@ CLabelWidget* CWorldMapWidget::AddLabel(
 	CLabelWidget *pLabel = new CLabelWidget(0,
 		xPos, icon.yPos + wIconH,
 		wTextW, wTextH + outlineHeightHack,
-		s_fontType, wstrLabelText.c_str(), false, 0, WT_Label, true, 0);
+		s_fontType, wstrLabelText.c_str(), false, 0, WT_Label, true);
+	pLabel->SetYFontOffset(0);
 
 	this->labels.push_back(pLabel); //for easy cleanup
 	return pLabel;

@@ -38,13 +38,6 @@ using namespace std;
 
 WSTRING CListBoxWidget::wstrFilterWord;
 
-
-#ifdef RUSSIAN_BUILD
-const int TEXT_DRAW_Y_OFFSET = -1; //Because this particular font is a tiny bit too far down.
-#else
-const int TEXT_DRAW_Y_OFFSET = -5; //Because this particular font is always too far down.
-#endif
-
 const UINT ITEM_LEFT_PADDING = 2;
 
 
@@ -84,6 +77,12 @@ CListBoxWidget::CListBoxWidget(
 {
 	if (CListBoxWidget::wstrFilterWord.size() == 0)
 		AsciiToUnicode("Filter", CListBoxWidget::wstrFilterWord);
+
+#ifdef RUSSIAN_BUILD
+	this->y_font_offset = -1; //Because this particular font is a tiny bit too far down.
+#else
+	this->y_font_offset = g_pTheFM->ApplyFontOffset() ? -5 : 0; //Because this particular font is always too far down.
+#endif
 
 	CalcAreas();
 }
@@ -937,7 +936,7 @@ void CListBoxWidget::Paint(
 		GetLineDrawCoords(0, drawX, drawY, drawWidth, drawHeight);
 
 		drawX = this->x + 10;
-		drawY = this->y + TEXT_DRAW_Y_OFFSET + this->h - CY_LBOX_ITEM - 1;
+		drawY = this->y + this->y_font_offset + this->h - CY_LBOX_ITEM - 1;
 
 		const SURFACECOLOR FilterSeparatorColor = GetSurfaceColor(GetDestSurface(), 102, 102, 102);
 
@@ -948,7 +947,7 @@ void CListBoxWidget::Paint(
 		DrawRow(this->x, drawY + 3, drawWidth, FilterSeparatorColor, pDestSurface);
 		g_pTheFM->DrawTextXY(FONTLIB::F_ListBoxItem, message.c_str(), pDestSurface,
 			drawX, drawY,
-			drawWidth - 20, (int)CY_LBOX_ITEM - TEXT_DRAW_Y_OFFSET);
+			drawWidth - 20, (int)CY_LBOX_ITEM - this->y_font_offset);
 
 	}
 
@@ -998,7 +997,7 @@ void CListBoxWidget::Paint_Line(
 
 	//Draw selected line text.
 	g_pTheFM->DrawTextXY(eDrawFont, listItem.text.c_str(), pDestSurface,
-		drawX, drawY + TEXT_DRAW_Y_OFFSET, drawWidth, (int)drawHeight - TEXT_DRAW_Y_OFFSET);
+		drawX, drawY + this->y_font_offset, drawWidth, (int)drawHeight - this->y_font_offset);
 	g_pTheFM->SetFontColor(eDrawFont, origColor);
 
 	//Draw focus box (cursor).

@@ -188,7 +188,7 @@ void CSubtitleEffect::PrepWidget()
 #ifdef RUSSIAN_BUILD
 	static const int YOFFSET = 1;   //this font draws a tad too low
 #else
-	static const int YOFFSET = 4;   //this font always draws too low
+	static const int YOFFSET = g_pTheFM->ApplyFontOffset() ? 4 : 0;   //this font always draws too low
 #endif
 	UINT wY = TextRect.y - YOFFSET;
 

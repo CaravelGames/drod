@@ -184,6 +184,8 @@ private:
 	WSTRING        StripLeadingArticle(const WSTRING& text);
 	void           UpdateFilter(WSTRING wstrFilter);
 
+	int            y_font_offset;
+
 	vector<LBOX_ITEM *> filteredItems;
 };
 
