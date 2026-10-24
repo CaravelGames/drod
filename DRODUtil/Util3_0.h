@@ -41,8 +41,10 @@ using namespace Language;
 
 #include <list>
 #include <map>
+#include <vector>
 using std::list;
 using std::map;
+using std::vector;
 
 class CUtil3_0 : public CUtil
 {
@@ -59,6 +61,7 @@ public:
 	CUtil3_0(const WCHAR* pszSetPath) : CUtil(v3_0, pszSetPath) { };
 
 	virtual bool  PrintCreate(const COptionList &Options) const;
+
 	virtual bool  PrintDelete(const COptionList &Options) const;
 	virtual bool  PrintImport(const COptionList &Options, const WCHAR* pszSrcPath, VERSION eSrcVersion) const;
 	virtual bool  PrintRoom(const COptionList &Options, UINT dwRoomID) const;
@@ -77,6 +80,7 @@ private:
 				const list<UINT> &NeededMessages) const;
 	bool        ImportUNI(const WCHAR *pwzFilepath, c4_Storage &TextStorage, const ASSIGNEDMIDS &AssignedMIDs,
 				UINT &dwLastMessageID, string &strMIDs) const;
+	bool        ExtractUNI(const WCHAR* pwzFilepath, ParsedMessages& messages, vector<string>& orderedMIDs) const;
 	static void startLanguageElement(void* userData, const char* tag, const char**);
 	static void endLanguageElement(void* userData, const char* tag);
 	static void processLanguageCharData(void* userData, const XML_Char* str, int length);

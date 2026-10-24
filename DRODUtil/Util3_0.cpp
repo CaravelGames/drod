@@ -708,13 +708,56 @@ const
   [MID_NoText][English][MID_Yes][English]&Yes[French]&Oui[MID_PressAnyKeyToContinue][Engli
   sh]Press any key to continue.[French]Appuyez n'importe quelle touche pour continuer.
   */
+	ParsedMessages messages;
+	vector<string> orderedMIDs;
+	if (!ExtractUNI(pwzFilepath, messages, orderedMIDs)) {
+		return false;
+	}
 
+	for (const auto& MID : orderedMIDs) {
+		//Use previously-assigned MID or a new one?
+		UINT dwUseMessageID;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(MID);
+			if (iMID == AssignedMIDs.end())
+				dwUseMessageID = ++dwLastMessageID; //Use new MID.
+			else
+			{
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		copyMIDName(MID.c_str(), dwUseMessageID, strMIDs);
+
+		auto& messageGroup = messages[MID];
+		for (const auto& languageMessage : messageGroup) {
+			LANGUAGE eLanguage = languageMessage.first;
+			WSTRING wstr = UTF8ToUnicode(languageMessage.second);
+			AddMessageText(TextStorage, dwUseMessageID, eLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ExtractUNI(
+//Collect all strings from a UNI file so that things can be done with them.
+//
+//Params:
+	const WCHAR* pwzFilepath,   //[in] filepath of UNI file
+	ParsedMessages& messages,   //[in/out] map from MID key + language to message
+	vector<string>& orderedMIDs //[in/out] MID keys, in the order they exist in the file
+) const
+{
 # define IS_WHITESPACE(c) \
 	 ((WCHAR)(c)==' ' || (WCHAR)(c)==9 || (WCHAR)(c)=='\r' || (WCHAR)(c)=='\n' || (WCHAR)(c)==0)
 
-  //Read the whole .UNI file into a buffer.
-  CStretchyBuffer Source;
-  if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
+	//Read the whole .UNI file into a buffer.
+	CStretchyBuffer Source;
+	if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
 
 	// Uni files are in UTF8, but they used to be in a wider format. Therefore, the code works on wide characters.
 	// So we will convert from UTF8 to Unicode, and extract from the converted string.
@@ -734,148 +777,135 @@ const
 	}
 #endif
 
-  const WCHAR wszNameTagStart[] = {{'M'},{'I'},{'D'},{'_'},{0}};
-  char szNameTag[MAXLEN_NAMETAG + 1];
+	const WCHAR wszNameTagStart[] = { { 'M' },{ 'I' },{ 'D' },{ '_' },{ 0 } };
+	char szNameTag[MAXLEN_NAMETAG + 1];
 
-  const WCHAR *pSeek = wideSource.c_str();
-  const WCHAR *pStop = pSeek + wideSource.size();
-  const WCHAR *pTagStart;
-  UINT wTagLen;
-  while (pSeek <= pStop)
-  {
-	 //Looking for a name tag.
-	 while (true)
-	 {
-		while (*pSeek != '[' && pSeek < pStop) ++pSeek;
-		if (pSeek + 5 >= pStop) return true;
-		if (WCSncmp(pSeek + 1, wszNameTagStart, (sizeof(wszNameTagStart)-1)/2)!=0)
-		  continue; //Some other tag--keep looking.
-		else
-		  break;
-	 }
-
-	 //
-	 //Found a name tag.
-	 //
-
-	 //Find end of name tag.
-	 ASSERT(*pSeek == '['); //pSeek is at '[' in "[MID_*]".
-	 pTagStart = pSeek;
-	 while (*pSeek != ']' && pSeek < pStop) ++pSeek;
-	 if (pSeek >= pStop) {ASSERTP(false, "Parse name tag error."); return false;}
-	 wTagLen = pSeek - pTagStart + 1;
-	 if (wTagLen - 2 > MAXLEN_NAMETAG) {ASSERTP(false, "Parse name tag error.(2)"); return false;}
-	 pSeek = pTagStart + 1;
-	 char *pszWriteNameTag = szNameTag;
-	 while (*pSeek != ']')
-		*(pszWriteNameTag++) = (char) pWCv(pSeek++);
-	 *pszWriteNameTag = 0;
-
-	 //Use previously-assigned MID or a new one?
-	 UINT dwUseMessageID;
-	 {
-		  ASSIGNEDMIDS::const_iterator iMID;
-		  string strNameTag = szNameTag;
-		  iMID = AssignedMIDs.find(strNameTag);
-		  if (iMID == AssignedMIDs.end())
-				dwUseMessageID = ++dwLastMessageID; //Use new MID.
-		  else    //Use existing MID.
-		  {
-				dwUseMessageID = iMID->second;
-		  }
-	 }
-
-	 //Copy name to MIDs concatenation.
-	 copyMIDName(szNameTag, dwUseMessageID, strMIDs);
-
-	 //Look for language tags with associated text to store.
-	 pSeek = pTagStart + wTagLen;
-	 while (true)
-	 {
-		//Find next language tag.
-		while (*pSeek != '[' && pSeek < pStop) ++pSeek;
-		if (pSeek >= pStop) return true;
-		pTagStart = pSeek;
-		while (*pSeek != ']' && pSeek < pStop) ++pSeek;
-		if (pSeek + 5 >= pStop) {ASSERTP(false, "Find next language tag error."); return false;}
-		UINT wTagLen = pSeek - pTagStart + 1;
-		if (WCSncmp(pTagStart + 1, wszNameTagStart, (sizeof(wszNameTagStart)-1)/2)==0)
-		  {pSeek = pTagStart; break;} //New name tag found.
-
-		//Which language?
-		WSTRING wstr(pTagStart + 1, wTagLen - 2);
-		const Language::LANGUAGE eLanguage = Language::Get(wstr.c_str());
-		if (eLanguage == Language::Unknown)
-		{
-		  ASSERTP(false, "Unexpected language."); return false;
-		}
-
-		//Find start of text.
-		pSeek = pTagStart + wTagLen;
-		while (pSeek < pStop && IS_WHITESPACE(*pSeek)) ++pSeek;
-		if (pSeek + 1 >= pStop) return true;
-		if (*pSeek == '[' && pSeek[1] != '[') //An unescaped left bracket was found before any text.
-		{
-		  //This is an empty string.
-		  AddMessageText(TextStorage, dwUseMessageID, eLanguage, wszEmpty);
-		  continue;
-		}
-		pTagStart = pSeek;
-
-		//Find end of text by finding first unescaped left bracket and then backing up
-		//past any whitespace.
+	const WCHAR* pSeek = wideSource.c_str();
+	const WCHAR* pStop = pSeek + wideSource.size();
+	const WCHAR* pTagStart;
+	UINT wTagLen;
+	while (pSeek <= pStop)
+	{
+		//Looking for a name tag.
 		while (true)
 		{
-		  while (pSeek < pStop && *pSeek != '[') ++pSeek;
-		  if (pSeek == pStop) break;
-		  if (pSeek + 1 < pStop && pSeek[1] == '[') //Escaped left bracket.
-		  {
-			 pSeek += 2;
-			 continue;
-		  }
-		  else //Unescaped left bracket.
-			 break;
+			while (*pSeek != '[' && pSeek < pStop) ++pSeek;
+			if (pSeek + 5 >= pStop) return true;
+			if (WCSncmp(pSeek + 1, wszNameTagStart, (sizeof(wszNameTagStart) - 1) / 2) != 0)
+				continue; //Some other tag--keep looking.
+			else
+				break;
 		}
-		--pSeek;
-		while (pSeek > pTagStart && IS_WHITESPACE(*pSeek)) --pSeek;
-		if (pSeek < pTagStart) {ASSERTP(false, "Find end of text error."); return false;}
-		++pSeek;
-		wTagLen = pSeek - pTagStart;
-		if (wTagLen > 10000) {ASSERTP(false, "Find end of text error.(2)"); return false;} //10000 = unreasonably lengthy text.
 
-		//Copy text into a buffer.
-		WCHAR *pwzText = new WCHAR[wTagLen + 1];
-		WCHAR *pwzWrite = pwzText;
-		const WCHAR *pRead = pTagStart, *pStopRead = pRead + wTagLen;
-		if (!pwzText) {ASSERTP(false, "Alloc failed."); return false;}
-		while (pRead < pStopRead)
+		//
+		//Found a name tag.
+		//
+
+		//Find end of name tag.
+		ASSERT(*pSeek == '['); //pSeek is at '[' in "[MID_*]".
+		pTagStart = pSeek;
+		while (*pSeek != ']' && pSeek < pStop) ++pSeek;
+		if (pSeek >= pStop) { ASSERTP(false, "Parse name tag error."); return false; }
+		wTagLen = pSeek - pTagStart + 1;
+		if (wTagLen - 2 > MAXLEN_NAMETAG) { ASSERTP(false, "Parse name tag error.(2)"); return false; }
+		pSeek = pTagStart + 1;
+		char* pszWriteNameTag = szNameTag;
+		while (*pSeek != ']')
+			*(pszWriteNameTag++) = (char)pWCv(pSeek++);
+		*pszWriteNameTag = 0;
+
+		orderedMIDs.push_back(szNameTag);
+
+		//Look for language tags with associated text to store.
+		pSeek = pTagStart + wTagLen;
+		while (true)
 		{
-		  if (*pRead == '[') //Escaped left bracket.
-		  {
-			 ASSERT(pRead[1] == '[' && pRead + 1 < pStopRead);
-			 pWCv(pwzWrite++) = '[';
-			 pRead += 2;
-		  }
-		  else if (*pRead == ']') //Escaped right bracker.
-		  {
-			 ASSERT(pRead[1] == ']' && pRead + 1 < pStopRead);
-			 pWCv(pwzWrite++) = ']';
-			 pRead += 2;
-		  }
-		  else
-			 *(pwzWrite++) = *(pRead++);
-		}
-		pWCv(pwzWrite) = 0;
+			//Find next language tag.
+			while (*pSeek != '[' && pSeek < pStop) ++pSeek;
+			if (pSeek >= pStop) return true;
+			pTagStart = pSeek;
+			while (*pSeek != ']' && pSeek < pStop) ++pSeek;
+			if (pSeek + 5 >= pStop) { ASSERTP(false, "Find next language tag error."); return false; }
+			UINT wTagLen = pSeek - pTagStart + 1;
+			if (WCSncmp(pTagStart + 1, wszNameTagStart, (sizeof(wszNameTagStart) - 1) / 2) == 0)
+			{
+				pSeek = pTagStart; break;
+			} //New name tag found.
 
-		//Add MessageTexts record to database.
-		AddMessageText(TextStorage, dwUseMessageID, eLanguage, pwzText);
-		delete [] pwzText;
-	 } //...for each language tag.
-  } //...for each name tag.
+//Which language?
+			WSTRING wstr(pTagStart + 1, wTagLen - 2);
+			const Language::LANGUAGE eLanguage = Language::Get(wstr.c_str());
+			if (eLanguage == Language::Unknown)
+			{
+				ASSERTP(false, "Unexpected language."); return false;
+			}
+
+			//Find start of text.
+			pSeek = pTagStart + wTagLen;
+			while (pSeek < pStop && IS_WHITESPACE(*pSeek)) ++pSeek;
+			if (pSeek + 1 >= pStop) return true;
+			if (*pSeek == '[' && pSeek[1] != '[') //An unescaped left bracket was found before any text.
+			{
+				//This is an empty string.
+				messages[szNameTag][eLanguage] = "";
+				continue;
+			}
+			pTagStart = pSeek;
+
+			//Find end of text by finding first unescaped left bracket and then backing up
+			//past any whitespace.
+			while (true)
+			{
+				while (pSeek < pStop && *pSeek != '[') ++pSeek;
+				if (pSeek == pStop) break;
+				if (pSeek + 1 < pStop && pSeek[1] == '[') //Escaped left bracket.
+				{
+					pSeek += 2;
+					continue;
+				}
+				else //Unescaped left bracket.
+					break;
+			}
+			--pSeek;
+			while (pSeek > pTagStart && IS_WHITESPACE(*pSeek)) --pSeek;
+			if (pSeek < pTagStart) { ASSERTP(false, "Find end of text error."); return false; }
+			++pSeek;
+			wTagLen = pSeek - pTagStart;
+			if (wTagLen > 10000) { ASSERTP(false, "Find end of text error.(2)"); return false; } //10000 = unreasonably lengthy text.
+
+			//Copy text into a buffer.
+			WCHAR* pwzText = new WCHAR[wTagLen + 1];
+			WCHAR* pwzWrite = pwzText;
+			const WCHAR* pRead = pTagStart, * pStopRead = pRead + wTagLen;
+			if (!pwzText) { ASSERTP(false, "Alloc failed."); return false; }
+			while (pRead < pStopRead)
+			{
+				if (*pRead == '[') //Escaped left bracket.
+				{
+					ASSERT(pRead[1] == '[' && pRead + 1 < pStopRead);
+					pWCv(pwzWrite++) = '[';
+					pRead += 2;
+				}
+				else if (*pRead == ']') //Escaped right bracker.
+				{
+					ASSERT(pRead[1] == ']' && pRead + 1 < pStopRead);
+					pWCv(pwzWrite++) = ']';
+					pRead += 2;
+				}
+				else
+					*(pwzWrite++) = *(pRead++);
+			}
+			pWCv(pwzWrite) = 0;
+
+			//Add MessageTexts record to database.
+			messages[szNameTag][eLanguage] = UnicodeToUTF8(pwzText);
+			delete[] pwzText;
+		} //...for each language tag.
+	} //...for each name tag.
 
 # undef IS_WHITESPACE
 
-  return true;
+	return true;
 }
 
 //****************************************************************************************************
