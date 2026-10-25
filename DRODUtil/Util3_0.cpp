@@ -921,39 +921,14 @@ bool CUtil3_0::ImportXML(
 	string& strMIDs                  //(in/out) C++ MID_* enumerations appended to this.
 ) const
 {
-	//Read the whole .xml file into a buffer.
-	CStretchyBuffer Source;
-	if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
-
-	//Turn it into a string, otherwise expat gets unhappy when it hits the EOF
-	const string pSource = (const char*)((const BYTE*)Source);
-
-	XML_Parser parser = XML_ParserCreate(NULL);
-	ASSERT(parser);
 	XMLLanguageParseData parseData;
-
-	XML_SetElementHandler(parser, startLanguageElement, endLanguageElement);
-	XML_SetCharacterDataHandler(parser, processLanguageCharData);
-	XML_SetUserData(parser, &parseData);
-
-	XML_Status status = XML_Parse(parser, pSource.c_str(), pSource.size(), true);
-	XML_ParserFree(parser);
-	parser = NULL;
-
-	if (status == XML_STATUS_ERROR) {
-		printf(
-			"Import Parse Error: %s at line %u:%u\n",
-			XML_ErrorString(XML_GetErrorCode(parser)),
-			(UINT)XML_GetCurrentLineNumber(parser),
-			(UINT)XML_GetCurrentColumnNumber(parser));
-		printf(NEWLINE);
+	if (!ExtractXML(pwzFilepath, parseData)) {
 		return false;
 	}
 
-	for (const auto& messageGroup : parseData.parsedMessages) {
+	for (const auto& strNameTag : parseData.orderedMIDs) {
 		//Use previously-assigned MID or a new one?
 		UINT dwUseMessageID;
-		string strNameTag = messageGroup.first;
 		{
 			ASSIGNEDMIDS::const_iterator iMID;
 			iMID = AssignedMIDs.find(strNameTag);
@@ -968,7 +943,8 @@ bool CUtil3_0::ImportXML(
 
 		copyMIDName(strNameTag.c_str(), dwUseMessageID, strMIDs);
 
-		for (const auto& languageMessage : messageGroup.second) {
+		auto& messageGroup = parseData.parsedMessages[strNameTag];
+		for (const auto& languageMessage : messageGroup) {
 			LANGUAGE eLanguage = languageMessage.first;
 			WSTRING wstr = UTF8ToUnicode(languageMessage.second);
 			AddMessageText(TextStorage, dwUseMessageID, eLanguage, wstr.c_str());
@@ -976,6 +952,45 @@ bool CUtil3_0::ImportXML(
 	}
 
 	return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ExtractXML(
+//Collect all strings from an xml file so that things can be done with them.
+//
+//Params:
+	const WCHAR* pwzFilepath,    //[in] filepath of xml file
+	XMLLanguageParseData& result //[in/out] Result of parsing
+) const
+{
+	//Read the whole .xml file into a buffer.
+	CStretchyBuffer Source;
+	if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
+
+	//Turn it into a string, otherwise expat gets unhappy when it hits the EOF
+	const string pSource = (const char*)((const BYTE*)Source);
+
+	XML_Parser parser = XML_ParserCreate(NULL);
+	ASSERT(parser);
+
+	XML_SetElementHandler(parser, startLanguageElement, endLanguageElement);
+	XML_SetCharacterDataHandler(parser, processLanguageCharData);
+	XML_SetUserData(parser, &result);
+
+	bool success = true;
+	XML_Status status = XML_Parse(parser, pSource.c_str(), pSource.size(), true);
+	if (status == XML_STATUS_ERROR) {
+		printf(
+			"Import Parse Error: %s at line %u:%u\n",
+			XML_ErrorString(XML_GetErrorCode(parser)),
+			(UINT)XML_GetCurrentLineNumber(parser),
+			(UINT)XML_GetCurrentColumnNumber(parser));
+		printf(NEWLINE);
+		success = false;
+	}
+
+	XML_ParserFree(parser);
+	return success;
 }
 
 //****************************************************************************************************
@@ -1001,6 +1016,7 @@ void CUtil3_0::startLanguageElement(
 	//Set the active message id. All processed messages will be assigned to it until a message end tag
 	//is encountered.
 	parseData->activeMID = strTag;
+	parseData->orderedMIDs.push_back(strTag);
 }
 
 //****************************************************************************************************

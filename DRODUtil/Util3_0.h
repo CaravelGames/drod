@@ -54,6 +54,7 @@ private:
 
 	struct XMLLanguageParseData {
 		ParsedMessages parsedMessages;
+		vector<string> orderedMIDs;
 		string activeMID;
 		string currentMessage;
 	};
@@ -86,6 +87,7 @@ private:
 	static void processLanguageCharData(void* userData, const XML_Char* str, int length);
 	bool        ImportXML(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
 		UINT& dwLastMessageID, string& strMIDs) const;
+	bool        ExtractXML(const WCHAR* pwzFilepath, XMLLanguageParseData& result) const;
 };
 
 #endif //...#ifndef UTIL3_0_H
