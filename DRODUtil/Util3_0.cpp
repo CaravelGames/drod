@@ -764,19 +764,6 @@ bool CUtil3_0::ExtractUNI(
 	const char* pSource = (const char*)((const BYTE*)Source);
 	WSTRING wideSource = UTF8ToUnicode(pSource);
 
-#ifdef WIN32
-	// We need crlf line ends, at least for Windows builds.
-	// This ensures we get them if the file has lr line ends
-	WSTRING::size_type pos = 0;
-	while ((pos = wideSource.find(L"\n", pos)) != string::npos)
-	{
-		if (wideSource.at(pos-1) != L'\r')
-			wideSource.insert(pos, L"\r");
-
-		pos++;
-	}
-#endif
-
 	const WCHAR wszNameTagStart[] = { { 'M' },{ 'I' },{ 'D' },{ '_' },{ 0 } };
 	char szNameTag[MAXLEN_NAMETAG + 1];
 
@@ -1094,13 +1081,26 @@ void CUtil3_0::AddMessageText(
 	 const Language::LANGUAGE eLanguage,  //(in)
 	 const WCHAR *pwszText)    //(in)
 {
+	// We need crlf line ends. Otherwise Windows builds are sad.
+	// This ensures we get them if the file has lf line ends.
+	WSTRING wstrText(pwszText);
+	WSTRING::size_type pos = 0;
+	while ((pos = wstrText.find(L"\n", pos)) != string::npos)
+	{
+		if (wstrText.at(pos - 1) != L'\r')
+			wstrText.insert(pos, L"\r");
+
+		pos++;
+	}
+
 	//Get next MessageTextID.
 	c4_View IncrementedIDsView = TextStorage.View("IncrementedIDs");
 	UINT dwMessageTextID = p_MessageTextID(IncrementedIDsView[0]);
 	p_MessageTextID(IncrementedIDsView[0]) = ++dwMessageTextID;
 
 	//Add record.
-	c4_Bytes TextBytes(pwszText, (WCSlen(pwszText) + 1)*sizeof(WCHAR));
+	const WCHAR* text = wstrText.c_str();
+	c4_Bytes TextBytes(text, (WCSlen(text) + 1)*sizeof(WCHAR));
 	c4_View MessageTextsView = TextStorage.View("MessageTexts");
 	MessageTextsView.Add(
 		p_MessageTextID[ dwMessageTextID ] +
