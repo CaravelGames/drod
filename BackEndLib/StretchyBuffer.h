@@ -87,7 +87,9 @@ public:
 	CStretchyBuffer & operator += (UINT wAdd);
 	CStretchyBuffer & operator += (int nAdd) { return operator += (UINT(nAdd)); }
 	CStretchyBuffer & operator += (const char *pszAdd) {Append((const BYTE *) pszAdd, strlen(pszAdd)); return *this;}
+	CStretchyBuffer & operator += (const std::string& strAdd) {*this += strAdd.c_str(); return *this;}
 	CStretchyBuffer & operator += (const WCHAR *pwczAdd) {Append((const BYTE *) pwczAdd, WCSlen(pwczAdd) * sizeof(WCHAR)); return *this;}
+	CStretchyBuffer & operator += (const WSTRING& wstrAdd) {*this += wstrAdd.c_str(); return *this;}
 	CStretchyBuffer & operator += (BYTE bytAdd) {Append((const BYTE *) &bytAdd, sizeof(bytAdd)); return *this;}
 	CStretchyBuffer & operator += (CStretchyBuffer& buf) {Append((const BYTE*)buf, buf.Size()); return *this;}
 
