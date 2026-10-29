@@ -64,6 +64,8 @@ VERSION     GetVersionFromParam(const WCHAR *pszSrcVersion);
 void     PrintCreate(const COptionList &Options, const WCHAR *pszDestPath, 
 		const WCHAR *pszDestVersion);
 void     PrintCreateHelp();
+void     PrintConvert(const COptionList& Options, const WCHAR* pszSrcPath);
+void     PrintConvertHelp();
 void     PrintDelete(const COptionList &Options, const WCHAR *pszSrcPath, 
 		const WCHAR *pszSrcVersion);
 void     PrintDeleteHelp();
@@ -112,6 +114,7 @@ void     PrintUsage();
 
 //Constants
 static const WCHAR wszCreate[] = {{'c'},{'r'},{'e'},{'a'},{'t'},{'e'},{0}};
+static const WCHAR wszConvert[] = {{'c'},{'o'},{'n'},{'v'},{'e'},{'r'},{'t'},{0}};
 static const WCHAR wszDelete[] = {{'d'},{'e'},{'l'},{'e'},{'t'},{'e'},{0}};
 static const WCHAR wszDemo[] = {{'d'},{'e'},{'m'},{'o'},{0}};
 static const WCHAR wszExport[] = {{'e'},{'x'},{'p'},{'o'},{'r'},{'t'},{0}};
@@ -190,6 +193,7 @@ int wmain(int argc, WCHAR* argv[])
 
 	//Parse command and call appropriate function.
 	if     (WCSicmp(argv[1], wszCreate) == 0)    PrintCreate(OptionList, OPT_PARAM(2), OPT_PARAM(3));
+	else if(WCSicmp(argv[1], wszConvert) == 0)   PrintConvert(OptionList, OPT_PARAM(2));
 	else if(WCSicmp(argv[1], wszDelete) == 0)    PrintDelete(OptionList, OPT_PARAM(2), OPT_PARAM(3));
 	else if(WCSicmp(argv[1], wszDemo) == 0)         PrintDemo(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszExport) == 0)    PrintExport(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
@@ -334,6 +338,7 @@ void PrintHelp(
 			PrintHelpHelp();
 	}
 	else if (WCSicmp(pszCommand, wszCreate) == 0)      PrintCreateHelp();
+	else if (WCSicmp(pszCommand, wszConvert) == 0)     PrintConvertHelp();
 	else if (WCSicmp(pszCommand, wszDelete) == 0)      PrintDeleteHelp();
 	else if (WCSicmp(pszCommand, wszDemo) == 0)        PrintDemoHelp();
 	else if (WCSicmp(pszCommand, wszExport) == 0)      PrintExportHelp();
@@ -397,6 +402,47 @@ void PrintCreate(
 	//Create the data.
 	if (pUtil->PrintCreate(Options))
 		printf("SUCCESS--DROD data was created." NEWLINE);
+}
+
+//******************************************************************************************
+void PrintConvertHelp()
+{
+	PrintHeader();
+	printf(
+		"convert [SrcPath]" NEWLINE
+		"" NEWLINE
+		"Converts a uni file to an xml file" NEWLINE
+		"" NEWLINE
+		"Params:" NEWLINE
+		"  SrcPath   File path of uni file to convert." NEWLINE
+		"            The output xml file will be placed in the same directory." NEWLINE
+		"            This argument is required." NEWLINE
+	);
+}
+
+//******************************************************************************************
+//Convert a uni file into an xml file.
+void PrintConvert(const COptionList& Options, const WCHAR* pszSrcPath)
+{
+	PrintHeader();
+	if (!Options.AreOptionsValid(wszEmpty)) return;
+
+	if ((pszSrcPath == NULL || WCSicmp(pszSrcPath, wszDefault) == 0)) {
+		printf("FAILED--Source path is required." NEWLINE);
+		return;
+	}
+
+	//Get util for default version.
+	CUtil* pUtil = GetUtil(GetDefaultVersion(), pszSrcPath);
+	if (!pUtil)
+	{
+		printf("FAILED--Version not supported." NEWLINE);
+		return;
+	}
+
+	if (pUtil->PrintConvertUNI(Options, pszSrcPath)) {
+		printf("SUCCESS--File was converted" NEWLINE);
+	}
 }
 
 //******************************************************************************************

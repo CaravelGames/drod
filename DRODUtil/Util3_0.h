@@ -63,6 +63,8 @@ public:
 
 	virtual bool  PrintCreate(const COptionList &Options) const;
 
+	virtual bool  PrintConvertUNI(const COptionList& Options, const WCHAR* pszSrcPath) const;
+
 	virtual bool  PrintDelete(const COptionList &Options) const;
 	virtual bool  PrintImport(const COptionList &Options, const WCHAR* pszSrcPath, VERSION eSrcVersion) const;
 	virtual bool  PrintRoom(const COptionList &Options, UINT dwRoomID) const;
@@ -88,6 +90,7 @@ private:
 	bool        ImportXML(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
 		UINT& dwLastMessageID, string& strMIDs) const;
 	bool        ExtractXML(const WCHAR* pwzFilepath, XMLLanguageParseData& result) const;
+	void        WriteToXML(const WSTRING& filepath, const ParsedMessages messages, const vector<string>& orderedMIDs) const;
 };
 
 #endif //...#ifndef UTIL3_0_H

@@ -154,6 +154,46 @@ const
 }
 
 //**************************************************************************************
+bool CUtil3_0::PrintConvertUNI(
+//Converts a given uni file to an xml file.The new file has the same name and location
+//as the input, but with a .xml extension.
+//
+//Params:
+	const COptionList& Options, //[in] Options affecting the conversion.--IGNORED
+	const WCHAR* pszSrcPath     //[in] Path to uni file to convert.
+)
+//
+//Returns:
+//True if successful, false if not.
+const
+{
+	printf("Collecting messages from: ");
+	wprintf(pszSrcPath);
+	printf(NEWLINE);
+
+	ParsedMessages messages;
+	vector<string> orderedMIDs;
+	if (!ExtractUNI(pszSrcPath, messages, orderedMIDs)) {
+		printf(
+			"Failed to collect messages" NEWLINE
+			"Check that the file path points to a valid uni file."
+		);
+		return false;
+	}
+
+	WSTRING uniFilePath(pszSrcPath);
+	WSTRING destPath = uniFilePath.substr(0, uniFilePath.size() - 4);
+	destPath += L".xml";
+
+	printf("Writing to ");
+	wprintf(destPath.c_str());
+	printf(NEWLINE);
+
+	WriteToXML(destPath, messages, orderedMIDs);
+	return true;
+}
+
+//**************************************************************************************
 bool CUtil3_0::PrintImport(
 //Imports DROD data from a specified location/version.
 //
@@ -1069,6 +1109,87 @@ void CUtil3_0::processLanguageCharData(
 	XMLLanguageParseData* parseData = static_cast<XMLLanguageParseData*>(userData);
 	const string processedStr(str, length);
 	parseData->currentMessage += processedStr;
+}
+
+//****************************************************************************************************
+void CUtil3_0::WriteToXML(
+//Export a set of messages to an xml file. Nested elements are intented using tabs (\t).
+//If a file already exists at the given path, it will be overwritten.
+//
+//Params:
+	const WSTRING& filepath,          //[in] Path to write file to
+	const ParsedMessages messages,    //[in] Collection of messages, that can include multiple languages
+	const vector<string>& orderedMIDs //[in] Message ids in the order to write them out
+) const
+{
+	CStretchyBuffer outBuffer;
+
+	//xml prolog
+	outBuffer += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+	outBuffer += NEWLINE;
+	//Root node
+	outBuffer += "<DRODMessages>";
+	outBuffer += NEWLINE;
+
+	auto toStartTag = [](const string& str) {
+		return "<" + str + ">";
+	};
+	auto toEndTag = [](const string& str) {
+		return "</" + str + ">";
+	};
+
+	//Replace &, < and > characters with equivalent xml entities
+	//Ampersand needs to be first, as the entities contain it
+	auto sanitize = [](const string& inStr) {
+		string outStr = strReplace(inStr, "&", "&amp;");
+		outStr = strReplace(outStr, "<", "&lt;");
+		outStr = strReplace(outStr, ">", "&gt;");
+		return outStr;
+	};
+
+	for (const auto& MID : orderedMIDs) {
+		outBuffer += "\t";
+		outBuffer += toStartTag(MID);
+		outBuffer += NEWLINE;
+
+		auto& messageGroup = messages.at(MID);
+		for (const auto& languageMessage : messageGroup) {
+			outBuffer += "\t\t";
+			string langCode(Language::GetCode(languageMessage.first));
+			outBuffer += toStartTag(langCode);
+
+			string message = languageMessage.second;
+			message = sanitize(message);
+			if (message.find("\n") == string::npos) {
+				//Single line string
+				if (!message.empty()) {
+					outBuffer += message;
+				}
+				outBuffer += toEndTag(langCode);
+				outBuffer += NEWLINE;
+				continue;
+			}
+
+			//Put multi-line messages in their own indented block
+			outBuffer += NEWLINE;
+			outBuffer += "\t\t\t";
+			//Put three tabs after each line end. Doesn't work if using CR-only line ends but we don't
+			//support those anywhere else anyway.
+			message = strReplace(message, "\n", "\n\t\t\t");
+			outBuffer += message;
+			outBuffer += NEWLINE;
+			outBuffer += "\t\t";
+			outBuffer += toEndTag(langCode);
+		}
+
+		outBuffer += "\t";
+		outBuffer += toEndTag(MID);
+		outBuffer += NEWLINE;
+	}
+
+	outBuffer += "</DRODMessages>";
+	outBuffer += NEWLINE;
+	CFiles::WriteBufferToFile(filepath.c_str(), outBuffer);
 }
 
 //****************************************************************************************************

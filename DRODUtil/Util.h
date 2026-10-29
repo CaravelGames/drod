@@ -67,6 +67,7 @@ public:
 	static bool IsPathValid(const WCHAR* pszPath);
 
 	virtual bool   PrintCreate(const COptionList &/*Options*/) const {PrintNotImplemented(); return false;}
+	virtual bool   PrintConvertUNI(const COptionList &/*Options*/, const WCHAR* /*pszSrcPath*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintDelete(const COptionList &/*Options*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintDemo(const COptionList &/*Options*/, UINT /*dwDemoID*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintExport(const COptionList &/*Options*/, const WCHAR* /*pszDestPath*/) const {PrintNotImplemented(); return false;}
