@@ -71,6 +71,8 @@ public:
 	virtual bool  PrintLevel(const COptionList &Options, UINT dwLevelID) const;
 	virtual bool  PrintTest(const COptionList &Options, UINT dwDemoID) const;
 
+	virtual bool  PrintTransfer(const COptionList& Options, const WCHAR* pszSrcDir, const WCHAR* pszDestLang) const;
+
 private:
 	static void AddMessageText(c4_Storage &TextStorage, const UINT dwMessageID,
 		  const Language::LANGUAGE eLanguage, const WCHAR *pwszText);
@@ -84,6 +86,7 @@ private:
 	bool        ImportUNI(const WCHAR *pwzFilepath, c4_Storage &TextStorage, const ASSIGNEDMIDS &AssignedMIDs,
 				UINT &dwLastMessageID, string &strMIDs) const;
 	bool        ExtractUNI(const WCHAR* pwzFilepath, ParsedMessages& messages, vector<string>& orderedMIDs) const;
+	void        WriteToUNI(const WSTRING& filepath, const ParsedMessages messages, const vector<string>& orderedMIDs) const;
 	static void startLanguageElement(void* userData, const char* tag, const char**);
 	static void endLanguageElement(void* userData, const char* tag);
 	static void processLanguageCharData(void* userData, const XML_Char* str, int length);
@@ -91,6 +94,9 @@ private:
 		UINT& dwLastMessageID, string& strMIDs) const;
 	bool        ExtractXML(const WCHAR* pwzFilepath, XMLLanguageParseData& result) const;
 	void        WriteToXML(const WSTRING& filepath, const ParsedMessages messages, const vector<string>& orderedMIDs) const;
+
+	void        TransferMessages(
+		ParsedMessages& srcMessages, ParsedMessages& destMessages, const Language::LANGUAGE destLanguage) const;
 };
 
 #endif //...#ifndef UTIL3_0_H

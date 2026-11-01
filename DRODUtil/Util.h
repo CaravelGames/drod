@@ -78,6 +78,7 @@ public:
 	virtual bool   PrintRoom(const COptionList &/*Options*/, UINT /*dwRoomID*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintSummary(const COptionList &/*Options*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintTest(const COptionList &/*Options*/, UINT /*dwDemoID*/) const {PrintNotImplemented(); return false;}
+	virtual bool   PrintTransfer(const COptionList& /*Options*/, const WCHAR* /*pszSrcDir*/, const WCHAR* /*pszDestLang*/) const { PrintNotImplemented(); return false; }
 
 protected:
 	WSTRING        strPath;

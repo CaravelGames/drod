@@ -516,6 +516,84 @@ bool CUtil3_0::PrintTest(const COptionList &Options, UINT dwDemoID) const
 	return bRes;
 }
 
+//**************************************************************************************
+bool CUtil3_0::PrintTransfer(
+//Create or update a text subdirectory for a given language
+//
+//Params:
+	const COptionList& Options, //[in] Options affecting the transfer.--IGNORED
+	const WCHAR* pszSrcDir,     //[in] Directory containing DROD text files
+	const WCHAR* pszDestLang    //[in] Code of language to transfer to
+) const
+{
+	if (!CFiles::IsValidPath(pszSrcDir)) {
+		printf("FAILED--Source path (%S) is not a valid path." NEWLINE, pszSrcDir);
+		return false;
+	}
+
+	Language::LANGUAGE destLanguage = Language::Get(pszDestLang);
+	if (destLanguage == Language::Unknown) {
+		printf("FAILED--Invalid language code." NEWLINE);
+		return false;
+	}
+
+	WSTRING wstrSearchPath = pszSrcDir;
+	WSTRING outputDir = wstrSearchPath + wszSlash + pszDestLang + wszSlash;
+	CFiles::CreatePathIfInvalid(outputDir.c_str());
+	printf("Transfering from %S to %S" NEWLINE, pszSrcDir, outputDir.c_str());
+
+	vector<WSTRING> uniFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"uni", uniFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& uniFilePath : uniFilePaths) {
+			ParsedMessages srcMessages;
+			vector<string> orderedMIDs;
+			if (!ExtractUNI(uniFilePath.c_str(), srcMessages, orderedMIDs)) {
+				continue;
+			}
+
+			WSTRING fileName = uniFilePath.substr(uniFilePath.find_last_of(wszSlash) + 1);
+			printf("Transferring from %S" NEWLINE, fileName.c_str());
+			WSTRING destPath = outputDir + fileName;
+
+			ParsedMessages destMessages;
+			if (CFiles::DoesFileExist(destPath.c_str())) {
+				vector<string> ignored;
+				ExtractUNI(destPath.c_str(), destMessages, ignored);
+			}
+
+			TransferMessages(srcMessages, destMessages, destLanguage);
+			WriteToUNI(destPath, destMessages, orderedMIDs);
+		}
+	}
+
+	vector<WSTRING> xmlFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"xml", xmlFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& xmlFilePath : xmlFilePaths) {
+			XMLLanguageParseData srcMessageData;
+			if (!ExtractXML(xmlFilePath.c_str(), srcMessageData)) {
+				continue;
+			}
+
+			WSTRING fileName = xmlFilePath.substr(xmlFilePath.find_last_of(wszSlash) + 1);
+			printf("Transferring from %S" NEWLINE, fileName.c_str());
+			WSTRING destPath = outputDir + fileName;
+
+			XMLLanguageParseData destMessageData;
+			if (CFiles::DoesFileExist(destPath.c_str())) {
+				ExtractXML(destPath.c_str(), destMessageData);
+			}
+
+			TransferMessages(
+				srcMessageData.parsedMessages, destMessageData.parsedMessages, destLanguage);
+			WriteToXML(destPath, destMessageData.parsedMessages, srcMessageData.orderedMIDs);
+		}
+	}
+
+	return true;
+}
+
 //
 //Private methods.
 //
@@ -936,6 +1014,57 @@ bool CUtil3_0::ExtractUNI(
 }
 
 //****************************************************************************************************
+void CUtil3_0::WriteToUNI(
+//Export a set of messages to uni file.
+//If a file already exists at the given path, it will be overwritten.
+//
+//Params:
+	const WSTRING& filepath,          //[in] Path to write file to
+	const ParsedMessages messages,    //[in] Collection of messages, that can include multiple languages
+	const vector<string>& orderedMIDs //[in] Message ids in the order to write them out
+) const
+{
+	CStretchyBuffer outBuffer;
+
+	auto toTag = [](const string& str) {
+		return "[" + str + "]";
+	};
+
+	//Deal with parsing issue around brackets
+	auto sanitize = [](const string& inStr) {
+		string outStr = strReplace(inStr, "[", "[[");
+		outStr = strReplace(outStr, "]", "]]");
+		return outStr;
+	};
+
+	bool wantNL = false; //prevent extra newline
+	for (const auto& MID : orderedMIDs) {
+		if (wantNL) {
+			outBuffer += NEWLINE;
+		}
+
+		outBuffer += toTag(MID);
+		outBuffer += NEWLINE;
+
+		auto& messageGroup = messages.at(MID);
+		for (const auto& languageMessage : messageGroup) {
+			string langCode(Language::GetCode(languageMessage.first));
+			outBuffer += toTag(langCode);
+			outBuffer += NEWLINE;
+			string message = languageMessage.second;
+			if (!message.empty()) {
+				outBuffer += sanitize(message);
+				outBuffer += NEWLINE;
+			}
+		}
+
+		wantNL = true;
+	}
+
+	CFiles::WriteBufferToFile(filepath.c_str(), outBuffer);
+}
+
+//****************************************************************************************************
 bool CUtil3_0::ImportXML(
 //Imports contents of one XML file into the text dat.
 //
@@ -1085,7 +1214,9 @@ void CUtil3_0::endLanguageElement(
 	str.erase(std::remove(str.begin(), str.end(), '\t'), str.end()); //remove tabs
 	size_t start = str.find_first_not_of(" \r\n");
 	if (start == string::npos) {
-		return; //all whitespace
+		//all whitespace
+		parseData->parsedMessages[parseData->activeMID][language] = "";
+		return;
 	}
 
 	size_t end = str.find_last_not_of(" \r\n");
@@ -1309,4 +1440,39 @@ const
 		  if (dwValue > dwLastMessageID) dwLastMessageID = dwValue;
 
 	 } //...keep looping forever.  Exit condition inside of loop.
+}
+
+//****************************************************************************************************
+void CUtil3_0::TransferMessages(
+//Create a set of messages for a given output language from a set of inputs.
+//
+//Params:
+	ParsedMessages& srcMessages,          //[in]     Base messages to transfer
+	ParsedMessages& destMessages,         //[in/out] Transfered messages, and any pre-existing messages
+	const Language::LANGUAGE destLanguage //[in]     Language to transfer to.
+) const
+{
+	for (const auto& entry : srcMessages) {
+		const string& MID = entry.first;
+		ParsedMessages::const_iterator destEntry = destMessages.find(MID);
+		if (destEntry != destMessages.cend()) {
+			if (destEntry->second.count(destLanguage)) {
+				//The message already exists in the destination.
+				continue;
+			}
+		}
+
+		//Try to find message in target language fist
+		string message = "";
+		auto messageIt = entry.second.find(destLanguage);
+		if (messageIt == entry.second.cend()) {
+			//Try English
+			messageIt = entry.second.find(Language::English);
+		}
+		if (messageIt != entry.second.cend()) {
+			message = messageIt->second;
+		}
+
+		destMessages[MID][destLanguage] = message;
+	}
 }

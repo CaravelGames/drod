@@ -108,6 +108,8 @@ void     PrintSummaryHelp();
 void     PrintTest(const COptionList &Options, const WCHAR *pszDemoID,
 		const WCHAR *pszSrcPath, const WCHAR *pszSrcVersion);
 void     PrintTestHelp();
+void     PrintTransfer(const COptionList& Options, const WCHAR* pszSrcPath, const WCHAR* pszDestLang);
+void     PrintTransferHelp();
 void     PrintUnprotect(const COptionList &Options, const WCHAR *pszFilePath);
 void     PrintUnprotectHelp();
 void     PrintUsage();
@@ -123,6 +125,7 @@ static const WCHAR wszHold[] = {{'h'},{'o'},{'l'},{'d'},{0}};
 static const WCHAR wszImport[] = {{'i'},{'m'},{'p'},{'o'},{'r'},{'t'},{0}};
 static const WCHAR wszLevel[] = {{'l'},{'e'},{'v'},{'e'},{'l'},{0}};
 static const WCHAR wszTest[] = {{'t'},{'e'},{'s'},{'t'},{0}};
+static const WCHAR wszTransfer[] = {{'t'},{'r'},{'a'},{'n'},{'s'},{'f'},{'e'},{'r'},{0}};
 static const WCHAR wszRoom[] = {{'r'},{'o'},{'o'},{'m'},{0}};
 static const WCHAR wszSummary[] = {{'s'},{'u'},{'m'},{'m'},{'a'},{'r'},{'y'},{0}};
 static const WCHAR wszUnprotect[] = {{'u'},{'n'},{'p'},{'r'},{'o'},{'t'},{'e'},{'c'},{'t'},{0}};
@@ -202,6 +205,7 @@ int wmain(int argc, WCHAR* argv[])
 	else if(WCSicmp(argv[1], wszImport) == 0)    PrintImport(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4), OPT_PARAM(5));
 	else if(WCSicmp(argv[1], wszLevel) == 0)     PrintLevel(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszTest) == 0)         PrintTest(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
+	else if(WCSicmp(argv[1], wszTransfer) == 0)     PrintTransfer(OptionList, OPT_PARAM(2), OPT_PARAM(3));
 	else if(WCSicmp(argv[1], wszRoom) == 0)         PrintRoom(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszSummary) == 0)      PrintSummary(OptionList, OPT_PARAM(2), OPT_PARAM(3));
 	else if(WCSicmp(argv[1], wszProtect) == 0)      PrintProtect(OptionList, OPT_PARAM(2));
@@ -280,6 +284,7 @@ void PrintUsage()
 	PrintHeader();
 	printf(
 			"The following commands are supported:" NEWLINE
+			"  convert   SrcPath" NEWLINE
 			"  create    [ [ DestPath ] DestVersion ]" NEWLINE
 			"  delete    [ [ SrcPath ] SrcVersion ]" NEWLINE
 			"  demo      [ [ [ DemoID ] SrcPath ] SrcVersion ]" NEWLINE
@@ -292,6 +297,7 @@ void PrintUsage()
 			"  room      [ [ [ RoomID ] SrcVersion ] SrcPath ]" NEWLINE
 			"  summary   [ [ SrcPath ] SrcVersion ]" NEWLINE
 			"  test      [ Options ] [ [ [ DemoID ] SrcVersion ] SrcPath ]" NEWLINE
+			"  transfer  SrcPath DestLanguage" NEWLINE
 			"  protect   SrcFilePath" NEWLINE
 			"  unprotect SrcFilePath" NEWLINE
 			"  compress  SrcFilePath DestFilePath" NEWLINE
@@ -346,6 +352,7 @@ void PrintHelp(
 	else if (WCSicmp(pszCommand, wszImport) == 0)      PrintImportHelp();
 	else if (WCSicmp(pszCommand, wszLevel) == 0)    PrintLevelHelp();
 	else if (WCSicmp(pszCommand, wszTest) == 0)        PrintTestHelp();
+	else if (WCSicmp(pszCommand, wszTransfer) == 0)    PrintTransferHelp();
 	else if (WCSicmp(pszCommand, wszMySQL) == 0)    PrintMysqlHelp();
 	else if (WCSicmp(pszCommand, wszRoom) == 0)        PrintRoomHelp();
 	else if (WCSicmp(pszCommand, wszSummary) == 0)     PrintSummaryHelp();
@@ -958,6 +965,55 @@ void PrintTest(
 			printf("SUCCESS--All demos tested." NEWLINE);
 		else
 			printf("SUCCESS--Demo tested." NEWLINE);
+	}
+}
+
+//******************************************************************************************
+void PrintTransferHelp()
+{
+	PrintHeader();
+	printf(
+		"transfer    SrcDirPath  LanguageCode" NEWLINE
+		"" NEWLINE
+		"Create a subdirectory of language specific string files from a given directory" NEWLINE
+		"or update an existing language subdirectory. Existing strings are preserved" NEWLINE
+		"" NEWLINE
+		"Params" NEWLINE
+		"SrcDirPath    Path to a directory contain DROD message files (uni or xml)." NEWLINE
+		"LanguageCode  Three letter ISO 639-3 language code." NEWLINE
+	);
+}
+
+//******************************************************************************************
+void PrintTransfer(
+	const COptionList& Options,
+	const WCHAR* pszSrcPath,
+	const WCHAR* pszDestLang
+)
+{
+	PrintHeader();
+	if (!Options.AreOptionsValid(wszEmpty)) return;
+
+	if ((pszSrcPath == NULL || WCSicmp(pszSrcPath, wszDefault) == 0)) {
+		printf("FAILED--Source path is required." NEWLINE);
+		return;
+	}
+
+	if (pszDestLang == NULL) {
+		printf("FAILED--Target language is required." NEWLINE);
+		return;
+	}
+
+	//Get util for default version.
+	CUtil* pUtil = GetUtil(GetDefaultVersion(), pszSrcPath);
+	if (!pUtil)
+	{
+		printf("FAILED--Version not supported." NEWLINE);
+		return;
+	}
+
+	if (pUtil->PrintTransfer(Options, pszSrcPath, pszDestLang)) {
+		printf("SUCCESS--Messages transferred." NEWLINE);
 	}
 }
 
