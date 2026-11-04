@@ -71,11 +71,13 @@ public:
 	virtual bool  PrintLevel(const COptionList &Options, UINT dwLevelID) const;
 	virtual bool  PrintTest(const COptionList &Options, UINT dwDemoID) const;
 
+	virtual bool  PrintLocalize(const COptionList& Options, const WCHAR* pszSrcPath, const WCHAR* pszDestLang) const;
 	virtual bool  PrintTransfer(const COptionList& Options, const WCHAR* pszSrcDir, const WCHAR* pszDestLang) const;
 
 private:
 	static void AddMessageText(c4_Storage &TextStorage, const UINT dwMessageID,
 		  const Language::LANGUAGE eLanguage, const WCHAR *pwszText);
+	void        RemoveBasicMessages(c4_Storage& TextStorage) const;
 	static bool DeleteDat(const WCHAR *pwszFilepath);
 	void        GetAssignedMIDs(const WCHAR *pwzMIDFilepath, ASSIGNEDMIDS &AssignedMIDs,
 				UINT &dwLastMessageID) const;
@@ -85,6 +87,8 @@ private:
 				const list<UINT> &NeededMessages) const;
 	bool        ImportUNI(const WCHAR *pwzFilepath, c4_Storage &TextStorage, const ASSIGNEDMIDS &AssignedMIDs,
 				UINT &dwLastMessageID, string &strMIDs) const;
+	bool        ImportUNI(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
+		const Language::LANGUAGE destLanguage) const;
 	bool        ExtractUNI(const WCHAR* pwzFilepath, ParsedMessages& messages, vector<string>& orderedMIDs) const;
 	void        WriteToUNI(const WSTRING& filepath, const ParsedMessages messages, const vector<string>& orderedMIDs) const;
 	static void startLanguageElement(void* userData, const char* tag, const char**);
@@ -92,6 +96,8 @@ private:
 	static void processLanguageCharData(void* userData, const XML_Char* str, int length);
 	bool        ImportXML(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
 		UINT& dwLastMessageID, string& strMIDs) const;
+	bool        ImportXML(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
+		const Language::LANGUAGE destLanguage) const;
 	bool        ExtractXML(const WCHAR* pwzFilepath, XMLLanguageParseData& result) const;
 	void        WriteToXML(const WSTRING& filepath, const ParsedMessages messages, const vector<string>& orderedMIDs) const;
 

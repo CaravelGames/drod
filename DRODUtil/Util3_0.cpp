@@ -517,6 +517,121 @@ bool CUtil3_0::PrintTest(const COptionList &Options, UINT dwDemoID) const
 }
 
 //**************************************************************************************
+bool CUtil3_0::PrintLocalize(
+//Create a localization dat file for a given language
+	const COptionList& Options,//[in] Options affecting the process.--IGNORED
+	const WCHAR* pszSrcPath,   //[in] Directory containing DROD text files and MIDs.h file
+	const WCHAR* pszDestLang   //[in] Code of language to create dat file for
+) const
+{
+	Language::LANGUAGE destLanguage = Language::Get(pszDestLang);
+	if (destLanguage == Language::Unknown) {
+		printf("FAILED--Invalid language code." NEWLINE);
+		return false;
+	}
+
+	WSTRING wstrSearchPath = pszSrcPath;
+	wstrSearchPath += wszSlash;
+	wstrSearchPath += pszDestLang;
+	if (!CFiles::IsValidPath(wstrSearchPath.c_str())) {
+		printf("FAILED--Require language subdirectory not found in %S." NEWLINE, pszSrcPath);
+		return false;
+	}
+
+	//Get map of already-assigned MIDs from existing MIDS.h.
+	ASSIGNEDMIDS AssignedMIDs;
+	{
+		UINT dwLastMessageID = 0;
+		WSTRING wstrHeaderFilepath;
+		wstrHeaderFilepath = pszSrcPath;
+		wstrHeaderFilepath += wszSlash;
+		wstrHeaderFilepath += L"MIDs.h";
+		if (!CFiles::DoesFileExist(wstrHeaderFilepath.c_str())) {
+			printf("FAILED--No MIDs.h file found in %S." NEWLINE, pszSrcPath);
+			return false;
+		}
+
+		GetAssignedMIDs(wstrHeaderFilepath.c_str(), AssignedMIDs, dwLastMessageID);
+	}
+
+	WSTRING destPath;
+	GetMasterFilepath(destPath);
+	{
+		//Add langugage tag to file name
+		WSTRING postfix = L"-";
+		postfix += pszDestLang;
+		WSTRING::size_type pos = destPath.find_last_of('.');
+		destPath.insert(pos, postfix);
+	}
+
+	printf("Output dat is %S" NEWLINE, destPath);
+	if (!CFiles::DoesFileExist(destPath.c_str())) {
+		//Make it so
+		if (!CDbBase::CreateDatabase(destPath)) {
+			printf("FAILED--Couldn't create dat file." NEWLINE);
+			return false;
+		}
+	}
+
+	const string filename = UnicodeToUTF8(destPath.c_str());
+	printf("Opening %s...", filename.c_str());
+	c4_Storage TextStorage(filename.c_str(), true);
+	printf("done." NEWLINE);
+
+	//Remove any existing messages
+	RemoveBasicMessages(TextStorage);
+
+	//Ensure all incremented IDs have been created at this time.
+	c4_View IncrementedIDs = TextStorage.View("IncrementedIDs");
+	if (IncrementedIDs.GetSize() < 1)
+	{
+		IncrementedIDs.Add(
+			p_DataID[0] +
+			p_DemoID[0] +
+			p_HoldID[0] +
+			p_LevelID[0] +
+			p_MessageID[uFirstNonSimpleMessageID] +
+			p_MessageTextID[0] +
+			p_PlayerID[0] +
+			p_RoomID[0] +
+			p_SavedGameID[0] +
+			p_SpeechID[0]);
+	} else {
+		c4_RowRef row = IncrementedIDs.GetAt(0);
+		p_MessageID(row) = uFirstNonSimpleMessageID;
+	}
+
+	//Import every *.UNI file found in language subdirectory.
+	vector<WSTRING> uniFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"uni", uniFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& uniFilePath : uniFilePaths) {
+			WSTRING fileName = uniFilePath.substr(uniFilePath.find_last_of(wszSlash) + 1);
+			printf("Importing messages from %S" NEWLINE, fileName);
+			if (!ImportUNI(uniFilePath.c_str(), TextStorage, AssignedMIDs, destLanguage)) {
+				continue;
+			}
+		}
+	}
+
+	//Import every *.xml file found in language subdirectory.
+	vector<WSTRING> xmlFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"xml", xmlFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& xmlFilePath : xmlFilePaths) {
+			WSTRING fileName = xmlFilePath.substr(xmlFilePath.find_last_of(wszSlash) + 1);
+			printf("Importing messages from %S" NEWLINE, fileName);
+			if (!ImportXML(xmlFilePath.c_str(), TextStorage, AssignedMIDs, destLanguage)) {
+				continue;
+			}
+		}
+	}
+
+	TextStorage.Commit();
+	return true;
+}
+
+//**************************************************************************************
 bool CUtil3_0::PrintTransfer(
 //Create or update a text subdirectory for a given language
 //
@@ -683,16 +798,8 @@ const
 		  "  MID_LastUnstored = 99," NEWLINE;
 	 if (dwLastMessageID < 99) dwLastMessageID = 99;
 
-	 //Delete any existing basic messages from the database.  (basic means "MIDs < uFirstNonSimpleMessageID").
-	 {
-		  c4_View MessageTextsView = TextStorage.View("MessageTexts");
-		  long lMessageTextCount = MessageTextsView.GetSize();
-		  while (lMessageTextCount--)
-		  {
-				if (p_MessageID( MessageTextsView[lMessageTextCount] ) < int(uFirstNonSimpleMessageID))
-					 MessageTextsView.RemoveAt(lMessageTextCount);
-		  }
-	 }
+	//Delete any existing basic messages from the database.  (basic means "MIDs < uFirstNonSimpleMessageID").
+	RemoveBasicMessages(TextStorage);
 
 	 //Ensure Incremented IDs for text exist.
 	c4_View IncrementedIDs = TextStorage.View("IncrementedIDs");
@@ -854,6 +961,50 @@ const
 			LANGUAGE eLanguage = languageMessage.first;
 			WSTRING wstr = UTF8ToUnicode(languageMessage.second);
 			AddMessageText(TextStorage, dwUseMessageID, eLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ImportUNI(
+//Imports contents of one UNI file for a specified language into the text dat.
+//
+//Params:
+	const WCHAR* pwzFilepath,             //[in]     Full path to UNI file
+	c4_Storage& TextStorage,              //[in/out] Database to import to
+	const ASSIGNEDMIDS& AssignedMIDs,     //[in]     Assigned MIDs.
+	const Language::LANGUAGE destLanguage //[in]     Language to import
+) const
+{
+	ParsedMessages messages;
+	vector<string> orderedMIDs;
+	if (!ExtractUNI(pwzFilepath, messages, orderedMIDs)) {
+		return false;
+	}
+
+	for (const auto& MID : orderedMIDs) {
+		//Find id to use. Don't assign new id when creating localization dat
+		UINT dwUseMessageID;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(MID);
+			if (iMID == AssignedMIDs.end()) {
+				//Report unknown MID and move to next one
+				printf("Unknown message id %s" NEWLINE, MID);
+				continue;
+			} else {
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		auto& messageGroup = messages[MID];
+		auto messageIt = messageGroup.find(destLanguage);
+		if (messageIt != messageGroup.end()) {
+			WSTRING wstr = UTF8ToUnicode(messageIt->second);
+			AddMessageText(TextStorage, dwUseMessageID, destLanguage, wstr.c_str());
 		}
 	}
 
@@ -1111,6 +1262,49 @@ bool CUtil3_0::ImportXML(
 }
 
 //****************************************************************************************************
+bool CUtil3_0::ImportXML(
+//Imports contents of one xml file for a specified language into the text dat.
+//
+//Params:
+	const WCHAR* pwzFilepath,             //[in]     Full path to xml file
+	c4_Storage& TextStorage,              //[in/out] Database to import to
+	const ASSIGNEDMIDS& AssignedMIDs,     //[in]     Assigned MIDs.
+	const Language::LANGUAGE destLanguage //[in]     Language to import
+) const
+{
+	XMLLanguageParseData result;
+	if (!ExtractXML(pwzFilepath, result)) {
+		return false;
+	}
+
+	for (const auto& MID : result.orderedMIDs) {
+		//Find id to use. Don't assign new id when creating localization dat
+		UINT dwUseMessageID;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(MID);
+			if (iMID == AssignedMIDs.end()) {
+				//Report unknown MID and move to next one
+				printf("Unknown message id %s" NEWLINE, MID);
+				continue;
+			} else {
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		auto& messageGroup = result.parsedMessages[MID];
+		auto messageIt = messageGroup.find(destLanguage);
+		if (messageIt != messageGroup.end()) {
+			WSTRING wstr = UTF8ToUnicode(messageIt->second);
+			AddMessageText(TextStorage, dwUseMessageID, destLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
 bool CUtil3_0::ExtractXML(
 //Collect all strings from an xml file so that things can be done with them.
 //
@@ -1359,6 +1553,19 @@ void CUtil3_0::AddMessageText(
 		p_MessageID[ dwMessageID ] +
 		p_LanguageCode[ (int)eLanguage ] +
 		p_MessageText[ TextBytes ] );
+}
+
+//****************************************************************************************************
+//Delete any existing basic messages from the database.  (basic means "MIDs < uFirstNonSimpleMessageID").
+void CUtil3_0::RemoveBasicMessages(c4_Storage& TextStorage) const
+{
+	c4_View MessageTextsView = TextStorage.View("MessageTexts");
+	long lMessageTextCount = MessageTextsView.GetSize();
+	while (lMessageTextCount--)
+	{
+		if (p_MessageID(MessageTextsView[lMessageTextCount]) < int(uFirstNonSimpleMessageID))
+			MessageTextsView.RemoveAt(lMessageTextCount);
+	}
 }
 
 //****************************************************************************************************

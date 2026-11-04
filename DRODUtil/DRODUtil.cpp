@@ -88,6 +88,9 @@ void     PrintImportHelp();
 void     PrintLevel(const COptionList &Options, const WCHAR *pszLevelID,
 		const WCHAR *pszSrcPath, const WCHAR *pszSrcVersion);
 void     PrintLevelHelp();
+void     PrintLocalize(const COptionList& Options, const WCHAR* pszSrcPath,
+	const WCHAR* pszDestPath, const WCHAR* pszDestLang);
+void     PrintLocalizeHelp();
 void     PrintMysql(const COptionList &Options, const WCHAR *pszFilePath,
 		const WCHAR *pszSrcPath, const WCHAR *pszSrcVersion);
 void     PrintMysqlHelp();
@@ -124,6 +127,7 @@ static const WCHAR wszHelp[] = {{'h'},{'e'},{'l'},{'p'},{0}};
 static const WCHAR wszHold[] = {{'h'},{'o'},{'l'},{'d'},{0}};
 static const WCHAR wszImport[] = {{'i'},{'m'},{'p'},{'o'},{'r'},{'t'},{0}};
 static const WCHAR wszLevel[] = {{'l'},{'e'},{'v'},{'e'},{'l'},{0}};
+static const WCHAR wszLocalize[] = { {'l'},{'o'},{'c'},{'a'},{'l'},{'i'},{ 'z' },{ 'e' },{ 0 }};
 static const WCHAR wszTest[] = {{'t'},{'e'},{'s'},{'t'},{0}};
 static const WCHAR wszTransfer[] = {{'t'},{'r'},{'a'},{'n'},{'s'},{'f'},{'e'},{'r'},{0}};
 static const WCHAR wszRoom[] = {{'r'},{'o'},{'o'},{'m'},{0}};
@@ -204,6 +208,7 @@ int wmain(int argc, WCHAR* argv[])
 	else if(WCSicmp(argv[1], wszHold) == 0)         PrintHold(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszImport) == 0)    PrintImport(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4), OPT_PARAM(5));
 	else if(WCSicmp(argv[1], wszLevel) == 0)     PrintLevel(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
+	else if(WCSicmp(argv[1], wszLocalize) == 0)     PrintLocalize(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszTest) == 0)         PrintTest(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszTransfer) == 0)     PrintTransfer(OptionList, OPT_PARAM(2), OPT_PARAM(3));
 	else if(WCSicmp(argv[1], wszRoom) == 0)         PrintRoom(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
@@ -293,6 +298,7 @@ void PrintUsage()
 			"  hold      [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
 			"  import    [ Options ] [ [ [ [ SrcPath ] SrcVersion ] DestPath ] DestVersion ]" NEWLINE
 			"  level     [ [ [ LevelID ] SrcPath ] SrcVersion ]" NEWLINE
+			"  localize  SrcPath  DestPath  DestLanguage" NEWLINE
 			"  mysql     [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
 			"  room      [ [ [ RoomID ] SrcVersion ] SrcPath ]" NEWLINE
 			"  summary   [ [ SrcPath ] SrcVersion ]" NEWLINE
@@ -351,6 +357,7 @@ void PrintHelp(
 	else if (WCSicmp(pszCommand, wszHold) == 0)        PrintHoldHelp();
 	else if (WCSicmp(pszCommand, wszImport) == 0)      PrintImportHelp();
 	else if (WCSicmp(pszCommand, wszLevel) == 0)    PrintLevelHelp();
+	else if (WCSicmp(pszCommand, wszLocalize) == 0)    PrintLocalizeHelp();
 	else if (WCSicmp(pszCommand, wszTest) == 0)        PrintTestHelp();
 	else if (WCSicmp(pszCommand, wszTransfer) == 0)    PrintTransferHelp();
 	else if (WCSicmp(pszCommand, wszMySQL) == 0)    PrintMysqlHelp();
@@ -740,6 +747,60 @@ void PrintLevel(
 	//Print level information.
 	if (pUtil->PrintLevel(Options, dwLevelID))
 		printf("SUCCESS--Level information retrieved." NEWLINE);
+}
+
+//******************************************************************************************
+void PrintLocalizeHelp()
+{
+	PrintHeader();
+	printf(
+		"localize      SrcPath  DestPath  LanguageCode" NEWLINE
+		"" NEWLINE
+		"Create a localization dat file for the given language." NEWLINE
+		"" NEWLINE
+		"Params:" NEWLINE
+		"  SrcPath       Location of data to import." NEWLINE
+		"  DestPath      Location to create localization dat." NEWLINE
+		"  LanguageCode  Three letter ISO 639-3 language code." NEWLINE
+	);
+}
+
+//******************************************************************************************
+void PrintLocalize(
+//Creates a localization dat file for a given language
+	const COptionList & Options,
+	const WCHAR* pszSrcPath,
+	const WCHAR* pszDestPath,
+	const WCHAR* pszDestLang
+)
+{
+	PrintHeader();
+
+	if (!Options.AreOptionsValid(wszEmpty)) return;
+
+	WSTRING strSrcPath =
+		(pszSrcPath == NULL || WCSicmp(pszSrcPath, wszDefault) == 0) ?
+		GetDefaultPath() : pszSrcPath;
+
+	WSTRING strDestPath =
+		(pszDestPath == NULL || WCSicmp(pszDestPath, wszDefault) == 0) ?
+		GetDefaultPath() : pszDestPath;
+
+	if (pszDestLang == NULL) {
+		printf("FAILED--Target language is required." NEWLINE);
+		return;
+	}
+
+	CUtil* pUtil = GetUtil(GetDefaultVersion(), strDestPath.c_str());
+	if (!pUtil)
+	{
+		printf("FAILED--Version not supported." NEWLINE);
+		return;
+	}
+
+	if (pUtil->PrintLocalize(Options, strSrcPath.c_str(), pszDestLang)) {
+		printf("SUCCESS--Localization dat was created." NEWLINE);
+	}
 }
 
 //******************************************************************************************
