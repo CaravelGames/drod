@@ -224,6 +224,9 @@ else
     fi
 
     if [ -f "configure" ]; then
+        # Work around unix/Makefile.in using $(RANLIB) without ever defining it
+        grep -q '^RANLIB' Makefile.in || printf '\nRANLIB ?= ranlib\n' >> Makefile.in
+
         ./configure --prefix="$INSTALL_DIR" --enable-static --disable-shared
         make
         make install
