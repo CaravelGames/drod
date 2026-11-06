@@ -80,6 +80,7 @@ public:
 	WCHAR*              GetAllocMessageText(const MESSAGE_ID eMessageID, UINT *pdwLen = NULL) const;
 	static UINT         GetIncrementedID(const c4_IntProp &propID);
 	const WCHAR*        GetMessageText(const MESSAGE_ID eMessageID, UINT *pdwLen = NULL);
+	const WCHAR*        GetLocalizedMessageText(const MESSAGE_ID eMessageID, UINT* pdwLen = NULL);
 	const WCHAR*        GetMessageText(const c4_Bytes& MessageTextBytes, UINT* pdwLen = NULL);
 	virtual UINT        GetPrimaryKey() const {return 0;}
 	static c4_RowRef    GetRowRef(const VIEWTYPE vType, UINT dwGlobalIndex);
@@ -118,6 +119,7 @@ protected:
 
 private:
 	static WSTRING BaseResourceFilename();
+	static WSTRING LocalizationResourceFilename();
 
 	virtual void  Commit();
 	virtual void  Rollback();
