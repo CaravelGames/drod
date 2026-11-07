@@ -5783,56 +5783,60 @@ void CCharacterDialogWidget::PopulateVarList()
 	//Add hard-coded global vars to the end of the list.
 	this->pVarListBox->SortAlphabetically(false);
 
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_COLOR, g_pTheDB->GetMessageText(MID_VarMonsterColor));
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_HUE, g_pTheDB->GetMessageText(MID_VarMonsterHue));
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_SATURATION, g_pTheDB->GetMessageText(MID_VarMonsterSaturation));
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_WEAPON, g_pTheDB->GetMessageText(MID_VarMonsterWeapon));
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_X, g_pTheDB->GetMessageText(MID_VarMonsterX));
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_Y, g_pTheDB->GetMessageText(MID_VarMonsterY));
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_O, g_pTheDB->GetMessageText(MID_VarMonsterO));
-	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_NAME, g_pTheDB->GetMessageText(MID_VarMonsterName));
-	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_X, g_pTheDB->GetMessageText(MID_VarMonsterParamX));
-	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_Y, g_pTheDB->GetMessageText(MID_VarMonsterParamY));
-	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_W, g_pTheDB->GetMessageText(MID_VarMonsterParamW));
-	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_H, g_pTheDB->GetMessageText(MID_VarMonsterParamH));
-	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_F, g_pTheDB->GetMessageText(MID_VarMonsterParamF));
+	auto addPredefinedVar = [this](ScriptVars::Predefined var) {
+		this->pVarListBox->AddItem(var, ScriptVars::getVarNameW(var).c_str());
+	};
 
-	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_X, g_pTheDB->GetMessageText(MID_VarX));
-	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_Y, g_pTheDB->GetMessageText(MID_VarY));
-	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_O, g_pTheDB->GetMessageText(MID_VarO));
+	addPredefinedVar(ScriptVars::P_MONSTER_COLOR);
+	addPredefinedVar(ScriptVars::P_MONSTER_HUE);
+	addPredefinedVar(ScriptVars::P_MONSTER_SATURATION);
+	addPredefinedVar(ScriptVars::P_MONSTER_WEAPON);
+	addPredefinedVar(ScriptVars::P_MONSTER_X);
+	addPredefinedVar(ScriptVars::P_MONSTER_Y);
+	addPredefinedVar(ScriptVars::P_MONSTER_O);
+	addPredefinedVar(ScriptVars::P_MONSTER_NAME);
+	addPredefinedVar(ScriptVars::P_SCRIPT_X);
+	addPredefinedVar(ScriptVars::P_SCRIPT_Y);
+	addPredefinedVar(ScriptVars::P_SCRIPT_W);
+	addPredefinedVar(ScriptVars::P_SCRIPT_H);
+	addPredefinedVar(ScriptVars::P_SCRIPT_F);
 
-	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_WEAPON, g_pTheDB->GetMessageText(MID_VarPlayerWeapon));
-	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_LOCAL_WEAPON, g_pTheDB->GetMessageText(MID_VarPlayerLocalWeapon));
+	addPredefinedVar(ScriptVars::P_PLAYER_X);
+	addPredefinedVar(ScriptVars::P_PLAYER_Y);
+	addPredefinedVar(ScriptVars::P_PLAYER_O);
 
-	this->pVarListBox->AddItem(ScriptVars::P_ROOMIMAGE_X, g_pTheDB->GetMessageText(MID_VarRoomImageX));
-	this->pVarListBox->AddItem(ScriptVars::P_ROOMIMAGE_Y, g_pTheDB->GetMessageText(MID_VarRoomImageY));
-	this->pVarListBox->AddItem(ScriptVars::P_OVERHEADIMAGE_X, g_pTheDB->GetMessageText(MID_VarOverheadImageX));
-	this->pVarListBox->AddItem(ScriptVars::P_OVERHEADIMAGE_Y, g_pTheDB->GetMessageText(MID_VarOverheadImageY));
+	addPredefinedVar(ScriptVars::P_PLAYER_WEAPON);
+	addPredefinedVar(ScriptVars::P_PLAYER_LOCAL_WEAPON);
 
-	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, g_pTheDB->GetMessageText(MID_SpawnCycle));
-	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE_FAST, g_pTheDB->GetMessageText(MID_SpawnCycleFast));
+	addPredefinedVar(ScriptVars::P_ROOMIMAGE_X);
+	addPredefinedVar(ScriptVars::P_ROOMIMAGE_Y);
+	addPredefinedVar(ScriptVars::P_OVERHEADIMAGE_X);
+	addPredefinedVar(ScriptVars::P_OVERHEADIMAGE_Y);
 
-	this->pVarListBox->AddItem(ScriptVars::P_COMBO, g_pTheDB->GetMessageText(MID_VarCombo));
+	addPredefinedVar(ScriptVars::P_SPAWNCYCLE);
+	addPredefinedVar(ScriptVars::P_SPAWNCYCLE_FAST);
 
-	this->pVarListBox->AddItem(ScriptVars::P_THREATCLOCK, g_pTheDB->GetMessageText(MID_VarThreatClock));
-	this->pVarListBox->AddItem(ScriptVars::P_LEVELNAME, g_pTheDB->GetMessageText(MID_VarLevelName));
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_X, g_pTheDB->GetMessageText(MID_VarRoomX));
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_Y, g_pTheDB->GetMessageText(MID_VarRoomY));
+	addPredefinedVar(ScriptVars::P_COMBO);
 
-	this->pVarListBox->AddItem(ScriptVars::P_PLAYERLIGHT, g_pTheDB->GetMessageText(MID_VarPlayerLight));
-	this->pVarListBox->AddItem(ScriptVars::P_PLAYERLIGHTTYPE, g_pTheDB->GetMessageText(MID_VarPlayerLightType));
+	addPredefinedVar(ScriptVars::P_THREATCLOCK);
+	addPredefinedVar(ScriptVars::P_LEVELNAME);
+	addPredefinedVar(ScriptVars::P_ROOM_X);
+	addPredefinedVar(ScriptVars::P_ROOM_Y);
 
-	this->pVarListBox->AddItem(ScriptVars::P_RETURN_X, g_pTheDB->GetMessageText(MID_VarReturnX));
-	this->pVarListBox->AddItem(ScriptVars::P_RETURN_Y, g_pTheDB->GetMessageText(MID_VarReturnY));
+	addPredefinedVar(ScriptVars::P_PLAYERLIGHT);
+	addPredefinedVar(ScriptVars::P_PLAYERLIGHTTYPE);
 
-	this->pVarListBox->AddItem(ScriptVars::P_INPUT, g_pTheDB->GetMessageText(MID_VarInput));
-	this->pVarListBox->AddItem(ScriptVars::P_INPUT_DIRECTION, g_pTheDB->GetMessageText(MID_VarInputDirection));
+	addPredefinedVar(ScriptVars::P_RETURN_X);
+	addPredefinedVar(ScriptVars::P_RETURN_Y);
 
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_WEATHER, g_pTheDB->GetMessageText(MID_RoomWeather));
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_DARKNESS, g_pTheDB->GetMessageText(MID_RoomDarkness));
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_FOG, g_pTheDB->GetMessageText(MID_RoomFog));
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_SNOW, g_pTheDB->GetMessageText(MID_RoomSnow));
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_RAIN, g_pTheDB->GetMessageText(MID_RoomRain));
+	addPredefinedVar(ScriptVars::P_INPUT);
+	addPredefinedVar(ScriptVars::P_INPUT_DIRECTION);
+
+	addPredefinedVar(ScriptVars::P_ROOM_WEATHER);
+	addPredefinedVar(ScriptVars::P_ROOM_DARKNESS);
+	addPredefinedVar(ScriptVars::P_ROOM_FOG);
+	addPredefinedVar(ScriptVars::P_ROOM_SNOW);
+	addPredefinedVar(ScriptVars::P_ROOM_RAIN);
 
 	this->pVarListBox->SortAlphabetically(true);
 	this->pArrayVarListBox->SortAlphabetically(true);
