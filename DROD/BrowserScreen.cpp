@@ -170,6 +170,7 @@ bool CBrowserScreen::SetForActivate()
 	int language = (int)Language::GetLanguage();
 	bool bTriedDefault = false;
 	bool bSuccess = false;
+	WSTRING wstrPageName = m_wstrPageToLoad.size() ? m_wstrPageToLoad : wszIndexPage;
 	while (!bSuccess && !bTriedDefault) {
 		//Load a specific (relative) page if requested, else load the designated index page.
 		CFiles Files;
@@ -178,12 +179,17 @@ bool CBrowserScreen::SetForActivate()
 		wstrPage += wszHelpPath;
 		wstrPage += _itoW(language, wszIBuf, 10);
 		wstrPage += wszSlash;
-		if (m_wstrPageToLoad.size())
-			wstrPage += m_wstrPageToLoad;
-		else
-			wstrPage += wszIndexPage;
+		wstrPage += wstrPageName;
 
 		bSuccess = this->pHTML->LoadFile(wstrPage.c_str());
+		if (!bSuccess) {
+			wstrPage = Files.GetResPath();
+			wstrPage += wszHelpPath;
+			wstrPage += UTF8ToUnicode(Language::GetCode(language));
+			wstrPage += wszSlash;
+			wstrPage += wstrPageName;
+			bSuccess = this->pHTML->LoadFile(wstrPage.c_str());
+		}
 
 		//If help files for a language other than the default were looked up
 		//and failed, try loading the default language.
