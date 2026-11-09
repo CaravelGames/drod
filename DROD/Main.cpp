@@ -291,9 +291,17 @@ int main(int argc, char *argv[])
 #endif
 
 	const WCHAR* gameName = wszDROD;
+	const WCHAR* gameConfName = NULL; //save folder; NULL means same as gameName
 #ifdef STEAMBUILD_TSS_APP
 	const WCHAR wszDRODTSS[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We(0) };
 	gameName = wszDRODTSS;
+#elif defined(__APPLE__) && defined(STEAMBUILD)
+	//Keep gameName "drod" (so it still loads drod5_0.dat) but give the macOS Steam
+	//GatEB build its own save folder, so it doesn't collide with the non-Steam TSS
+	//standalone build (both otherwise use "drod-5_0").
+	const WCHAR wszDRODGatEBSteam[] = { We('d'),We('r'),We('o'),We('d'),We('-'),
+		We('g'),We('a'),We('t'),We('e'),We('b'),We('-'),We('s'),We('t'),We('e'),We('a'),We('m'),We(0) };
+	gameConfName = wszDRODGatEBSteam;
 #elif defined(KDD_STANDALONE)
 	const WCHAR wszDRODKDD[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('k'),We('d'),We('d'),We(0) };
 	gameName = wszDRODKDD;
@@ -307,7 +315,7 @@ int main(int argc, char *argv[])
 	const WCHAR wszDRODGatEB[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('g'),We('a'),We('t'),We('e'),We('b'),We(0) };
 	gameName = wszDRODGatEB;
 #endif
-	m_pFiles = new CFiles(wstrPath.c_str(), gameName, wszDROD_VER, bIsDemo);
+	m_pFiles = new CFiles(wstrPath.c_str(), gameName, wszDROD_VER, bIsDemo, true, false, gameConfName);
 	if (CFiles::bad_data_path_file) {
 		DisplayInitErrorMessage(MID_DataPathDotTextFileIsInvalid);
 	}
@@ -1929,6 +1937,14 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Customizing, INIKey::ValidateSavesOnImport, "1");
 	AddIfMissing(INISection::Customizing, INIKey::Windib, "1");
 	AddIfMissing(INISection::Customizing, INIKey::KeepSoundsFromDeletedSpeech, "0");
+
+#ifdef RUSSIAN_BUILD
+	AddIfMissing(INISection::Fonts, INIKey::Font1, "times.ttf");
+	AddIfMissing(INISection::Fonts, INIKey::Font2, "times.ttf");
+#else
+	AddIfMissing(INISection::Fonts, INIKey::Font1, "tomnr.ttf");
+	AddIfMissing(INISection::Fonts, INIKey::Font2, "epilog.ttf");
+#endif
 
 	AddIfMissing(INISection::Graphics, "Clock", "Clock");
 	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");

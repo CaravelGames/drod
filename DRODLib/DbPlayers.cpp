@@ -261,12 +261,6 @@ void CDbPlayers::ExportXML(
 	str += INT32TOSTR(pPlayer->dwPlayerID);
 	if (bRef)
 	{
-		if (dbRefs.vTypeBeingExported == V_SavedGames || dbRefs.vTypeBeingExported == V_Demos)
-		{
-			//Export player's completed challenges, for potential import (e.g., during cloud sync).
-			ExportXMLPlayerChallenges(pPlayer->challenges, str);
-		}
-
 		//Don't need any further information for a player reference.
 		str += CLOSETAG;
 	} else {
@@ -336,6 +330,9 @@ void CDbPlayers::ExportXML(
 					delete[] pSettings;
 				}
 
+				//Export player's completed challenges
+				ExportXMLPlayerChallenges(pPlayer->challenges, str);
+
 				str += CLOSETAG;
 				CDbXML::PerformCallbackf(0.01f);
 
@@ -386,9 +383,6 @@ void CDbPlayers::ExportXML(
 						str.reserve(str.capacity() * 2);
 					db.SavedGames.ExportXML(*iter, dbRefs, str);
 				}
-
-				//Export player's completed challenges after saved games and their holds.
-				ExportXMLPlayerChallenges(pPlayer->challenges, str);
 			}
 			break;
 		}

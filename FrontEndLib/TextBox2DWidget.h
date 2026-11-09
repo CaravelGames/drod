@@ -110,6 +110,8 @@ private:
 	vector<UINT>   lineIndices; //text index located at the start of each text display line (after the first)
 	WSTRING        prevText;    //text used last time widget stats were calculated
 	UINT           wPosClickTopLine; //retain original location when dragging vert scroll bar
+
+	int            y_font_offset;
 };
 
 #endif //#ifndef TEXTBOX2DWIDGET_H

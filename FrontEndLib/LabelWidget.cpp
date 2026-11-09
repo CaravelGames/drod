@@ -50,8 +50,7 @@ CLabelWidget::CLabelWidget(
 	                                    //    SetText().
 	const UINT wFirstIndent,            //(in)   Indentation of the first line [default=0]
 	const WIDGETTYPE eType,             //[default=WT_Label]
-	const bool bCacheRendering,         //[default=false]
-	const int y_font_offset)            //[default=-6]
+	const bool bCacheRendering)         //[default=false]
 	: CWidget(eType, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, eFontType(eSetFontType)
 	, eTextAlign(TA_Left)
@@ -60,8 +59,8 @@ CLabelWidget::CLabelWidget(
 	, bPrintLeadingSpacesAfterFirstLine(false)
 	, bCacheRendering(bCacheRendering)
 	, pRenderedText(NULL)
-	, y_font_offset(y_font_offset)
 {
+	this->y_font_offset = g_pTheFM->ApplyFontOffset() ? -6 : 0;
 	SetText(pwczSetText, bResizeToFit, wFirstIndent);
 }
 

@@ -134,6 +134,19 @@ drodrpg/Master/Linux/steam
 /cmake-build-debug
 
 # OS X specific files/folders
+# macOS build output (one dir per make build type) + from-source dependency prefix
 Master/Darwin/custom/
+Master/Darwin/release/
+Master/Darwin/debug/
+Master/Darwin/steam/
+Master/Darwin/deps/
+# Local game data (.dat) for dev builds — copyrighted, never committed
+Master/Darwin/localdata/
+# DROD RPG macOS build output (reuses the main game's Master/Darwin/deps)
+drodrpg/Master/Darwin/custom/
+drodrpg/Master/Darwin/release/
+drodrpg/Master/Darwin/debug/
+drodrpg/Master/Darwin/steam/
+drodrpg/Master/Darwin/localdata/
 .DS_Store
 .idea

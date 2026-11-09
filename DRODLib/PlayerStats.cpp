@@ -7,28 +7,51 @@ using namespace ScriptVars;
 
 //*****************************************************************************
 //Symbols of predefined in-game variables. - Must be in the same order as Predefined enum
-const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
-	MID_VarMonsterWeapon,
-	0,
-	MID_VarMonsterColor,
-	MID_VarX, MID_VarY, MID_VarO,
-	MID_VarMonsterX, MID_VarMonsterY, MID_VarMonsterO,
-	0, 0,
-	MID_VarMonsterParamX, MID_VarMonsterParamY, MID_VarMonsterParamW, MID_VarMonsterParamH, MID_VarMonsterParamF,
-	MID_VarRoomImageX, MID_VarRoomImageY, MID_VarOverheadImageX, MID_VarOverheadImageY,
-	MID_VarLevelName, MID_VarThreatClock, MID_VarPlayerLight, MID_VarPlayerLightType,
-	MID_VarReturnX, MID_VarReturnY,
-	MID_VarMonsterName,
-	MID_VarRoomX, MID_VarRoomY,
-	MID_RoomWeather, MID_RoomDarkness, MID_RoomFog, MID_RoomSnow, MID_RoomRain,
-	MID_SpawnCycle, MID_SpawnCycleFast,
-	MID_VarPlayerWeapon, MID_VarPlayerLocalWeapon,
-	MID_VarInput, MID_VarInputDirection,
-	MID_VarCombo,
-	MID_VarMonsterHue, MID_VarMonsterSaturation
+const string ScriptVars::varNames[PredefinedVarCount] = {
+	"_MyWeapon",
+	"", //unused
+	"_MyColor",
+	"_X",
+	"_Y",
+	"_O",
+	"_MyX",
+	"_MyY",
+	"_MyO",
+	"", //unused
+	"", //unused
+	"_MyScriptX",
+	"_MyScriptY",
+	"_MyScriptW",
+	"_MyScriptH",
+	"_MyScriptF",
+	"_RoomImageX",
+	"_RoomImageY",
+	"_OverheadImageX",
+	"_OverheadImageY",
+	"_LevelName",
+	"_ThreatClock",
+	"_PlayerLight",
+	"_PlayerLightType",
+	"_ReturnX",
+	"_ReturnY",
+	"_MyName",
+	"_RoomX",
+	"_RoomY",
+	"_RoomWeather",
+	"_RoomDarkness",
+	"_RoomFog",
+	"_RoomSnow",
+	"_RoomRain",
+	"_SpawnCycle",
+	"_SpawnCycleFast",
+	"_PlayerWeapon",
+	"_PlayerLocalWeapon",
+	"_Input",
+	"_InputDirection",
+	"_Combo",
+	"_MyHue",
+	"_MySaturation",
 };
-
-string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
 
 //*****************************************************************************
 // Values are not case sensitive; caps added here for readability
@@ -65,11 +88,9 @@ string ScriptVars::getVarName(const Predefined var)
 	if (var < FirstPredefinedVar)
 		return string();
 
-	init(); //ensure texts are populated
-
 	const UINT index = -var - 1;
 	ASSERT(index < PredefinedVarCount);
-	return midTexts[index];
+	return varNames[index];
 }
 
 //*****************************************************************************
@@ -139,25 +160,6 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 }
 
 //*****************************************************************************
-void ScriptVars::init()
-//Init 'midTexts' on first call.
-//Much faster than repeated multiple DB queries.
-{
-	UINT index=0;
-	if (midTexts[0].empty())
-	{
-		for (int i=-1; i>=FirstPredefinedVar; --i, ++index)
-		{
-			//Get user-readable form of var.
-			ASSERT(index < PredefinedVarCount);
-			const WCHAR *pText = g_pTheDB->GetMessageText(predefinedVarMIDs[index]);
-			UnicodeToUTF8(pText, midTexts[index]);
-		}
-		ASSERT(!midTexts[0].empty());
-	}
-}
-
-//*****************************************************************************
 bool ScriptVars::IsStringVar(Predefined val)
 {
 	return val == P_LEVELNAME || val == P_MONSTER_NAME;
@@ -174,8 +176,6 @@ Predefined ScriptVars::parsePredefinedVar(const WSTRING& wstr)
 //*****************************************************************************
 Predefined ScriptVars::parsePredefinedVar(const string& str)
 {
-	init();
-
 	const char *pText = str.c_str();
 
 	//Optimization: all predefined vars start with an underscore
@@ -184,7 +184,7 @@ Predefined ScriptVars::parsePredefinedVar(const string& str)
 		for (int i=-1; i>=FirstPredefinedVar; --i, ++index)
 		{
 			//Compare against user-readable form of var.
-			if (!_stricmp(pText, midTexts[index].c_str()))
+			if (!_stricmp(pText, varNames[index].c_str()))
 				return Predefined(i);
 		}
 	}

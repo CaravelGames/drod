@@ -121,7 +121,6 @@ namespace ScriptVars
 		PrimitiveCount
 	};
 
-	void init();
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
 	bool IsStringVar(Predefined val);
@@ -140,8 +139,7 @@ namespace ScriptVars
 	bool IsIndexInArrayRange(const int index);
 
 	//All predefined vars.
-	extern const UINT predefinedVarMIDs[PredefinedVarCount];
-	extern string midTexts[PredefinedVarCount];
+	extern const string varNames[PredefinedVarCount];
 	extern const char primitiveNames[PrimitiveCount][15]; //expand buffer size as needed
 };
 

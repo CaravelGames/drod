@@ -78,6 +78,7 @@ CFontManager::CFontManager()
 	: vFontCache(0)   //init empty font cache
 	, LoadedFonts(NULL)
 	, pColorMapSurface(NULL)
+	, bApplyFontOffset(true)
 //Constructor.
 {
 }

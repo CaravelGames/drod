@@ -29,6 +29,8 @@ Actions:
     run-tests         Run DROD tests
     build-tests       Build DROD tests
     test              Build & Run DROD tests
+    copy-libs         Copy shared libraries to build directories
+    copy-libs-rpg     Copy shared libraries to build directories in DROD RPG
 
 Options:
     -r, --root        Use root user where applicable
@@ -37,7 +39,7 @@ Options:
     --mode=custom     Make a non-official build without internet capabilities (default)
     --mode=caravel    Make a standalone, official caravel build
     --mode=steam      Make an official Steam GatEB build
-    --mode=tss        Make an official Steam TSS build
+    --mode=steam-tss  Make an official Steam TSS build
     -f, --force       Force rebuild all libraries even if they exist (passed to build-deps)
     -h, --help        Show this help message
 EOF
@@ -122,6 +124,8 @@ action_all() {
     action_build_deps || return $?
     action_build_drod || return $?
     action_build_drod_rpg || return $?
+    action_copy_libs || return $?
+    action_copy_libs_rpg || return $?
 }
 
 action_docker_build() {
@@ -173,6 +177,38 @@ action_run_tests() {
     $SCRIPT_DIR/../../Master/Linux/builds/$MODE.$BUILD.x86_64/drod_tests
 }
 
+action_copy_libs() {
+    echo "=> copy-libs: copying libraries"
+    for build_dir in "$SCRIPT_DIR/../../Master/Linux/builds"/*/; do
+        # Skip if the glob matched nothing
+        [[ -d "$build_dir" ]] || continue
+
+        build_dir=$(basename "$build_dir")
+        echo "  -> $build_dir"
+
+        docker_exec "cd '/drod/Master/Linux/builds/$build_dir' \
+            && cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 . \
+            && cp /usr/lib/x86_64-linux-gnu/libz.so.1 . \
+            && cp /usr/lib/x86_64-linux-gnu/libzstd.so.1 ."
+    done
+}
+
+action_copy_libs_rpg() {
+    echo "=> copy-libs: copying libraries"
+    for build_dir in "$SCRIPT_DIR/../../drodrpg/Master/Linux/builds"/*/; do
+        # Skip if the glob matched nothing
+        [[ -d "$build_dir" ]] || continue
+
+        build_dir=$(basename "$build_dir")
+        echo "  -> $build_dir"
+
+        docker_exec "cd '/drod/drodrpg/Master/Linux/builds/$build_dir' \
+            && cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 . \
+            && cp /usr/lib/x86_64-linux-gnu/libz.so.1 . \
+            && cp /usr/lib/x86_64-linux-gnu/libzstd.so.1 ."
+    done
+}
+
 # Dispatch the selected action
 case "$ACTION" in
     all)
@@ -213,6 +249,12 @@ case "$ACTION" in
         action_docker_up
         action_build_tests
         action_run_tests
+        ;;
+    copy-libs)
+        action_copy_libs
+        ;;
+    copy-libs-rpg)
+        action_copy_libs_rpg
         ;;
     *)
         echo "Unknown action: $ACTION"

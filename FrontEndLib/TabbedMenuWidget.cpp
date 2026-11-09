@@ -400,8 +400,9 @@ void CTabbedMenuWidget::DrawTabs()
 				DrawRect(rect,FocusColor, pDestSurface);
 			}
 		} else {
+			const int nudge = g_pTheFM->ApplyFontOffset() ? 0 : 4; //non-default fonts draw a little high
 			g_pTheFM->DrawTextToRect(eFontType, this->tabText[wTab].c_str(),
-				xPos + CX_SPACE, this->y, width, wTabHeight, pDestSurface);
+				xPos + CX_SPACE, this->y + nudge, width, wTabHeight, pDestSurface);
 
 			//Draw focus border.
 			if (wFocusedTab == wTab)

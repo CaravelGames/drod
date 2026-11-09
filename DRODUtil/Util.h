@@ -67,16 +67,19 @@ public:
 	static bool IsPathValid(const WCHAR* pszPath);
 
 	virtual bool   PrintCreate(const COptionList &/*Options*/) const {PrintNotImplemented(); return false;}
+	virtual bool   PrintConvertUNI(const COptionList &/*Options*/, const WCHAR* /*pszSrcPath*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintDelete(const COptionList &/*Options*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintDemo(const COptionList &/*Options*/, UINT /*dwDemoID*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintExport(const COptionList &/*Options*/, const WCHAR* /*pszDestPath*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintHold(const COptionList &/*Options*/, UINT /*dwHoldID*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintLevel(const COptionList &/*Options*/, UINT /*dwLevelID*/) const {PrintNotImplemented(); return false;}
+	virtual bool   PrintLocalize(const COptionList& /*Options*/, const WCHAR* /*pszSrcPath*/, const WCHAR* /*pszDestLang*/) const { PrintNotImplemented(); return false; }
 	virtual bool   PrintImport(const COptionList &/*Options*/, const WCHAR* /*pszSrcPath*/, VERSION /*eSrcVersion*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintMysql(const COptionList &/*Options*/, UINT /*dwRoomID*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintRoom(const COptionList &/*Options*/, UINT /*dwRoomID*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintSummary(const COptionList &/*Options*/) const {PrintNotImplemented(); return false;}
 	virtual bool   PrintTest(const COptionList &/*Options*/, UINT /*dwDemoID*/) const {PrintNotImplemented(); return false;}
+	virtual bool   PrintTransfer(const COptionList& /*Options*/, const WCHAR* /*pszSrcDir*/, const WCHAR* /*pszDestLang*/) const { PrintNotImplemented(); return false; }
 
 protected:
 	WSTRING        strPath;

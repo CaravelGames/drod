@@ -42,12 +42,6 @@
 
 #define EDGE_OFFSET  (CX_INSET_BORDER + 1)
 
-#ifdef RUSSIAN_BUILD
-const int Y_KLUDGE = 1;
-#else
-const int Y_KLUDGE = 2; //font is drawn too high otherwise
-#endif
-
 //
 //Public methods.
 //
@@ -69,6 +63,12 @@ CTextBox2DWidget::CTextBox2DWidget(
 	, nSelectEndX(-1), nSelectEndY(-1)
 	, wPosClickTopLine(0)
 {
+#ifdef RUSSIAN_BUILD
+	this->y_font_offset = 1;
+#else
+	this->y_font_offset = g_pTheFM->ApplyFontOffset() ? 2 : 0; //font is drawn too high otherwise
+#endif
+
 	CalcAreas();
 }
 
@@ -778,7 +778,7 @@ void CTextBox2DWidget::DrawText(
 	const int nOffsetX, const int nOffsetY)   //(in) Drawing offsets.
 {
 	const int wX = this->x + nOffsetX + EDGE_OFFSET;
-	const int wY = this->y + nOffsetY - Y_KLUDGE;
+	const int wY = this->y + nOffsetY - this->y_font_offset;
 	UINT wH = this->h - nOffsetY;
 
 	//Render one line of text at a time.
@@ -815,7 +815,7 @@ void CTextBox2DWidget::DrawText(
 	//Highlight selected text.
 	const UINT wW = GetTextLineDisplayWidth(nOffsetX);
 	const UINT wViewableTextLinesInWidget = GetViewableTextLinesInWidget();
-	const int dItemsListH = this->ItemsRect.h - Y_KLUDGE * 2;
+	const int dItemsListH = this->ItemsRect.h - this->y_font_offset * 2;
 
 	//Determine where to start and end highlighting.
 	int nStartX, nStartY, nEndX, nEndY;
@@ -845,8 +845,8 @@ void CTextBox2DWidget::DrawText(
 	//Highlight.
 	const int nLineHeight = g_pTheFM->GetFontLineHeight(this->fontType);
 
-	nStartY += Y_KLUDGE + EDGE_OFFSET;
-	nEndY += Y_KLUDGE + EDGE_OFFSET + nLineHeight;
+	nStartY += this->y_font_offset + EDGE_OFFSET;
+	nEndY += this->y_font_offset + EDGE_OFFSET + nLineHeight;
 
 	/*
 	 Highlight is constructed in three strips:
@@ -915,7 +915,7 @@ void CTextBox2DWidget::DrawCursor(
 	//Draw cursor.
 	if (this->wCursorY != UINT(-1))
 	{
-		const int yPos = this->wCursorY + nOffsetY + Y_KLUDGE*2;
+		const int yPos = this->wCursorY + nOffsetY + 4;
 		const UINT cursorH = g_pTheFM->GetFontLineHeight(this->fontType) - 2*EDGE_OFFSET;
 		if (yPos+cursorH < this->h)
 		{
