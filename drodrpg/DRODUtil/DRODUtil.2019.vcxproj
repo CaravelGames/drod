@@ -33,6 +33,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>DRODUtil</ProjectName>
     <ProjectGuid>{7B031E3B-8A8E-4260-B496-9909A8E50E1B}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'" Label="Configuration">
@@ -128,7 +129,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
-    <IntDir>$(Configuration)\</IntDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
