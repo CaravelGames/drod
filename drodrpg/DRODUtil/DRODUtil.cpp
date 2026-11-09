@@ -1010,7 +1010,7 @@ const WSTRING GetDefaultPath()
 //Returns default path.
 {
 	CFiles Files;
-	return Files.GetDatPath();
+	return Files.GetResPath();
 }
 
 //******************************************************************************************
