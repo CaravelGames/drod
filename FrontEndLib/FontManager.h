@@ -116,6 +116,7 @@ public:
 	virtual ~CFontManager();
 
 	UINT        AdjustTextRectHeight(const UINT eFontType, const UINT wH) const;
+	bool        ApplyFontOffset() const { return this->bApplyFontOffset; }
 	WSTRING     CalcPartialWord(const UINT eFontType, WCHAR *wczWord,
 			const UINT wWordLen, const int nMaxWidth, UINT &wCharsNotDrawn) const;
 	void        DrawTextXY(const UINT eFontType, const WCHAR *pwczText,
@@ -177,6 +178,10 @@ protected:
 	LOADEDFONT     *LoadedFonts;
 
 	SDL_Surface *  pColorMapSurface;
+
+	//The default UI font requires vertical offsets to be applied. This flag says
+	//if that needs to be done.
+	bool bApplyFontOffset;
 };
 
 //Define global pointer to the one and only CFontManager object.

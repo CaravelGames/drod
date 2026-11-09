@@ -5089,6 +5089,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 
 			//Show hold stats over a blank room widget.
 			this->pRoomWidget->UnloadCurrentGame();
+			// Make sure permanent effects, like puzzle mode's Grid, are also removed,
+			// otherwise they may access a deleted room and segfault
+			this->pRoomWidget->ClearEffects(false);
 			this->pRoomWidget->AddLastLayerEffect(new CTextEffect(
 					this->pRoomWidget, GetGameStats(true).c_str(), F_Stats, 10000, 0, false, true));
 			HandleEventsForHoldExit();

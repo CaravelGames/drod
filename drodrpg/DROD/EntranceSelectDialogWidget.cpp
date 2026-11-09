@@ -589,9 +589,10 @@ void CEntranceSelectDialogWidget::PopulateListBoxFromHoldVars(CCurrentGame* pGam
 			wVarValue += wszRightBracket;
 		} else if (vType == UVT_int) {
 			int iVarValue = stats.GetVar(varName, (int)0);
-			std::basic_stringstream<WCHAR_t> stream;
-			stream << iVarValue;
-			wVarValue = stream.str();
+			// libc++ (macOS) has no std::ctype<char16_t>, so a
+			// basic_stringstream<WCHAR_t> won't compile; use _itoW.
+			WCHAR wszIBuf[16];
+			wVarValue = _itoW(iVarValue, wszIBuf, 10);
 		} else {
 			wVarValue = stats.GetVar(varName, WS("0"));
 		}

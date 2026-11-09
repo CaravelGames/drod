@@ -52,23 +52,26 @@ namespace I18N {
 		bool bHasModifier = bIsShift || bIsCtrl || bIsAlt;
 		bool bHasNonModifier = keyCode != SDLK_UNKNOWN;
 
-		std::basic_stringstream<WCHAR> str;
+		// Plain WSTRING concatenation rather than a basic_stringstream<WCHAR>:
+		// libc++ (macOS) lacks the std::ctype<char16_t> facet that char16_t
+		// streams need.
+		WSTRING str;
 
 		if (bIsShift) {
-			str << (wModifierCount > 1 && bHasNonModifier ? ShiftShort : ShiftLong);
+			str += (wModifierCount > 1 && bHasNonModifier ? ShiftShort : ShiftLong);
 		}
 
 		if (bIsCtrl) {
-			str << (wModifierCount > 1 && bHasNonModifier ? CtrlShort : CtrlLong);
+			str += (wModifierCount > 1 && bHasNonModifier ? CtrlShort : CtrlLong);
 		}
 
 		if (bIsAlt) {
-			str << (wModifierCount > 1 && bHasNonModifier ? AltShort : AltLong);
+			str += (wModifierCount > 1 && bHasNonModifier ? AltShort : AltLong);
 		}
 
 		if (keyCode != SDLK_UNKNOWN)
-			str << g_pTheDB->GetMessageText(InputCommands::KeyToMID(keyCode));
+			str += g_pTheDB->GetMessageText(InputCommands::KeyToMID(keyCode));
 
-		return str.str();
+		return str;
 	}
 }

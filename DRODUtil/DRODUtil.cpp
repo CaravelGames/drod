@@ -64,6 +64,8 @@ VERSION     GetVersionFromParam(const WCHAR *pszSrcVersion);
 void     PrintCreate(const COptionList &Options, const WCHAR *pszDestPath, 
 		const WCHAR *pszDestVersion);
 void     PrintCreateHelp();
+void     PrintConvert(const COptionList& Options, const WCHAR* pszSrcPath);
+void     PrintConvertHelp();
 void     PrintDelete(const COptionList &Options, const WCHAR *pszSrcPath, 
 		const WCHAR *pszSrcVersion);
 void     PrintDeleteHelp();
@@ -86,6 +88,9 @@ void     PrintImportHelp();
 void     PrintLevel(const COptionList &Options, const WCHAR *pszLevelID,
 		const WCHAR *pszSrcPath, const WCHAR *pszSrcVersion);
 void     PrintLevelHelp();
+void     PrintLocalize(const COptionList& Options, const WCHAR* pszSrcPath,
+	const WCHAR* pszDestPath, const WCHAR* pszDestLang);
+void     PrintLocalizeHelp();
 void     PrintMysql(const COptionList &Options, const WCHAR *pszFilePath,
 		const WCHAR *pszSrcPath, const WCHAR *pszSrcVersion);
 void     PrintMysqlHelp();
@@ -106,12 +111,15 @@ void     PrintSummaryHelp();
 void     PrintTest(const COptionList &Options, const WCHAR *pszDemoID,
 		const WCHAR *pszSrcPath, const WCHAR *pszSrcVersion);
 void     PrintTestHelp();
+void     PrintTransfer(const COptionList& Options, const WCHAR* pszSrcPath, const WCHAR* pszDestLang);
+void     PrintTransferHelp();
 void     PrintUnprotect(const COptionList &Options, const WCHAR *pszFilePath);
 void     PrintUnprotectHelp();
 void     PrintUsage();
 
 //Constants
 static const WCHAR wszCreate[] = {{'c'},{'r'},{'e'},{'a'},{'t'},{'e'},{0}};
+static const WCHAR wszConvert[] = {{'c'},{'o'},{'n'},{'v'},{'e'},{'r'},{'t'},{0}};
 static const WCHAR wszDelete[] = {{'d'},{'e'},{'l'},{'e'},{'t'},{'e'},{0}};
 static const WCHAR wszDemo[] = {{'d'},{'e'},{'m'},{'o'},{0}};
 static const WCHAR wszExport[] = {{'e'},{'x'},{'p'},{'o'},{'r'},{'t'},{0}};
@@ -119,7 +127,9 @@ static const WCHAR wszHelp[] = {{'h'},{'e'},{'l'},{'p'},{0}};
 static const WCHAR wszHold[] = {{'h'},{'o'},{'l'},{'d'},{0}};
 static const WCHAR wszImport[] = {{'i'},{'m'},{'p'},{'o'},{'r'},{'t'},{0}};
 static const WCHAR wszLevel[] = {{'l'},{'e'},{'v'},{'e'},{'l'},{0}};
+static const WCHAR wszLocalize[] = { {'l'},{'o'},{'c'},{'a'},{'l'},{'i'},{ 'z' },{ 'e' },{ 0 }};
 static const WCHAR wszTest[] = {{'t'},{'e'},{'s'},{'t'},{0}};
+static const WCHAR wszTransfer[] = {{'t'},{'r'},{'a'},{'n'},{'s'},{'f'},{'e'},{'r'},{0}};
 static const WCHAR wszRoom[] = {{'r'},{'o'},{'o'},{'m'},{0}};
 static const WCHAR wszSummary[] = {{'s'},{'u'},{'m'},{'m'},{'a'},{'r'},{'y'},{0}};
 static const WCHAR wszUnprotect[] = {{'u'},{'n'},{'p'},{'r'},{'o'},{'t'},{'e'},{'c'},{'t'},{0}};
@@ -190,6 +200,7 @@ int wmain(int argc, WCHAR* argv[])
 
 	//Parse command and call appropriate function.
 	if     (WCSicmp(argv[1], wszCreate) == 0)    PrintCreate(OptionList, OPT_PARAM(2), OPT_PARAM(3));
+	else if(WCSicmp(argv[1], wszConvert) == 0)   PrintConvert(OptionList, OPT_PARAM(2));
 	else if(WCSicmp(argv[1], wszDelete) == 0)    PrintDelete(OptionList, OPT_PARAM(2), OPT_PARAM(3));
 	else if(WCSicmp(argv[1], wszDemo) == 0)         PrintDemo(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszExport) == 0)    PrintExport(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
@@ -197,7 +208,9 @@ int wmain(int argc, WCHAR* argv[])
 	else if(WCSicmp(argv[1], wszHold) == 0)         PrintHold(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszImport) == 0)    PrintImport(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4), OPT_PARAM(5));
 	else if(WCSicmp(argv[1], wszLevel) == 0)     PrintLevel(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
+	else if(WCSicmp(argv[1], wszLocalize) == 0)     PrintLocalize(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszTest) == 0)         PrintTest(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
+	else if(WCSicmp(argv[1], wszTransfer) == 0)     PrintTransfer(OptionList, OPT_PARAM(2), OPT_PARAM(3));
 	else if(WCSicmp(argv[1], wszRoom) == 0)         PrintRoom(OptionList, OPT_PARAM(2), OPT_PARAM(3), OPT_PARAM(4));
 	else if(WCSicmp(argv[1], wszSummary) == 0)      PrintSummary(OptionList, OPT_PARAM(2), OPT_PARAM(3));
 	else if(WCSicmp(argv[1], wszProtect) == 0)      PrintProtect(OptionList, OPT_PARAM(2));
@@ -276,6 +289,7 @@ void PrintUsage()
 	PrintHeader();
 	printf(
 			"The following commands are supported:" NEWLINE
+			"  convert   SrcPath" NEWLINE
 			"  create    [ [ DestPath ] DestVersion ]" NEWLINE
 			"  delete    [ [ SrcPath ] SrcVersion ]" NEWLINE
 			"  demo      [ [ [ DemoID ] SrcPath ] SrcVersion ]" NEWLINE
@@ -284,10 +298,12 @@ void PrintUsage()
 			"  hold      [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
 			"  import    [ Options ] [ [ [ [ SrcPath ] SrcVersion ] DestPath ] DestVersion ]" NEWLINE
 			"  level     [ [ [ LevelID ] SrcPath ] SrcVersion ]" NEWLINE
+			"  localize  SrcPath  DestPath  DestLanguage" NEWLINE
 			"  mysql     [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
 			"  room      [ [ [ RoomID ] SrcVersion ] SrcPath ]" NEWLINE
 			"  summary   [ [ SrcPath ] SrcVersion ]" NEWLINE
 			"  test      [ Options ] [ [ [ DemoID ] SrcVersion ] SrcPath ]" NEWLINE
+			"  transfer  SrcPath DestLanguage" NEWLINE
 			"  protect   SrcFilePath" NEWLINE
 			"  unprotect SrcFilePath" NEWLINE
 			"  compress  SrcFilePath DestFilePath" NEWLINE
@@ -334,13 +350,16 @@ void PrintHelp(
 			PrintHelpHelp();
 	}
 	else if (WCSicmp(pszCommand, wszCreate) == 0)      PrintCreateHelp();
+	else if (WCSicmp(pszCommand, wszConvert) == 0)     PrintConvertHelp();
 	else if (WCSicmp(pszCommand, wszDelete) == 0)      PrintDeleteHelp();
 	else if (WCSicmp(pszCommand, wszDemo) == 0)        PrintDemoHelp();
 	else if (WCSicmp(pszCommand, wszExport) == 0)      PrintExportHelp();
 	else if (WCSicmp(pszCommand, wszHold) == 0)        PrintHoldHelp();
 	else if (WCSicmp(pszCommand, wszImport) == 0)      PrintImportHelp();
 	else if (WCSicmp(pszCommand, wszLevel) == 0)    PrintLevelHelp();
+	else if (WCSicmp(pszCommand, wszLocalize) == 0)    PrintLocalizeHelp();
 	else if (WCSicmp(pszCommand, wszTest) == 0)        PrintTestHelp();
+	else if (WCSicmp(pszCommand, wszTransfer) == 0)    PrintTransferHelp();
 	else if (WCSicmp(pszCommand, wszMySQL) == 0)    PrintMysqlHelp();
 	else if (WCSicmp(pszCommand, wszRoom) == 0)        PrintRoomHelp();
 	else if (WCSicmp(pszCommand, wszSummary) == 0)     PrintSummaryHelp();
@@ -397,6 +416,47 @@ void PrintCreate(
 	//Create the data.
 	if (pUtil->PrintCreate(Options))
 		printf("SUCCESS--DROD data was created." NEWLINE);
+}
+
+//******************************************************************************************
+void PrintConvertHelp()
+{
+	PrintHeader();
+	printf(
+		"convert [SrcPath]" NEWLINE
+		"" NEWLINE
+		"Converts a uni file to an xml file" NEWLINE
+		"" NEWLINE
+		"Params:" NEWLINE
+		"  SrcPath   File path of uni file to convert." NEWLINE
+		"            The output xml file will be placed in the same directory." NEWLINE
+		"            This argument is required." NEWLINE
+	);
+}
+
+//******************************************************************************************
+//Convert a uni file into an xml file.
+void PrintConvert(const COptionList& Options, const WCHAR* pszSrcPath)
+{
+	PrintHeader();
+	if (!Options.AreOptionsValid(wszEmpty)) return;
+
+	if ((pszSrcPath == NULL || WCSicmp(pszSrcPath, wszDefault) == 0)) {
+		printf("FAILED--Source path is required." NEWLINE);
+		return;
+	}
+
+	//Get util for default version.
+	CUtil* pUtil = GetUtil(GetDefaultVersion(), pszSrcPath);
+	if (!pUtil)
+	{
+		printf("FAILED--Version not supported." NEWLINE);
+		return;
+	}
+
+	if (pUtil->PrintConvertUNI(Options, pszSrcPath)) {
+		printf("SUCCESS--File was converted" NEWLINE);
+	}
 }
 
 //******************************************************************************************
@@ -690,6 +750,60 @@ void PrintLevel(
 }
 
 //******************************************************************************************
+void PrintLocalizeHelp()
+{
+	PrintHeader();
+	printf(
+		"localize      SrcPath  DestPath  LanguageCode" NEWLINE
+		"" NEWLINE
+		"Create a localization dat file for the given language." NEWLINE
+		"" NEWLINE
+		"Params:" NEWLINE
+		"  SrcPath       Location of data to import." NEWLINE
+		"  DestPath      Location to create localization dat." NEWLINE
+		"  LanguageCode  Three letter ISO 639-3 language code." NEWLINE
+	);
+}
+
+//******************************************************************************************
+void PrintLocalize(
+//Creates a localization dat file for a given language
+	const COptionList & Options,
+	const WCHAR* pszSrcPath,
+	const WCHAR* pszDestPath,
+	const WCHAR* pszDestLang
+)
+{
+	PrintHeader();
+
+	if (!Options.AreOptionsValid(wszEmpty)) return;
+
+	WSTRING strSrcPath =
+		(pszSrcPath == NULL || WCSicmp(pszSrcPath, wszDefault) == 0) ?
+		GetDefaultPath() : pszSrcPath;
+
+	WSTRING strDestPath =
+		(pszDestPath == NULL || WCSicmp(pszDestPath, wszDefault) == 0) ?
+		GetDefaultPath() : pszDestPath;
+
+	if (pszDestLang == NULL) {
+		printf("FAILED--Target language is required." NEWLINE);
+		return;
+	}
+
+	CUtil* pUtil = GetUtil(GetDefaultVersion(), strDestPath.c_str());
+	if (!pUtil)
+	{
+		printf("FAILED--Version not supported." NEWLINE);
+		return;
+	}
+
+	if (pUtil->PrintLocalize(Options, strSrcPath.c_str(), pszDestLang)) {
+		printf("SUCCESS--Localization dat was created." NEWLINE);
+	}
+}
+
+//******************************************************************************************
 void PrintMysqlHelp()
 {
 	PrintHeader();
@@ -912,6 +1026,55 @@ void PrintTest(
 			printf("SUCCESS--All demos tested." NEWLINE);
 		else
 			printf("SUCCESS--Demo tested." NEWLINE);
+	}
+}
+
+//******************************************************************************************
+void PrintTransferHelp()
+{
+	PrintHeader();
+	printf(
+		"transfer    SrcDirPath  LanguageCode" NEWLINE
+		"" NEWLINE
+		"Create a subdirectory of language specific string files from a given directory" NEWLINE
+		"or update an existing language subdirectory. Existing strings are preserved" NEWLINE
+		"" NEWLINE
+		"Params" NEWLINE
+		"SrcDirPath    Path to a directory contain DROD message files (uni or xml)." NEWLINE
+		"LanguageCode  Three letter ISO 639-3 language code." NEWLINE
+	);
+}
+
+//******************************************************************************************
+void PrintTransfer(
+	const COptionList& Options,
+	const WCHAR* pszSrcPath,
+	const WCHAR* pszDestLang
+)
+{
+	PrintHeader();
+	if (!Options.AreOptionsValid(wszEmpty)) return;
+
+	if ((pszSrcPath == NULL || WCSicmp(pszSrcPath, wszDefault) == 0)) {
+		printf("FAILED--Source path is required." NEWLINE);
+		return;
+	}
+
+	if (pszDestLang == NULL) {
+		printf("FAILED--Target language is required." NEWLINE);
+		return;
+	}
+
+	//Get util for default version.
+	CUtil* pUtil = GetUtil(GetDefaultVersion(), pszSrcPath);
+	if (!pUtil)
+	{
+		printf("FAILED--Version not supported." NEWLINE);
+		return;
+	}
+
+	if (pUtil->PrintTransfer(Options, pszSrcPath, pszDestLang)) {
+		printf("SUCCESS--Messages transferred." NEWLINE);
 	}
 }
 

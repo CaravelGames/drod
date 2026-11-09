@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>%EXECUTABLE_NAME%</string>
 	<key>CFBundleGetInfoString</key>
-	<string>%VERSION% OS X, Copyright Caravel Games, 2012</string>
+	<string>%VERSION% macOS, Copyright Caravel Games, 2026</string>
 	<key>CFBundleIconFile</key>
 	<string>DROD</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -20,5 +20,7 @@
 	<string>%VERSION%</string>
 	<key>CSResourceFileMapped</key>
 	<true/>
+	<key>LSMinimumSystemVersion</key>
+	<string>%MIN_OS%</string>
 </dict>
 </plist>

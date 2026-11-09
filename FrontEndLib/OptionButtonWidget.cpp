@@ -181,7 +181,7 @@ void COptionButtonWidget::Paint(
 #ifdef RUSSIAN_BUILD
 		static const int Y_OFFSET = 0;
 #else
-		static const int Y_OFFSET = -2;	//kludge -- font is too low otherwise
+		static const int Y_OFFSET = g_pTheFM->ApplyFontOffset() ? -2 : 0;	//kludge -- font is too low otherwise
 #endif
 		UINT wIgnored, wTextHeight;
 		g_pTheFM->GetTextRectHeight(FONTLIB::F_Button, 

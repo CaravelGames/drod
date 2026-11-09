@@ -11,7 +11,7 @@ It may be used under the terms of the MPL and other licenses, described in the L
 
 ##### Building for Windows
 
-Currently there are three documents that describe the build process for DROD and DROD RPG:
+Currently, there are three documents that describe the build process for DROD and DROD RPG:
 1. *CompilingDrod_Win.md* - which describes use of an automated script for building required third-party libraries and is aimed at using VS2013 and newer, e.g., VS2019.
 2. *CompilingDrod_Win_MSVS2013.md* - an earlier version of the document which points to earlier lib versions.
 3. *CompilingDrod_Win_Old.md* - which was assembled for DROD TCB that should work for older versions of Visual Studio
@@ -22,27 +22,14 @@ Workspace files for Microsoft Visual Studio 6.0 and Visual Studio 2002 are also 
 
 ##### Linux builds
 
-Ninja generator and build files for Linux are included in Master/Linux. cd to Master/Linux and run './ninjamaker' then './build' or './build -clean' for clean rebuild.
-
-When debugging build issues edit the build file from 'ninja -k 0' to 'ninja -k N' so ninja stops building after N jobs fail.
-
->Options are passed to scons as 'option=value' (without the quotes), separated by spaces.
->For example, if you wanted to build DROD with FMOD audio for amd64/x86-64 (which wouldn't work since >FMOD 3.x doesn't exist for amd64, but hey, let's ignore such trifling details), you would do:
->
->`scons audio=fmod arch=amd64`
->
->The dist option should be left at the default (none).
-
-It is possible to build DROD on a Raspberry Pi 4 (or probably 5), although this will require increasing the amount of swap space available for lower memory units (e.g. less than 4Gb). Failure to provide sufficient swap space will result in the Pi crashing. Increased swap space is not required to run DROD once built.
-
-To build, run `./ninjamaker -arch aarch64 -no-static` followed by `./build` in the `Master/Linux` directory. You will need to have built and installed Metakit before doing this, else it will fail when linking.
-
+See [Docs/Linux_Compilation.md](./Docs/Linux_Compilation.md) for details on how to build DROD on Linux.
 
 ##### Mac builds
 
-Makefiles for Mac are included in Master/Darwin.
+The macOS build uses Apple Clang + Homebrew and is documented in *CompilingDrod_macOS.md*.
 
-To build a 64-bit binary, run "make custom" (etc.)
+In short: `cd Master/Darwin && ./build_macos.sh` produces a self-contained `DROD TSS.app`
+(add `--dmg` for a disk image). To build just the binary, run `make drod-custom` in `Master/Darwin`.
 
 ### Contributing
 
@@ -78,3 +65,4 @@ Fonts:
  - Fonts for each game are initialized in `DRODFontManager.cpp`.
  - DROD uses the Tom's New Roman and Epilog fonts, both created by Tom Murphy 7. These fonts can be obtain from http://fonts.tom7.com/.
  - It is recommended to use the latest version of these fonts when developing, as older versions have visual problems when used with later versions of freetype.
+ - Alternate fonts can be set using the [Fonts] section of Data/drod.ini. `Font1` is used for the UI, `Font2` for text drawn over the game screen. Please note that larger fonts may not display correctly in all locations.
