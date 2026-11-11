@@ -1,4 +1,4 @@
-// $Id: Util3_0.h 8144 2007-08-26 17:07:39Z mrimer $
+// $Id$
 
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1
@@ -37,38 +37,72 @@ using namespace Language;
 
 #include <BackEndLib/mk4_NoWarnings.h>
 
+#include <expat.h>
+
 #include <list>
 #include <map>
+#include <vector>
 using std::list;
 using std::map;
+using std::vector;
 
 class CUtil3_0 : public CUtil
 {
 private:
 	 typedef map<string,UINT> ASSIGNEDMIDS;
+	 typedef map<string, map<Language::LANGUAGE, string>> ParsedMessages;
+
+	struct XMLLanguageParseData {
+		ParsedMessages parsedMessages;
+		vector<string> orderedMIDs;
+		string activeMID;
+		string currentMessage;
+	};
 public:
 	CUtil3_0(const WCHAR* pszSetPath) : CUtil(v3_0, pszSetPath) { };
 
 	virtual bool  PrintCreate(const COptionList &Options) const;
+
+	virtual bool  PrintConvertUNI(const COptionList& Options, const WCHAR* pszSrcPath) const;
+
 	virtual bool  PrintDelete(const COptionList &Options) const;
 	virtual bool  PrintImport(const COptionList &Options, const WCHAR* pszSrcPath, VERSION eSrcVersion) const;
 	virtual bool  PrintRoom(const COptionList &Options, UINT dwRoomID) const;
 	virtual bool  PrintLevel(const COptionList &Options, UINT dwLevelID) const;
 	virtual bool  PrintTest(const COptionList &Options, UINT dwDemoID) const;
 
+	virtual bool  PrintLocalize(const COptionList& Options, const WCHAR* pszSrcPath, const WCHAR* pszDestLang) const;
+	virtual bool  PrintTransfer(const COptionList& Options, const WCHAR* pszSrcDir, const WCHAR* pszDestLang) const;
+
 private:
 	static void AddMessageText(c4_Storage &TextStorage, const UINT dwMessageID,
 		  const Language::LANGUAGE eLanguage, const WCHAR *pwszText);
+	void        RemoveBasicMessages(c4_Storage& TextStorage) const;
 	static bool DeleteDat(const WCHAR *pwszFilepath);
 	void        GetAssignedMIDs(const WCHAR *pwzMIDFilepath, ASSIGNEDMIDS &AssignedMIDs,
-				UINT &dwMaxMessageID) const;
+				UINT &dwLastMessageID) const;
 	void        GetMasterFilepath(WSTRING &wstrFilepath) const;
 	bool        ImportBasicMessages(const WCHAR *pwzSrcPath, c4_Storage &TextStorage) const;
 	bool        ImportMessageTexts(c4_Storage &SourceStorage, c4_Storage &DestStorage,
 				const list<UINT> &NeededMessages) const;
 	bool        ImportUNI(const WCHAR *pwzFilepath, c4_Storage &TextStorage, const ASSIGNEDMIDS &AssignedMIDs,
-				UINT &dwMaxMessageID, string &strMIDs) const;
+				UINT &dwLastMessageID, string &strMIDs) const;
+	bool        ImportUNI(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
+		const Language::LANGUAGE destLanguage) const;
+	bool        ExtractUNI(const WCHAR* pwzFilepath, ParsedMessages& messages, vector<string>& orderedMIDs) const;
+	void        WriteToUNI(const WSTRING& filepath, const ParsedMessages messages, const vector<string>& orderedMIDs) const;
+	static void startLanguageElement(void* userData, const char* tag, const char**);
+	static void endLanguageElement(void* userData, const char* tag);
+	static void processLanguageCharData(void* userData, const XML_Char* str, int length);
+	bool        ImportXML(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
+		UINT& dwLastMessageID, string& strMIDs) const;
+	bool        ImportXML(const WCHAR* pwzFilepath, c4_Storage& TextStorage, const ASSIGNEDMIDS& AssignedMIDs,
+		const Language::LANGUAGE destLanguage) const;
+	bool        ExtractXML(const WCHAR* pwzFilepath, XMLLanguageParseData& result) const;
+	void        WriteToXML(const WSTRING& filepath, const ParsedMessages messages, const vector<string>& orderedMIDs) const;
+
+	void        TransferMessages(
+		ParsedMessages& srcMessages, ParsedMessages& destMessages, const Language::LANGUAGE destLanguage) const;
 };
 
 #endif //...#ifndef UTIL3_0_H
-
