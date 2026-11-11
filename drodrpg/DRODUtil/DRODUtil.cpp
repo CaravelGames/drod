@@ -256,17 +256,17 @@ void PrintHeader()
 {
 	const WSTRING wszDefaultPath = GetDefaultPath();
 
-	printf(APPNAME "\r\n"
-		"Portions created by Caravel Games are Copyright (C) 1995, 1996, \r\n"
-		"1997, 2000, 2001, 2002, 2003, 2004, 2005 Caravel Software.\r\n"
-		"All Rights Reserved.\r\n"
-		"Contributors: Michael Welsh Duggan, JP Burford, Rik Cookney, John Wm. Wicks,\r\n"
-		"Mike Rimer, Matt Schikore, Gerry Jo Jellestad\r\n"
-		"\r\n");
+	printf(APPNAME "" NEWLINE
+		"Portions created by Caravel Games are Copyright (C) 1995, 1996, " NEWLINE
+		"1997, 2000, 2001, 2002, 2003, 2004, 2005 Caravel Software." NEWLINE
+		"All Rights Reserved." NEWLINE
+		"Contributors: Michael Welsh Duggan, JP Burford, Rik Cookney, John Wm. Wicks," NEWLINE
+		"Mike Rimer, Matt Schikore, Gerry Jo Jellestad" NEWLINE
+		"" NEWLINE);
 #ifdef HAS_UNICODE
-	printf("Default path is %S.\r\n"
-		"Default version is %S.\r\n"
-		"-------------------------------------------------------------------------------\r\n",
+	printf("Default path is %S." NEWLINE
+		"Default version is %S." NEWLINE
+		"-------------------------------------------------------------------------------" NEWLINE,
 		wszDefaultPath.c_str(), g_szarrVersions[GetDefaultVersion()] );
 #else
 	WSTRING wstrTemp = wszDefaultPath;
@@ -275,9 +275,9 @@ void PrintHeader()
 	wstrTemp = g_szarrVersions[GetDefaultVersion()];
 	char pszVersion[wstrTemp.length()];
 	UnicodeToUTF8(wstrTemp, pszVersion);
-	printf("Default path is %s.\r\n"
-		"Default version is %s.\r\n"
-		"-------------------------------------------------------------------------------\r\n",
+	printf("Default path is %s." NEWLINE
+		"Default version is %s." NEWLINE
+		"-------------------------------------------------------------------------------" NEWLINE,
 		pszDefaultPath.c_str(), pszVersion);
 #endif
 }
@@ -287,28 +287,28 @@ void PrintUsage()
 {
 	PrintHeader();
 	printf(
-			"The following commands are supported:\r\n"
-			"  create    [ [ DestPath ] DestVersion ]\r\n"
+			"The following commands are supported:" NEWLINE
+			"  create    [ [ DestPath ] DestVersion ]" NEWLINE
 			"  convert   SrcPath" NEWLINE
-			"  delete    [ [ SrcPath ] SrcVersion ]\r\n"
-			"  demo      [ [ [ DemoID ] SrcPath ] SrcVersion ]\r\n"
-			"  export    [ [ [ DestPath ] SrcPath ] SrcVersion ]\r\n"
-			"  help      [ Command ]\r\n"
-			"  hold      [ [ [ HoldID ] SrcPath ] SrcVersion ]\r\n"
-			"  import    [ Options ] [ [ [ [ SrcPath ] SrcVersion ] DestPath ] DestVersion ]\r\n"
-			"  level     [ [ [ LevelID ] SrcPath ] SrcVersion ]\r\n"
+			"  delete    [ [ SrcPath ] SrcVersion ]" NEWLINE
+			"  demo      [ [ [ DemoID ] SrcPath ] SrcVersion ]" NEWLINE
+			"  export    [ [ [ DestPath ] SrcPath ] SrcVersion ]" NEWLINE
+			"  help      [ Command ]" NEWLINE
+			"  hold      [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
+			"  import    [ Options ] [ [ [ [ SrcPath ] SrcVersion ] DestPath ] DestVersion ]" NEWLINE
+			"  level     [ [ [ LevelID ] SrcPath ] SrcVersion ]" NEWLINE
 			"  localize  SrcPath  DestPath  DestLanguage" NEWLINE
-			"  mysql     [ [ [ HoldID ] SrcPath ] SrcVersion ]\r\n"
-			"  room      [ [ [ RoomID ] SrcVersion ] SrcPath ]\r\n"
-			"  summary   [ [ SrcPath ] SrcVersion ]\r\n"
-			"  test      [ Options ] [ [ [ DemoID ] SrcVersion ] SrcPath ]\r\n"
+			"  mysql     [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
+			"  room      [ [ [ RoomID ] SrcVersion ] SrcPath ]" NEWLINE
+			"  summary   [ [ SrcPath ] SrcVersion ]" NEWLINE
+			"  test      [ Options ] [ [ [ DemoID ] SrcVersion ] SrcPath ]" NEWLINE
 			"  transfer  SrcPath DestLanguage" NEWLINE
-			"  protect   SrcFilePath\r\n"
-			"  unprotect SrcFilePath\r\n"
-			"  compress  SrcFilePath DestFilePath\r\n"
-			"  uncompress SrcFilePath DestFilePath\r\n"
-			"\r\n"
-			"Use \"help\" command for information on specific commands.\r\n");
+			"  protect   SrcFilePath" NEWLINE
+			"  unprotect SrcFilePath" NEWLINE
+			"  compress  SrcFilePath DestFilePath" NEWLINE
+			"  uncompress SrcFilePath DestFilePath" NEWLINE
+			"" NEWLINE
+			"Use \"help\" command for information on specific commands." NEWLINE);
 }
 
 //******************************************************************************************
@@ -316,20 +316,20 @@ void PrintHelpHelp()
 {
 	PrintHeader();
 	printf(
-	  "help        [ Command ]\r\n"
-	  "\r\n"
-	  "Shows help for a specific command.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  Command     Command for which help will be displayed, if omitted you'll see\r\n"
-	  "              help for the \"help\" command.  If you need even more help, try\r\n"
-	  "              \"drodutil help help help\".\r\n");
+	  "help        [ Command ]" NEWLINE
+	  "" NEWLINE
+	  "Shows help for a specific command." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  Command     Command for which help will be displayed, if omitted you'll see" NEWLINE
+	  "              help for the \"help\" command.  If you need even more help, try" NEWLINE
+	  "              \"drodutil help help help\"." NEWLINE);
 }
 
 //******************************************************************************************
 void PrintHelpHelpHelp()
 {
-	printf("I was only joking.  Boy, you are a mess, aren't you?\r\n");
+	printf("I was only joking.  Boy, you are a mess, aren't you?" NEWLINE);
 }
 
 //******************************************************************************************
@@ -373,15 +373,15 @@ void PrintCreateHelp()
 {
 	PrintHeader();
 	printf(
-	  "create [ [ DestPath ] DestVersion ]\r\n"
-	  "\r\n"
-	  "Creates empty DROD data.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  DestPath      Location at which to create data.  If omitted, default path\r\n"
-	  "                will be used.\r\n"
-	  "  DestVersion   Data version to create.  If omitted, default version will be\r\n"
-	  "                used.\r\n");
+	  "create [ [ DestPath ] DestVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Creates empty DROD data." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  DestPath      Location at which to create data.  If omitted, default path" NEWLINE
+	  "                will be used." NEWLINE
+	  "  DestVersion   Data version to create.  If omitted, default version will be" NEWLINE
+	  "                used." NEWLINE);
 }
 
 //******************************************************************************************
@@ -408,13 +408,13 @@ void PrintCreate(
 	CUtil *pUtil = GetUtil(eVersion, wstrPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Create the data.
 	if (pUtil->PrintCreate(Options))
-		printf("SUCCESS--DROD data was created.\r\n");
+		printf("SUCCESS--DROD data was created." NEWLINE);
 }
 
 //******************************************************************************************
@@ -463,15 +463,15 @@ void PrintDeleteHelp()
 {
 	PrintHeader();
 	printf(
-	  "delete [ [ SrcPath ] SrcVersion ]\r\n"
-	  "\r\n"
-	  "Deletes DROD data.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  SrcPath       Location of data to delete.  If omitted, default path will\r\n"
-	  "                be used.\r\n"
-	  "  SrcVersion    Version of data to delete.  If omitted, default version will\r\n"
-	  "                be used.\r\n");
+	  "delete [ [ SrcPath ] SrcVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Deletes DROD data." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  SrcPath       Location of data to delete.  If omitted, default path will" NEWLINE
+	  "                be used." NEWLINE
+	  "  SrcVersion    Version of data to delete.  If omitted, default version will" NEWLINE
+	  "                be used." NEWLINE);
 }
 
 //******************************************************************************************
@@ -496,13 +496,13 @@ void PrintDelete(
 	CUtil *pUtil = GetUtil(eVersion, strPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Delete the data.
 	if (pUtil->PrintDelete(Options))
-		printf("SUCCESS--DROD data was deleted.\r\n");
+		printf("SUCCESS--DROD data was deleted." NEWLINE);
 }
 
 //******************************************************************************************
@@ -510,17 +510,17 @@ void PrintExportHelp()
 {
 	PrintHeader();
 	printf(
-	  "export      [ [ [ DestPath ] SrcPath ] SrcVersion]\r\n"
-	  "\r\n"
-	  "Exports DROD data to an XML format designed for DRODUtil imports.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  DestPath      Location at which to write export files.  If omitted, default\r\n"
-	  "                path will be used.\r\n"
-	  "  SrcPath       Location of data to be exported.  If omitted, default path will\r\n"
-	  "                be used.\r\n"
-	  "  SrcVersion    Version of data to exported.  If omitted, default version will\r\n"
-	  "                be used.\r\n"
+	  "export      [ [ [ DestPath ] SrcPath ] SrcVersion]" NEWLINE
+	  "" NEWLINE
+	  "Exports DROD data to an XML format designed for DRODUtil imports." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  DestPath      Location at which to write export files.  If omitted, default" NEWLINE
+	  "                path will be used." NEWLINE
+	  "  SrcPath       Location of data to be exported.  If omitted, default path will" NEWLINE
+	  "                be used." NEWLINE
+	  "  SrcVersion    Version of data to exported.  If omitted, default version will" NEWLINE
+	  "                be used." NEWLINE
 	  );
 }
 
@@ -549,13 +549,13 @@ void PrintExport(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Export the data.
 	if (pUtil->PrintExport(Options, strDestPath.c_str()))
-		printf("SUCCESS--DROD data was exported.\r\n");
+		printf("SUCCESS--DROD data was exported." NEWLINE);
 }
 
 //******************************************************************************************
@@ -563,15 +563,15 @@ void PrintHoldHelp()
 {
 	PrintHeader();
 	printf(
-	  "hold        [ [ [ HoldID ] SrcPath ] SrcVersion ]\r\n"
-	  "\r\n"
-	  "Shows information about a specified hold.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  HoldID        Indicates which hold to use.  If omitted, first hold will be\r\n"
-	  "                used.\r\n"
-	  "  SrcPath       Location of data.  If omitted, default path will be used.\r\n"
-	  "  SrcVersion    Version of data.  If omitted, default version will be used.\r\n"
+	  "hold        [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Shows information about a specified hold." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  HoldID        Indicates which hold to use.  If omitted, first hold will be" NEWLINE
+	  "                used." NEWLINE
+	  "  SrcPath       Location of data.  If omitted, default path will be used." NEWLINE
+	  "  SrcVersion    Version of data.  If omitted, default version will be used." NEWLINE
 	  );
 }
 
@@ -603,13 +603,13 @@ void PrintHold(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Print hold information.
 	if (pUtil->PrintHold(Options, dwHoldID))
-		printf("SUCCESS--Hold information retrieved.\r\n");
+		printf("SUCCESS--Hold information retrieved." NEWLINE);
 }
 
 //******************************************************************************************
@@ -617,29 +617,29 @@ void PrintImportHelp()
 {
 	PrintHeader();
 	printf(
-	  "import          [ -d ] [ -h ] [ -p ] [ -t ] [ -i ]\r\n"
-	  "                [ [ [ [ SrcPath ] SrcVersion ] DestPath ] DestVersion ]\r\n"
-	  "\r\n"
-	  "Imports DROD data from an earlier version.\r\n"
-	  "\r\n"
-	  "Options:\r\n"
-	  "  -h            Import all holds in source data.\r\n"
-	  "  -d            Import all demos and saved games found in source data.\r\n"
-	  "  -p            Import all players found in source data.\r\n"
-	  "  -t            Import all basic messages and generate MIDs.h file containing\r\n"
-	  "                MID_* constants for messages.  MIDs.h will be written to SrcPath.\r\n"
-	  "  -i            Import all images found in source data.\r\n"
-	  "If no options are specified, options will default to \"-h -d -p -t\".\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  SrcPath       Location of data to import.  If omitted, default path will \r\n"
-	  "                be used.\r\n"
-	  "  SrcVersion    Version of data to import.  If omitted, the version previous to\r\n"
-	  "                the default version will be used.\r\n"
-	  "  DestPath      Location of data to recieve import.  If omitted, default path\r\n"
-	  "                will be used.\r\n"
-	  "  DestVersion   Version of data to recieve import.  If omitted, default version\r\n"
-	  "                will be used.\r\n"
+	  "import          [ -d ] [ -h ] [ -p ] [ -t ] [ -i ]" NEWLINE
+	  "                [ [ [ [ SrcPath ] SrcVersion ] DestPath ] DestVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Imports DROD data from an earlier version." NEWLINE
+	  "" NEWLINE
+	  "Options:" NEWLINE
+	  "  -h            Import all holds in source data." NEWLINE
+	  "  -d            Import all demos and saved games found in source data." NEWLINE
+	  "  -p            Import all players found in source data." NEWLINE
+	  "  -t            Import all basic messages and generate MIDs.h file containing" NEWLINE
+	  "                MID_* constants for messages.  MIDs.h will be written to SrcPath." NEWLINE
+	  "  -i            Import all images found in source data." NEWLINE
+	  "If no options are specified, options will default to \"-h -d -p -t\"." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  SrcPath       Location of data to import.  If omitted, default path will " NEWLINE
+	  "                be used." NEWLINE
+	  "  SrcVersion    Version of data to import.  If omitted, the version previous to" NEWLINE
+	  "                the default version will be used." NEWLINE
+	  "  DestPath      Location of data to recieve import.  If omitted, default path" NEWLINE
+	  "                will be used." NEWLINE
+	  "  DestVersion   Version of data to recieve import.  If omitted, default version" NEWLINE
+	  "                will be used." NEWLINE
 	  );
 }
 
@@ -677,7 +677,7 @@ void PrintImport(
 	if (!(eSrcVersion == v1_11c && eDestVersion == v1_5) &&
 		(!eSrcVersion == v1_5 && (eDestVersion == v1_6 || eDestVersion == v2_0)) )
 	{
-		printf("FAILED--Only 1.11c-to-1.5 and 1.5-to-1.6/2.0 imports are supported.\r\n");
+		printf("FAILED--Only 1.11c-to-1.5 and 1.5-to-1.6/2.0 imports are supported." NEWLINE);
 		return;
 	}
 
@@ -685,13 +685,13 @@ void PrintImport(
 	CUtil *pUtil = GetUtil(eDestVersion, strDestPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Import the data.
 	if (pUtil->PrintImport(Options, strSrcPath.c_str(), eSrcVersion))
-		printf("SUCCESS--DROD data was imported.\r\n");
+		printf("SUCCESS--DROD data was imported." NEWLINE);
 }
 
 //******************************************************************************************
@@ -699,15 +699,15 @@ void PrintLevelHelp()
 {
 	PrintHeader();
 	printf(
-	  "level        [ [ [ LevelID ] SrcPath ] SrcVersion ]\r\n"
-	  "\r\n"
-	  "Save image of level minimap to filename \"level\"+<ID>.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  LevelID       Indicates which level to use.  If omitted, first level of first\r\n"
-	  "                hold will be used.\r\n"
-	  "  SrcPath       Location of data.  If omitted, default path will be used.\r\n"
-	  "  SrcVersion    Version of data.  If omitted, default version will be used.\r\n"
+	  "level        [ [ [ LevelID ] SrcPath ] SrcVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Save image of level minimap to filename \"level\"+<ID>." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  LevelID       Indicates which level to use.  If omitted, first level of first" NEWLINE
+	  "                hold will be used." NEWLINE
+	  "  SrcPath       Location of data.  If omitted, default path will be used." NEWLINE
+	  "  SrcVersion    Version of data.  If omitted, default version will be used." NEWLINE
 	  );
 }
 
@@ -739,13 +739,13 @@ void PrintLevel(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Print level information.
 	if (pUtil->PrintLevel(Options, dwLevelID))
-		printf("SUCCESS--Level information retrieved.\r\n");
+		printf("SUCCESS--Level information retrieved." NEWLINE);
 }
 
 //******************************************************************************************
@@ -807,15 +807,15 @@ void PrintMysqlHelp()
 {
 	PrintHeader();
 	printf(
-	  "mysql        [ [ [ HoldID ] SrcPath ] SrcVersion ]\r\n"
-	  "Shows information about an entire hold, formatted as a PHP file\r\n"
-	  "which will create a MySQL database.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  HoldID        Indicates which hold to use.  If omitted, first\r\n"
-	  "                hold will be used.\r\n"
-	  "  SrcPath       Location of data.  If omitted, default path will be used.\r\n"
-	  "  SrcVersion    Version of data.  If omitted, default version will be used.\r\n"
+	  "mysql        [ [ [ HoldID ] SrcPath ] SrcVersion ]" NEWLINE
+	  "Shows information about an entire hold, formatted as a PHP file" NEWLINE
+	  "which will create a MySQL database." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  HoldID        Indicates which hold to use.  If omitted, first" NEWLINE
+	  "                hold will be used." NEWLINE
+	  "  SrcPath       Location of data.  If omitted, default path will be used." NEWLINE
+	  "  SrcVersion    Version of data.  If omitted, default version will be used." NEWLINE
 	  );
 }
 
@@ -848,13 +848,13 @@ void PrintMysql(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Print hold information.
 	if (pUtil->PrintMysql(Options, dwHoldID))
-		printf("SUCCESS--Hold information retrieved.\r\n");
+		printf("SUCCESS--Hold information retrieved." NEWLINE);
 }
 
 //******************************************************************************************
@@ -862,18 +862,18 @@ void PrintRoomHelp()
 {
 	PrintHeader();
 	printf(
-	  "room        [-h:holdID] [ [ [ RoomID ] SrcPath ] SrcVersion ]\r\n"
-	  "\r\n"
-	  "Save image of room to filename \"room\"+<RoomID>.\r\n"
-	  "\r\n"
-	  "Options:\r\n"
-	  "  -h:holdID     Save all rooms in hold w/ holdID.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  RoomID        Indicates which room to use.  If omitted, first room of first\r\n"
-	  "                level of first hold will be used.\r\n"
-	  "  SrcPath       Location of data.  If omitted, default path will be used.\r\n"
-	  "  SrcVersion    Version of data.  If omitted, default version will be used.\r\n"
+	  "room        [-h:holdID] [ [ [ RoomID ] SrcPath ] SrcVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Save image of room to filename \"room\"+<RoomID>." NEWLINE
+	  "" NEWLINE
+	  "Options:" NEWLINE
+	  "  -h:holdID     Save all rooms in hold w/ holdID." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  RoomID        Indicates which room to use.  If omitted, first room of first" NEWLINE
+	  "                level of first hold will be used." NEWLINE
+	  "  SrcPath       Location of data.  If omitted, default path will be used." NEWLINE
+	  "  SrcVersion    Version of data.  If omitted, default version will be used." NEWLINE
 	  );
 }
 
@@ -906,13 +906,13 @@ void PrintRoom(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Print room information.
 	if (pUtil->PrintRoom(Options, dwRoomID))
-		printf("SUCCESS--Room information retrieved.\r\n");
+		printf("SUCCESS--Room information retrieved." NEWLINE);
 }
 
 
@@ -921,13 +921,13 @@ void PrintSummaryHelp()
 {
 	PrintHeader();
 	printf(
-	  "summary        [ [ [ SrcPath ] SrcVersion ]\r\n"
-	  "\r\n"
-	  "Shows summary information about DROD data.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  SrcPath       Location of data.  If omitted, default path will be used.\r\n"
-	  "  SrcVersion    Version of data.  If omitted, default version will be used.\r\n");
+	  "summary        [ [ [ SrcPath ] SrcVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Shows summary information about DROD data." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  SrcPath       Location of data.  If omitted, default path will be used." NEWLINE
+	  "  SrcVersion    Version of data.  If omitted, default version will be used." NEWLINE);
 }
 
 //******************************************************************************************
@@ -954,13 +954,13 @@ void PrintSummary(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Print summary information.
 	if (pUtil->PrintSummary(Options))
-		printf("SUCCESS--Summary information displayed.\r\n");
+		printf("SUCCESS--Summary information displayed." NEWLINE);
 }
 
 //******************************************************************************************
@@ -968,21 +968,21 @@ void PrintTestHelp()
 {
 	PrintHeader();
 	printf(
-	  "test        [-c] [-s:checksum] [ [ [ DemoID ] SrcPath ] SrcVersion ]\r\n"
-	  "\r\n"
-	  "Plays through a demo and shows results.\r\n"
-	  "\r\n"
-	  "Options:\r\n"
-	  "  -c            Display failure if room is not conquered.\r\n"
-	  "  -m            Display failure if monsters are present at end of demo.\r\n"
-	  "  -s:checksum   Display failure if game state checksum does not match\r\n"
-	  "                \"checksum\" attribute at end of demo.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  SrcPath       Location of data.  If omitted, default path will be used.\r\n"
-	  "  SrcVersion    Version of data.  If omitted, default version will be used.\r\n"
-	  "  DemoID        Indicates which demo to use for testing.  If omitted, all demos\r\n"
-	  "                will be tested.\r\n");
+	  "test        [-c] [-s:checksum] [ [ [ DemoID ] SrcPath ] SrcVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Plays through a demo and shows results." NEWLINE
+	  "" NEWLINE
+	  "Options:" NEWLINE
+	  "  -c            Display failure if room is not conquered." NEWLINE
+	  "  -m            Display failure if monsters are present at end of demo." NEWLINE
+	  "  -s:checksum   Display failure if game state checksum does not match" NEWLINE
+	  "                \"checksum\" attribute at end of demo." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  SrcPath       Location of data.  If omitted, default path will be used." NEWLINE
+	  "  SrcVersion    Version of data.  If omitted, default version will be used." NEWLINE
+	  "  DemoID        Indicates which demo to use for testing.  If omitted, all demos" NEWLINE
+	  "                will be tested." NEWLINE);
 }
 
 //******************************************************************************************
@@ -1014,7 +1014,7 @@ void PrintTest(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
@@ -1022,9 +1022,9 @@ void PrintTest(
 	if (pUtil->PrintTest(Options, dwDemoID))
 	{
 		if (dwDemoID == 0)
-			printf("SUCCESS--All demos tested.\r\n");
+			printf("SUCCESS--All demos tested." NEWLINE);
 		else
-			printf("SUCCESS--Demo tested.\r\n");
+			printf("SUCCESS--Demo tested." NEWLINE);
 	}
 }
 
@@ -1082,15 +1082,15 @@ void PrintDemoHelp()
 {
 	PrintHeader();
 	printf(
-	  "demo        [ [ [ DemoID ] SrcPath ] SrcVersion ]\r\n"
-	  "\r\n"
-	  "Displays information about a demo.\r\n"
-	  "\r\n"
-	  "Params:\r\n"
-	  "  DemoID        Indicates which demo to use.  If omitted, first demo will be\r\n"
-	  "                used.\r\n"
-	  "  SrcPath       Location of data.  If omitted, default path will be used.\r\n"
-	  "  SrcVersion    Version of data.  If omitted, default version will be used.\r\n"
+	  "demo        [ [ [ DemoID ] SrcPath ] SrcVersion ]" NEWLINE
+	  "" NEWLINE
+	  "Displays information about a demo." NEWLINE
+	  "" NEWLINE
+	  "Params:" NEWLINE
+	  "  DemoID        Indicates which demo to use.  If omitted, first demo will be" NEWLINE
+	  "                used." NEWLINE
+	  "  SrcPath       Location of data.  If omitted, default path will be used." NEWLINE
+	  "  SrcVersion    Version of data.  If omitted, default version will be used." NEWLINE
 	  );
 }
 
@@ -1120,14 +1120,14 @@ void PrintDemo(
 	CUtil *pUtil = GetUtil(eSrcVersion, strSrcPath.c_str());
 	if (!pUtil)
 	{
-		printf("FAILED--Version not supported.\r\n");
+		printf("FAILED--Version not supported." NEWLINE);
 		return;
 	}
 
 	//Test the demo.
 	if (pUtil->PrintDemo(Options, dwDemoID))
 	{
-		printf("SUCCESS--Demo information retrieved.\r\n");
+		printf("SUCCESS--Demo information retrieved." NEWLINE);
 	}
 }
 
@@ -1212,10 +1212,10 @@ void PrintProtectHelp()
 {
 	PrintHeader();
 	printf(
-		"protect    SrcFilePath\r\n"
-		"\r\n"
-		"Scrambles the contents of a file so that its format can only be recognized\r\n"
-		"by DROD.\r\n");
+		"protect    SrcFilePath" NEWLINE
+		"" NEWLINE
+		"Scrambles the contents of a file so that its format can only be recognized" NEWLINE
+		"by DROD." NEWLINE);
 }
 
 //******************************************************************************************
@@ -1231,18 +1231,18 @@ void PrintProtect(
 	if (!Options.AreOptionsValid(wszEmpty)) return;
 	if (!pszFilePath)
 	{
-		printf("FAILED--Must specify file to protect.\r\n");
+		printf("FAILED--Must specify file to protect." NEWLINE);
 		return;
 	}
 
 	if (CFiles::FileIsEncrypted(pszFilePath))
-		printf("FAILED--File already looks protected.\r\n");
+		printf("FAILED--File already looks protected." NEWLINE);
 	else
 	{
 		//Scramble the data.
 		if (CFiles::ProtectFile(pszFilePath))
-			printf("SUCCESS--File protected.\r\n");
-		else printf("FAILED--File could not be read/written.\r\n");
+			printf("SUCCESS--File protected." NEWLINE);
+		else printf("FAILED--File could not be read/written." NEWLINE);
 	}
 }
 
@@ -1251,10 +1251,10 @@ void PrintUnprotectHelp()
 {
 	PrintHeader();
 	printf(
-		"unprotect  SrcFilePath\r\n"
-		"\r\n"
-		"Unscrambles the contents of a previously protected file so that its format\r\n"
-		"can be recognized by other applications.\r\n");
+		"unprotect  SrcFilePath" NEWLINE
+		"" NEWLINE
+		"Unscrambles the contents of a previously protected file so that its format" NEWLINE
+		"can be recognized by other applications." NEWLINE);
 }
 
 //******************************************************************************************
@@ -1270,18 +1270,18 @@ void PrintUnprotect(
 	if (!Options.AreOptionsValid(wszEmpty)) return;
 	if (!pszFilePath)
 	{
-		printf("FAILED--Must specify file to unprotect.\r\n");
+		printf("FAILED--Must specify file to unprotect." NEWLINE);
 		return;
 	}
 
 	if (!CFiles::FileIsEncrypted(pszFilePath))
-		printf("FAILED--File already looks unprotected.\r\n");
+		printf("FAILED--File already looks unprotected." NEWLINE);
 	else
 	{
 		//Unscramble the data.
 		if (CFiles::UnprotectFile(pszFilePath))
-			printf("SUCCESS--File unprotected.\r\n");
-		else printf("FAILED--File could not be read/written.\r\n");
+			printf("SUCCESS--File unprotected." NEWLINE);
+		else printf("FAILED--File could not be read/written." NEWLINE);
 	}
 }
 
@@ -1290,9 +1290,9 @@ void PrintCompressHelp()
 {
 	PrintHeader();
 	printf(
-		"compress    SrcFilePath DestFilePath\r\n"
-		"\r\n"
-		"Compresses the contents of a file so that it can be imported by DROD.\r\n");
+		"compress    SrcFilePath DestFilePath" NEWLINE
+		"" NEWLINE
+		"Compresses the contents of a file so that it can be imported by DROD." NEWLINE);
 }
 
 //******************************************************************************************
@@ -1309,19 +1309,19 @@ void PrintCompress(
 	if (!Options.AreOptionsValid(wszEmpty)) return;
 	if (!pszSrcFilePath)
 	{
-		printf("FAILED--Must specify file to compress and destination file.\r\n");
+		printf("FAILED--Must specify file to compress and destination file." NEWLINE);
 		return;
 	}
 	if (!pszDestFilePath)
 	{
-		printf("FAILED--Must specify destination file.\r\n");
+		printf("FAILED--Must specify destination file." NEWLINE);
 		return;
 	}
 
 	CStretchyBuffer buffer;
 	if (!CFiles::ReadFileIntoBuffer(pszSrcFilePath, buffer))
 	{
-		printf("FAILED--Unable to open source file.\r\n");
+		printf("FAILED--Unable to open source file." NEWLINE);
 		return;
 	}
 
@@ -1336,7 +1336,7 @@ void PrintCompress(
 	CFiles::WriteBufferToFile(pszDestFilePath, output);
 	delete dest;
 
-	printf("SUCCESS--File compressed.\r\n");
+	printf("SUCCESS--File compressed." NEWLINE);
 }
 
 //******************************************************************************************
@@ -1344,10 +1344,10 @@ void PrintUncompressHelp()
 {
 	PrintHeader();
 	printf(
-		"uncompress    SrcFilePath DestFilePath\r\n"
-		"\r\n"
-		"Uncompresses the contents of an exported file so that it can be read\r\n"
-		"by humans.\r\n");
+		"uncompress    SrcFilePath DestFilePath" NEWLINE
+		"" NEWLINE
+		"Uncompresses the contents of an exported file so that it can be read" NEWLINE
+		"by humans." NEWLINE);
 }
 
 //******************************************************************************************
@@ -1364,19 +1364,19 @@ void PrintUncompress(
 	if (!Options.AreOptionsValid(wszEmpty)) return;
 	if (!pszSrcFilePath)
 	{
-		printf("FAILED--Must specify file to uncompress and destination file.\r\n");
+		printf("FAILED--Must specify file to uncompress and destination file." NEWLINE);
 		return;
 	}
 	if (!pszDestFilePath)
 	{
-		printf("FAILED--Must specify destination file.\r\n");
+		printf("FAILED--Must specify destination file." NEWLINE);
 		return;
 	}
 
 	CStretchyBuffer buffer;
 	if (!CFiles::ReadFileIntoBuffer(pszSrcFilePath, buffer))
 	{
-		printf("FAILED--Unable to open source file.\r\n");
+		printf("FAILED--Unable to open source file." NEWLINE);
 		return;
 	}
 	buffer.Decode();
@@ -1385,16 +1385,16 @@ void PrintUncompress(
 	ULONG decodedSize;
 	if (!buffer.Uncompress(decodedBuf, decodedSize))
 	{
-		printf("FAILED--Memory/data error during uncompression.\r\n");
+		printf("FAILED--Memory/data error during uncompression." NEWLINE);
 		return;
 	}
 
 	CStretchyBuffer output(decodedBuf, decodedSize);
 	if (!CFiles::WriteBufferToFile(pszDestFilePath, output))
 	{
-		printf("FAILED--Cannot write destination file.\r\n");
+		printf("FAILED--Cannot write destination file." NEWLINE);
 		return;
 	}
 
-	printf("SUCCESS--File uncompressed.\r\n");
+	printf("SUCCESS--File uncompressed." NEWLINE);
 }
