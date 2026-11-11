@@ -1,4 +1,4 @@
-// $Id: Util3_0.cpp 8342 2007-10-14 23:28:01Z mrimer $
+// $Id$
 
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1
@@ -33,12 +33,12 @@
 #include "GameScreenDummy.h"	//to avoid a bunch of other includes from DROD
 #include "../DROD/EditRoomWidget.h"
 #include "../DROD/MapWidget.h"
-#include <FrontEndLib/Screen.h>
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbProps.h"
 #include "../DRODLib/DbMessageText.h"
 #include "../DRODLib/GameConstants.h"
 #include "../Texts/MIDs.h"
+#include <FrontEndLib/Screen.h>
 #include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/Date.h>
 #include <BackEndLib/Files.h>
@@ -150,6 +150,46 @@ const
 		return false;
 
 	//Success.
+	return true;
+}
+
+//**************************************************************************************
+bool CUtil3_0::PrintConvertUNI(
+//Converts a given uni file to an xml file.The new file has the same name and location
+//as the input, but with a .xml extension.
+//
+//Params:
+	const COptionList& Options, //[in] Options affecting the conversion.--IGNORED
+	const WCHAR* pszSrcPath     //[in] Path to uni file to convert.
+)
+//
+//Returns:
+//True if successful, false if not.
+const
+{
+	printf("Collecting messages from: ");
+	wprintf(pszSrcPath);
+	printf(NEWLINE);
+
+	ParsedMessages messages;
+	vector<string> orderedMIDs;
+	if (!ExtractUNI(pszSrcPath, messages, orderedMIDs)) {
+		printf(
+			"Failed to collect messages" NEWLINE
+			"Check that the file path points to a valid uni file."
+		);
+		return false;
+	}
+
+	WSTRING uniFilePath(pszSrcPath);
+	WSTRING destPath = uniFilePath.substr(0, uniFilePath.size() - 4);
+	destPath += L".xml";
+
+	printf("Writing to ");
+	wprintf(destPath.c_str());
+	printf(NEWLINE);
+
+	WriteToXML(destPath, messages, orderedMIDs);
 	return true;
 }
 
@@ -476,6 +516,199 @@ bool CUtil3_0::PrintTest(const COptionList &Options, UINT dwDemoID) const
 	return bRes;
 }
 
+//**************************************************************************************
+bool CUtil3_0::PrintLocalize(
+//Create a localization dat file for a given language
+	const COptionList& Options,//[in] Options affecting the process.--IGNORED
+	const WCHAR* pszSrcPath,   //[in] Directory containing DROD text files and MIDs.h file
+	const WCHAR* pszDestLang   //[in] Code of language to create dat file for
+) const
+{
+	Language::LANGUAGE destLanguage = Language::Get(pszDestLang);
+	if (destLanguage == Language::Unknown) {
+		printf("FAILED--Invalid language code." NEWLINE);
+		return false;
+	}
+
+	WSTRING wstrSearchPath = pszSrcPath;
+	wstrSearchPath += wszSlash;
+	wstrSearchPath += pszDestLang;
+	if (!CFiles::IsValidPath(wstrSearchPath.c_str())) {
+		printf("FAILED--Require language subdirectory not found in %S." NEWLINE, pszSrcPath);
+		return false;
+	}
+
+	//Get map of already-assigned MIDs from existing MIDS.h.
+	ASSIGNEDMIDS AssignedMIDs;
+	{
+		UINT dwLastMessageID = 0;
+		WSTRING wstrHeaderFilepath;
+		wstrHeaderFilepath = pszSrcPath;
+		wstrHeaderFilepath += wszSlash;
+		wstrHeaderFilepath += L"MIDs.h";
+		if (!CFiles::DoesFileExist(wstrHeaderFilepath.c_str())) {
+			printf("FAILED--No MIDs.h file found in %S." NEWLINE, pszSrcPath);
+			return false;
+		}
+
+		GetAssignedMIDs(wstrHeaderFilepath.c_str(), AssignedMIDs, dwLastMessageID);
+	}
+
+	WSTRING destPath;
+	GetMasterFilepath(destPath);
+	{
+		//Add langugage tag to file name
+		WSTRING postfix = L"-";
+		postfix += pszDestLang;
+		WSTRING::size_type pos = destPath.find_last_of('.');
+		destPath.insert(pos, postfix);
+	}
+
+	printf("Output dat is %S" NEWLINE, destPath);
+	if (!CFiles::DoesFileExist(destPath.c_str())) {
+		//Make it so
+		if (!CDbBase::CreateDatabase(destPath)) {
+			printf("FAILED--Couldn't create dat file." NEWLINE);
+			return false;
+		}
+	}
+
+	const string filename = UnicodeToUTF8(destPath.c_str());
+	printf("Opening %s...", filename.c_str());
+	c4_Storage TextStorage(filename.c_str(), true);
+	printf("done." NEWLINE);
+
+	//Remove any existing messages
+	RemoveBasicMessages(TextStorage);
+
+	//Ensure all incremented IDs have been created at this time.
+	c4_View IncrementedIDs = TextStorage.View("IncrementedIDs");
+	if (IncrementedIDs.GetSize() < 1)
+	{
+		IncrementedIDs.Add(
+			p_DataID[0] +
+			p_DemoID[0] +
+			p_HoldID[0] +
+			p_LevelID[0] +
+			p_MessageID[uFirstNonSimpleMessageID] +
+			p_MessageTextID[0] +
+			p_PlayerID[0] +
+			p_RoomID[0] +
+			p_SavedGameID[0] +
+			p_SpeechID[0]);
+	} else {
+		c4_RowRef row = IncrementedIDs.GetAt(0);
+		p_MessageID(row) = uFirstNonSimpleMessageID;
+	}
+
+	//Import every *.UNI file found in language subdirectory.
+	vector<WSTRING> uniFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"uni", uniFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& uniFilePath : uniFilePaths) {
+			WSTRING fileName = uniFilePath.substr(uniFilePath.find_last_of(wszSlash) + 1);
+			printf("Importing messages from %S" NEWLINE, fileName);
+			if (!ImportUNI(uniFilePath.c_str(), TextStorage, AssignedMIDs, destLanguage)) {
+				continue;
+			}
+		}
+	}
+
+	//Import every *.xml file found in language subdirectory.
+	vector<WSTRING> xmlFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"xml", xmlFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& xmlFilePath : xmlFilePaths) {
+			WSTRING fileName = xmlFilePath.substr(xmlFilePath.find_last_of(wszSlash) + 1);
+			printf("Importing messages from %S" NEWLINE, fileName);
+			if (!ImportXML(xmlFilePath.c_str(), TextStorage, AssignedMIDs, destLanguage)) {
+				continue;
+			}
+		}
+	}
+
+	TextStorage.Commit();
+	return true;
+}
+
+//**************************************************************************************
+bool CUtil3_0::PrintTransfer(
+//Create or update a text subdirectory for a given language
+//
+//Params:
+	const COptionList& Options, //[in] Options affecting the transfer.--IGNORED
+	const WCHAR* pszSrcDir,     //[in] Directory containing DROD text files
+	const WCHAR* pszDestLang    //[in] Code of language to transfer to
+) const
+{
+	if (!CFiles::IsValidPath(pszSrcDir)) {
+		printf("FAILED--Source path (%S) is not a valid path." NEWLINE, pszSrcDir);
+		return false;
+	}
+
+	Language::LANGUAGE destLanguage = Language::Get(pszDestLang);
+	if (destLanguage == Language::Unknown) {
+		printf("FAILED--Invalid language code." NEWLINE);
+		return false;
+	}
+
+	WSTRING wstrSearchPath = pszSrcDir;
+	WSTRING outputDir = wstrSearchPath + wszSlash + pszDestLang + wszSlash;
+	CFiles::CreatePathIfInvalid(outputDir.c_str());
+	printf("Transfering from %S to %S" NEWLINE, pszSrcDir, outputDir.c_str());
+
+	vector<WSTRING> uniFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"uni", uniFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& uniFilePath : uniFilePaths) {
+			ParsedMessages srcMessages;
+			vector<string> orderedMIDs;
+			if (!ExtractUNI(uniFilePath.c_str(), srcMessages, orderedMIDs)) {
+				continue;
+			}
+
+			WSTRING fileName = uniFilePath.substr(uniFilePath.find_last_of(wszSlash) + 1);
+			printf("Transferring from %S" NEWLINE, fileName.c_str());
+			WSTRING destPath = outputDir + fileName;
+
+			ParsedMessages destMessages;
+			if (CFiles::DoesFileExist(destPath.c_str())) {
+				vector<string> ignored;
+				ExtractUNI(destPath.c_str(), destMessages, ignored);
+			}
+
+			TransferMessages(srcMessages, destMessages, destLanguage);
+			WriteToUNI(destPath, destMessages, orderedMIDs);
+		}
+	}
+
+	vector<WSTRING> xmlFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"xml", xmlFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& xmlFilePath : xmlFilePaths) {
+			XMLLanguageParseData srcMessageData;
+			if (!ExtractXML(xmlFilePath.c_str(), srcMessageData)) {
+				continue;
+			}
+
+			WSTRING fileName = xmlFilePath.substr(xmlFilePath.find_last_of(wszSlash) + 1);
+			printf("Transferring from %S" NEWLINE, fileName.c_str());
+			WSTRING destPath = outputDir + fileName;
+
+			XMLLanguageParseData destMessageData;
+			if (CFiles::DoesFileExist(destPath.c_str())) {
+				ExtractXML(destPath.c_str(), destMessageData);
+			}
+
+			TransferMessages(
+				srcMessageData.parsedMessages, destMessageData.parsedMessages, destLanguage);
+			WriteToXML(destPath, destMessageData.parsedMessages, srcMessageData.orderedMIDs);
+		}
+	}
+
+	return true;
+}
+
 //
 //Private methods.
 //
@@ -526,7 +759,7 @@ bool CUtil3_0::ImportBasicMessages(
 const
 {
 	 //Get map of already-assigned MIDs from existing MIDS.h.
-	 UINT dwMaxMessageID = 0;
+	 UINT dwLastMessageID = 0;
 	 WSTRING wstrHeaderFilepath;
 	 ASSIGNEDMIDS AssignedMIDs;
 	 {
@@ -534,7 +767,7 @@ const
 		  wstrHeaderFilepath = pwzSrcPath;
 		  wstrHeaderFilepath += wszSlash;
 		  wstrHeaderFilepath += wszMIDS_H;
-		  GetAssignedMIDs(wstrHeaderFilepath.c_str(), AssignedMIDs, dwMaxMessageID);
+		  GetAssignedMIDs(wstrHeaderFilepath.c_str(), AssignedMIDs, dwLastMessageID);
 	 }
 
 	 //Concat first part of MIDS.h.
@@ -558,23 +791,14 @@ const
 		  "  MID_MemPerformanceWarning = 6," NEWLINE
 		  "  MID_MemLowWarning = 7," NEWLINE
 		  "  MID_MemLowExitNeeded = 8," NEWLINE
-		  "  MID_AppConfigError = 9,\r\n"
-		  "  MID_DRODIsAlreadyRunning = 10,\r\n"
+		  "  MID_AppConfigError = 9," NEWLINE
+		  "  MID_DRODIsAlreadyRunning = 10," NEWLINE
 		  "  MID_DataPathDotTextFileIsInvalid = 11," NEWLINE
 		  "  MID_LastUnstored = 99," NEWLINE;
-	 if (dwMaxMessageID < 99)
-		 dwMaxMessageID = 99;
+	 if (dwLastMessageID < 99) dwLastMessageID = 99;
 
-	 //Delete any existing basic messages from the database.  (basic means "MIDs < uFirstNonSimpleMessageID").
-	 {
-		  c4_View MessageTextsView = TextStorage.View("MessageTexts");
-		  long lMessageTextCount = MessageTextsView.GetSize();
-		  while (lMessageTextCount--)
-		  {
-				if (p_MessageID( MessageTextsView[lMessageTextCount] ) < (int)uFirstNonSimpleMessageID)
-					 MessageTextsView.RemoveAt(lMessageTextCount);
-		  }
-	 }
+	//Delete any existing basic messages from the database.  (basic means "MIDs < uFirstNonSimpleMessageID").
+	RemoveBasicMessages(TextStorage);
 
 	 //Ensure Incremented IDs for text exist.
 	c4_View IncrementedIDs = TextStorage.View("IncrementedIDs");
@@ -587,73 +811,51 @@ const
 		p_MessageID(row) = uFirstNonSimpleMessageID;
 	}
 
-	WSTRING wstrSearchPath = pwzSrcPath;
-#ifdef WIN32
-	 //Concat search path.
-	 const WCHAR wszUNI[] = {{'*'},{'.'},{'u'},{'n'},{'i'},{0}};
-	 wstrSearchPath += wszSlash;
-	 wstrSearchPath += wszUNI;
+	auto outputSource = [&strMIDs](const WSTRING& fileName) {
+		printf("Importing messages from ");
+		wprintf(fileName.c_str());
+		printf(NEWLINE);
 
-	 //Import every *.UNI file found at the source path.
-	 WIN32_FIND_DATA FindData;
-	 HANDLE hFindUNI = FindFirstFile(wstrSearchPath.c_str(), &FindData);
-	 if (hFindUNI != INVALID_HANDLE_VALUE)
-	 {
-		 do
-		 {
-			 string filename;
-			 WSTRING wstrUNIFilepath = pwzSrcPath;
-			 wstrUNIFilepath += wszSlash;
-			 wstrUNIFilepath += FindData.cFileName;
-			 UnicodeToUTF8(FindData.cFileName, filename);
-#else
-	char szSearchPath[wstrSearchPath.length()];
-	UnicodeToUTF8(wstrSearchPath, szSearchPath);
-	DIR *pdFindUNI = opendir(szSearchPath);
-	if (pdFindUNI)
-	{
-		struct dirent *pDir;
-		while ((pDir = readdir(pdFindUNI)))
-		{
-			const size_t len = strlen(pDir->d_name);
-			if (len < 4 || strcasecmp(pDir->d_name + len - 4, ".uni"))
-				continue;
-
-			WSTRING wstrUNIFilepath = pwzSrcPath;
-			wstrUNIFilepath += wszSlash;
-			WSTRING wstrFilename;
-			UTF8ToUnicode(pDir->d_name, wstrFilename);
-			wstrUNIFilepath += wstrFilename;
-#endif
-
-			strMIDs +=
+		strMIDs +=
 			"" NEWLINE
 			"  //Messages from ";
-#ifdef WIN32
-			strMIDs += filename;
-#else
-			strMIDs += pDir->d_name;
-#endif
-			strMIDs += ":" NEWLINE;
+		strMIDs += UnicodeToUTF8(fileName);
+		strMIDs += ":" NEWLINE;
+	};
 
-			if (!ImportUNI(wstrUNIFilepath.c_str(), TextStorage, AssignedMIDs, dwMaxMessageID, strMIDs))
+	//Import every *.UNI file found at the source path.
+	WSTRING wstrSearchPath = pwzSrcPath;
+	vector<WSTRING> uniFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"uni", uniFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& uniFilePath : uniFilePaths) {
+			WSTRING fileName = uniFilePath.substr(uniFilePath.find_last_of(wszSlash) + 1);
+			outputSource(fileName);
+			if (!ImportUNI(uniFilePath.c_str(), TextStorage, AssignedMIDs, dwLastMessageID, strMIDs))
 			{
 				TextStorage.Rollback();
 				return false;
 			}
-#ifdef WIN32
-		} while (FindNextFile(hFindUNI, &FindData));
-
-		FindClose(hFindUNI);
-#else
 		}
+	}
 
-		closedir(pdFindUNI);
-#endif
-	 }
+	//Import every *.xml file found at the source path.
+	vector<WSTRING> xmlFilePaths;
+	if (CFiles::GetFileList(wstrSearchPath.c_str(), L"xml", xmlFilePaths, true)) {
+		printf(NEWLINE);
+		for (const auto& xmlFilePath : xmlFilePaths) {
+			WSTRING fileName = xmlFilePath.substr(xmlFilePath.find_last_of(wszSlash) + 1);
+			outputSource(fileName);
+			if (!ImportXML(xmlFilePath.c_str(), TextStorage, AssignedMIDs, dwLastMessageID, strMIDs))
+			{
+				TextStorage.Rollback();
+				return false;
+			}
+		}
+	}
 
-	 //Finish MIDs concatenation.
-	 strMIDs +=
+	//Finish MIDs concatenation.
+	strMIDs +=
 		  "" NEWLINE
 		  "  MID_END_UNUSED" NEWLINE
 		  "};" NEWLINE
@@ -677,6 +879,19 @@ const
 }
 
 //****************************************************************************************************
+void copyMIDName(const char* nameTag, UINT dwMessageID, string& strMIDs)
+{
+	//In the format "  tagname = tagvalue,".
+	static char szNumBuf[20];
+	strMIDs += "  ";
+	strMIDs += nameTag;
+	strMIDs += " = ";
+	strMIDs += _itoa(dwMessageID, szNumBuf, 10);
+	strMIDs += ",";
+	strMIDs += NEWLINE;
+}
+
+//****************************************************************************************************
 bool CUtil3_0::ImportUNI(
 //Imports contents of one UNI file into the text dat.
 //
@@ -684,8 +899,8 @@ bool CUtil3_0::ImportUNI(
   const WCHAR *pwzFilepath,         //(in)      Full path to UNI file.
   c4_Storage &TextStorage,          //(in)      text.dat
   const ASSIGNEDMIDS &AssignedMIDs, //(in)      Already assigned MIDs.
-  UINT &dwMaxMessageID,             //(in/out)  Accepts maximum message ID used.  Returned with new value
-												//          of last (maximum) message ID used.
+  UINT &dwLastMessageID,           //(in/out)  Accepts last message ID used.  Returned with new value
+												//          of last message ID used.
   string &strMIDs)                  //(in/out)  C++ MID_* enumerations appended to this.
 //
 //Returns:
@@ -717,184 +932,588 @@ const
   [MID_NoText][English][MID_Yes][English]&Yes[French]&Oui[MID_PressAnyKeyToContinue][Engli
   sh]Press any key to continue.[French]Appuyez n'importe quelle touche pour continuer.
   */
+	ParsedMessages messages;
+	vector<string> orderedMIDs;
+	if (!ExtractUNI(pwzFilepath, messages, orderedMIDs)) {
+		return false;
+	}
 
+	for (const auto& MID : orderedMIDs) {
+		//Use previously-assigned MID or a new one?
+		UINT dwUseMessageID;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(MID);
+			if (iMID == AssignedMIDs.end())
+				dwUseMessageID = ++dwLastMessageID; //Use new MID.
+			else
+			{
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		copyMIDName(MID.c_str(), dwUseMessageID, strMIDs);
+
+		auto& messageGroup = messages[MID];
+		for (const auto& languageMessage : messageGroup) {
+			LANGUAGE eLanguage = languageMessage.first;
+			WSTRING wstr = UTF8ToUnicode(languageMessage.second);
+			AddMessageText(TextStorage, dwUseMessageID, eLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ImportUNI(
+//Imports contents of one UNI file for a specified language into the text dat.
+//
+//Params:
+	const WCHAR* pwzFilepath,             //[in]     Full path to UNI file
+	c4_Storage& TextStorage,              //[in/out] Database to import to
+	const ASSIGNEDMIDS& AssignedMIDs,     //[in]     Assigned MIDs.
+	const Language::LANGUAGE destLanguage //[in]     Language to import
+) const
+{
+	ParsedMessages messages;
+	vector<string> orderedMIDs;
+	if (!ExtractUNI(pwzFilepath, messages, orderedMIDs)) {
+		return false;
+	}
+
+	for (const auto& MID : orderedMIDs) {
+		//Find id to use. Don't assign new id when creating localization dat
+		UINT dwUseMessageID;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(MID);
+			if (iMID == AssignedMIDs.end()) {
+				//Report unknown MID and move to next one
+				printf("Unknown message id %s" NEWLINE, MID);
+				continue;
+			} else {
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		auto& messageGroup = messages[MID];
+		auto messageIt = messageGroup.find(destLanguage);
+		if (messageIt != messageGroup.end()) {
+			WSTRING wstr = UTF8ToUnicode(messageIt->second);
+			AddMessageText(TextStorage, dwUseMessageID, destLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ExtractUNI(
+//Collect all strings from a UNI file so that things can be done with them.
+//
+//Params:
+	const WCHAR* pwzFilepath,   //[in] filepath of UNI file
+	ParsedMessages& messages,   //[in/out] map from MID key + language to message
+	vector<string>& orderedMIDs //[in/out] MID keys, in the order they exist in the file
+) const
+{
 # define IS_WHITESPACE(c) \
 	 ((WCHAR)(c)==' ' || (WCHAR)(c)==9 || (WCHAR)(c)=='\r' || (WCHAR)(c)=='\n' || (WCHAR)(c)==0)
 
-  //Read the whole .UNI file into a buffer.
-  CStretchyBuffer Source;
-  if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
+	//Read the whole .UNI file into a buffer.
+	CStretchyBuffer Source;
+	if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
 
-  // Uni files are in UTF8, but they used to be in a wider format. Therefore, the code works on wide characters.
-  // So we will convert from UTF8 to Unicode, and extract from the converted string.
-  const char* pSource = (const char*)((const BYTE*)Source);
-  WSTRING wideSource = UTF8ToUnicode(pSource);
+	// Uni files are in UTF8, but they used to be in a wider format. Therefore, the code works on wide characters.
+	// So we will convert from UTF8 to Unicode, and extract from the converted string.
+	const char* pSource = (const char*)((const BYTE*)Source);
+	WSTRING wideSource = UTF8ToUnicode(pSource);
 
-  const WCHAR wszNameTagStart[] = {{'M'},{'I'},{'D'},{'_'},{0}};
-  char szNameTag[MAXLEN_NAMETAG + 1];
+	const WCHAR wszNameTagStart[] = { { 'M' },{ 'I' },{ 'D' },{ '_' },{ 0 } };
+	char szNameTag[MAXLEN_NAMETAG + 1];
 
-#ifdef WIN32
-	// We need crlf line ends, at least for Windows builds.
-	// This ensures we get them if the file has lr line ends
-	WSTRING::size_type pos = 0;
-	while ((pos = wideSource.find(L"\n", pos)) != string::npos)
+	const WCHAR* pSeek = wideSource.c_str();
+	const WCHAR* pStop = pSeek + wideSource.size();
+	const WCHAR* pTagStart;
+	UINT wTagLen;
+	while (pSeek <= pStop)
 	{
-		if (wideSource.at(pos - 1) != L'\r')
-			wideSource.insert(pos, L"\r");
-
-		pos++;
-	}
-#endif
-
-  const WCHAR* pSeek = wideSource.c_str();
-  const WCHAR* pStop = pSeek + wideSource.size();
-  const WCHAR *pTagStart;
-  UINT wTagLen;
-  while (pSeek <= pStop)
-  {
-	 //Looking for a name tag.
-	 while (true)
-	 {
-		while (*pSeek != '[' && pSeek < pStop) ++pSeek;
-		if (pSeek + 5 >= pStop) return true;
-		if (WCSncmp(pSeek + 1, wszNameTagStart, (sizeof(wszNameTagStart)-1)/2)!=0)
-		  continue; //Some other tag--keep looking.
-		else
-		  break;
-	 }
-
-	 //
-	 //Found a name tag.
-	 //
-
-	 //Find end of name tag.
-	 ASSERT(*pSeek == '['); //pSeek is at '[' in "[MID_*]".
-	 pTagStart = pSeek;
-	 while (*pSeek != ']' && pSeek < pStop) ++pSeek;
-	 if (pSeek >= pStop) {ASSERTP(false, "Parse name tag error."); return false;}
-	 wTagLen = pSeek - pTagStart + 1;
-	 if (wTagLen - 2 > MAXLEN_NAMETAG) {ASSERTP(false, "Parse name tag error.(2)"); return false;}
-	 pSeek = pTagStart + 1;
-	 char *pszWriteNameTag = szNameTag;
-	 while (*pSeek != ']')
-		*(pszWriteNameTag++) = (char) pWCv(pSeek++);
-	 *pszWriteNameTag = 0;
-
-	 //Use previously-assigned MID or a new one?
-	 UINT dwUseMessageID;
-	 {
-		  ASSIGNEDMIDS::const_iterator iMID;
-		  string strNameTag = szNameTag;
-		  iMID = AssignedMIDs.find(strNameTag);
-		  if (iMID == AssignedMIDs.end())
-				dwUseMessageID = ++dwMaxMessageID; //Use new MID.
-		  else    //Use existing MID.
-		  {
-				dwUseMessageID = iMID->second;
-		  }
-	 }
-
-	 //Copy name to MIDs concatenation.
-	 {
-		  //In the format "  tagname = tagvalue,".
-		  static char szNumBuf[20];
-		  strMIDs += "  ";
-		  strMIDs += szNameTag;
-		  strMIDs += " = ";
-		  strMIDs += _itoa(dwUseMessageID, szNumBuf, 10);
-		  strMIDs += ",";
-		  strMIDs += "\r\n";
-	 }
-
-	 //Look for language tags with associated text to store.
-	 pSeek = pTagStart + wTagLen;
-	 while (true)
-	 {
-		//Find next language tag.
-		while (*pSeek != '[' && pSeek < pStop) ++pSeek;
-		if (pSeek >= pStop) return true;
-		pTagStart = pSeek;
-		while (*pSeek != ']' && pSeek < pStop) ++pSeek;
-		if (pSeek + 5 >= pStop) {ASSERTP(false, "Find next language tag error."); return false;}
-		UINT wTagLen = pSeek - pTagStart + 1;
-		if (WCSncmp(pTagStart + 1, wszNameTagStart, (sizeof(wszNameTagStart)-1)/2)==0)
-		  {pSeek = pTagStart; break;} //New name tag found.
-
-		//Which language?
-		WSTRING wstr(pTagStart + 1, wTagLen - 2);
-		const Language::LANGUAGE eLanguage = Language::Get(wstr.c_str());
-		if (eLanguage == Language::Unknown)
-		{
-		  ASSERT(!"Unexpected language."); return false;
-		}
-
-		//Find start of text.
-		pSeek = pTagStart + wTagLen;
-		while (pSeek < pStop && IS_WHITESPACE(*pSeek)) ++pSeek;
-		if (pSeek + 1 >= pStop)
-			return true;
-		if (*pSeek == '[' && pSeek[1] != '[') //An unescaped left bracket was found before any text.
-		{
-		  //This is an empty string.
-		  AddMessageText(TextStorage, dwUseMessageID, eLanguage, wszEmpty);
-		  continue;
-		}
-		pTagStart = pSeek;
-
-		//Find end of text by finding first unescaped left bracket and then backing up
-		//past any whitespace.
+		//Looking for a name tag.
 		while (true)
 		{
-		  while (pSeek < pStop && *pSeek != '[') ++pSeek;
-		  if (pSeek == pStop) break;
-		  if (pSeek + 1 < pStop && pSeek[1] == '[') //Escaped left bracket.
-		  {
-			 pSeek += 2;
-			 continue;
-		  }
-		  else //Unescaped left bracket.
-			 break;
+			while (*pSeek != '[' && pSeek < pStop) ++pSeek;
+			if (pSeek + 5 >= pStop) return true;
+			if (WCSncmp(pSeek + 1, wszNameTagStart, (sizeof(wszNameTagStart) - 1) / 2) != 0)
+				continue; //Some other tag--keep looking.
+			else
+				break;
 		}
-		--pSeek;
-		while (pSeek > pTagStart && IS_WHITESPACE(*pSeek)) --pSeek;
-		if (pSeek < pTagStart) {ASSERT(!"Find end of text error."); return false;}
-		++pSeek;
-		wTagLen = pSeek - pTagStart;
-		if (wTagLen > 10000) {ASSERT(!"Find end of text error.(2)"); return false;} //10000 = unreasonably lengthy text.
 
-		//Copy text into a buffer.
-		WCHAR *pwzText = new WCHAR[wTagLen + 1];
-		WCHAR *pwzWrite = pwzText;
-		const WCHAR *pRead = pTagStart, *pStopRead = pRead + wTagLen;
-		if (!pwzText) {ASSERTP(false, "Alloc failed."); return false;}
-		while (pRead < pStopRead)
+		//
+		//Found a name tag.
+		//
+
+		//Find end of name tag.
+		ASSERT(*pSeek == '['); //pSeek is at '[' in "[MID_*]".
+		pTagStart = pSeek;
+		while (*pSeek != ']' && pSeek < pStop) ++pSeek;
+		if (pSeek >= pStop) { ASSERTP(false, "Parse name tag error."); return false; }
+		wTagLen = pSeek - pTagStart + 1;
+		if (wTagLen - 2 > MAXLEN_NAMETAG) { ASSERTP(false, "Parse name tag error.(2)"); return false; }
+		pSeek = pTagStart + 1;
+		char* pszWriteNameTag = szNameTag;
+		while (*pSeek != ']')
+			*(pszWriteNameTag++) = (char)pWCv(pSeek++);
+		*pszWriteNameTag = 0;
+
+		orderedMIDs.push_back(szNameTag);
+
+		//Look for language tags with associated text to store.
+		pSeek = pTagStart + wTagLen;
+		while (true)
 		{
-		  if (*pRead == '[') //Escaped left bracket.
-		  {
-			 ASSERT(pRead[1] == '[' && pRead + 1 < pStopRead);
-			 pWCv(pwzWrite++) = '[';
-			 pRead += 2;
-		  }
-		  else if (*pRead == ']') //Escaped right bracker.
-		  {
-			 ASSERT(pRead[1] == ']' && pRead + 1 < pStopRead);
-			 pWCv(pwzWrite++) = ']';
-			 pRead += 2;
-		  }
-		  else
-			 *(pwzWrite++) = *(pRead++);
-		}
-		pWCv(pwzWrite) = 0;
+			//Find next language tag.
+			while (*pSeek != '[' && pSeek < pStop) ++pSeek;
+			if (pSeek >= pStop) return true;
+			pTagStart = pSeek;
+			while (*pSeek != ']' && pSeek < pStop) ++pSeek;
+			if (pSeek + 5 >= pStop) { ASSERTP(false, "Find next language tag error."); return false; }
+			UINT wTagLen = pSeek - pTagStart + 1;
+			if (WCSncmp(pTagStart + 1, wszNameTagStart, (sizeof(wszNameTagStart) - 1) / 2) == 0)
+			{
+				pSeek = pTagStart; break;
+			} //New name tag found.
 
-		//Add MessageTexts record to database.
-		AddMessageText(TextStorage, dwUseMessageID, eLanguage, pwzText);
-		delete [] pwzText;
-	 } //...for each language tag.
-  } //...for each name tag.
+//Which language?
+			WSTRING wstr(pTagStart + 1, wTagLen - 2);
+			const Language::LANGUAGE eLanguage = Language::Get(wstr.c_str());
+			if (eLanguage == Language::Unknown)
+			{
+				ASSERTP(false, "Unexpected language."); return false;
+			}
+
+			//Find start of text.
+			pSeek = pTagStart + wTagLen;
+			while (pSeek < pStop && IS_WHITESPACE(*pSeek)) ++pSeek;
+			if (pSeek + 1 >= pStop) return true;
+			if (*pSeek == '[' && pSeek[1] != '[') //An unescaped left bracket was found before any text.
+			{
+				//This is an empty string.
+				messages[szNameTag][eLanguage] = "";
+				continue;
+			}
+			pTagStart = pSeek;
+
+			//Find end of text by finding first unescaped left bracket and then backing up
+			//past any whitespace.
+			while (true)
+			{
+				while (pSeek < pStop && *pSeek != '[') ++pSeek;
+				if (pSeek == pStop) break;
+				if (pSeek + 1 < pStop && pSeek[1] == '[') //Escaped left bracket.
+				{
+					pSeek += 2;
+					continue;
+				}
+				else //Unescaped left bracket.
+					break;
+			}
+			--pSeek;
+			while (pSeek > pTagStart && IS_WHITESPACE(*pSeek)) --pSeek;
+			if (pSeek < pTagStart) { ASSERTP(false, "Find end of text error."); return false; }
+			++pSeek;
+			wTagLen = pSeek - pTagStart;
+			if (wTagLen > 10000) { ASSERTP(false, "Find end of text error.(2)"); return false; } //10000 = unreasonably lengthy text.
+
+			//Copy text into a buffer.
+			WCHAR* pwzText = new WCHAR[wTagLen + 1];
+			WCHAR* pwzWrite = pwzText;
+			const WCHAR* pRead = pTagStart, * pStopRead = pRead + wTagLen;
+			if (!pwzText) { ASSERTP(false, "Alloc failed."); return false; }
+			while (pRead < pStopRead)
+			{
+				if (*pRead == '[') //Escaped left bracket.
+				{
+					ASSERT(pRead[1] == '[' && pRead + 1 < pStopRead);
+					pWCv(pwzWrite++) = '[';
+					pRead += 2;
+				}
+				else if (*pRead == ']') //Escaped right bracker.
+				{
+					ASSERT(pRead[1] == ']' && pRead + 1 < pStopRead);
+					pWCv(pwzWrite++) = ']';
+					pRead += 2;
+				}
+				else
+					*(pwzWrite++) = *(pRead++);
+			}
+			pWCv(pwzWrite) = 0;
+
+			//Add MessageTexts record to database.
+			messages[szNameTag][eLanguage] = UnicodeToUTF8(pwzText);
+			delete[] pwzText;
+		} //...for each language tag.
+	} //...for each name tag.
 
 # undef IS_WHITESPACE
 
-  return true;
+	return true;
+}
+
+//****************************************************************************************************
+void CUtil3_0::WriteToUNI(
+//Export a set of messages to uni file.
+//If a file already exists at the given path, it will be overwritten.
+//
+//Params:
+	const WSTRING& filepath,          //[in] Path to write file to
+	const ParsedMessages messages,    //[in] Collection of messages, that can include multiple languages
+	const vector<string>& orderedMIDs //[in] Message ids in the order to write them out
+) const
+{
+	CStretchyBuffer outBuffer;
+
+	auto toTag = [](const string& str) {
+		return "[" + str + "]";
+	};
+
+	//Deal with parsing issue around brackets
+	auto sanitize = [](const string& inStr) {
+		string outStr = strReplace(inStr, "[", "[[");
+		outStr = strReplace(outStr, "]", "]]");
+		return outStr;
+	};
+
+	bool wantNL = false; //prevent extra newline
+	for (const auto& MID : orderedMIDs) {
+		if (wantNL) {
+			outBuffer += NEWLINE;
+		}
+
+		outBuffer += toTag(MID);
+		outBuffer += NEWLINE;
+
+		auto& messageGroup = messages.at(MID);
+		for (const auto& languageMessage : messageGroup) {
+			string langCode(Language::GetCode(languageMessage.first));
+			outBuffer += toTag(langCode);
+			outBuffer += NEWLINE;
+			string message = languageMessage.second;
+			if (!message.empty()) {
+				outBuffer += sanitize(message);
+				outBuffer += NEWLINE;
+			}
+		}
+
+		wantNL = true;
+	}
+
+	CFiles::WriteBufferToFile(filepath.c_str(), outBuffer);
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ImportXML(
+//Imports contents of one XML file into the text dat.
+//
+//Params:
+	const WCHAR* pwzFilepath,        //(in) Full path to XML file.
+	c4_Storage& TextStorage,         //(in) text.dat
+	const ASSIGNEDMIDS& AssignedMIDs,//(in) Already assigned MIDs.
+	UINT& dwLastMessageID,           // (in / out) Accepts last message ID used. Returned with new value
+	                                 //of last message ID used.
+	string& strMIDs                  //(in/out) C++ MID_* enumerations appended to this.
+) const
+{
+	XMLLanguageParseData parseData;
+	if (!ExtractXML(pwzFilepath, parseData)) {
+		return false;
+	}
+
+	for (const auto& strNameTag : parseData.orderedMIDs) {
+		//Use previously-assigned MID or a new one?
+		UINT dwUseMessageID;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(strNameTag);
+			if (iMID == AssignedMIDs.end())
+				dwUseMessageID = ++dwLastMessageID; //Use new MID.
+			else
+			{
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		copyMIDName(strNameTag.c_str(), dwUseMessageID, strMIDs);
+
+		auto& messageGroup = parseData.parsedMessages[strNameTag];
+		for (const auto& languageMessage : messageGroup) {
+			LANGUAGE eLanguage = languageMessage.first;
+			WSTRING wstr = UTF8ToUnicode(languageMessage.second);
+			AddMessageText(TextStorage, dwUseMessageID, eLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ImportXML(
+//Imports contents of one xml file for a specified language into the text dat.
+//
+//Params:
+	const WCHAR* pwzFilepath,             //[in]     Full path to xml file
+	c4_Storage& TextStorage,              //[in/out] Database to import to
+	const ASSIGNEDMIDS& AssignedMIDs,     //[in]     Assigned MIDs.
+	const Language::LANGUAGE destLanguage //[in]     Language to import
+) const
+{
+	XMLLanguageParseData result;
+	if (!ExtractXML(pwzFilepath, result)) {
+		return false;
+	}
+
+	for (const auto& MID : result.orderedMIDs) {
+		//Find id to use. Don't assign new id when creating localization dat
+		UINT dwUseMessageID;
+		{
+			ASSIGNEDMIDS::const_iterator iMID;
+			iMID = AssignedMIDs.find(MID);
+			if (iMID == AssignedMIDs.end()) {
+				//Report unknown MID and move to next one
+				printf("Unknown message id %s" NEWLINE, MID);
+				continue;
+			} else {
+				//Use existing MID.
+				dwUseMessageID = iMID->second;
+			}
+		}
+
+		auto& messageGroup = result.parsedMessages[MID];
+		auto messageIt = messageGroup.find(destLanguage);
+		if (messageIt != messageGroup.end()) {
+			WSTRING wstr = UTF8ToUnicode(messageIt->second);
+			AddMessageText(TextStorage, dwUseMessageID, destLanguage, wstr.c_str());
+		}
+	}
+
+	return true;
+}
+
+//****************************************************************************************************
+bool CUtil3_0::ExtractXML(
+//Collect all strings from an xml file so that things can be done with them.
+//
+//Params:
+	const WCHAR* pwzFilepath,    //[in] filepath of xml file
+	XMLLanguageParseData& result //[in/out] Result of parsing
+) const
+{
+	//Read the whole .xml file into a buffer.
+	CStretchyBuffer Source;
+	if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
+
+	//Turn it into a string, otherwise expat gets unhappy when it hits the EOF
+	const string pSource = (const char*)((const BYTE*)Source);
+
+	XML_Parser parser = XML_ParserCreate(NULL);
+	ASSERT(parser);
+
+	XML_SetElementHandler(parser, startLanguageElement, endLanguageElement);
+	XML_SetCharacterDataHandler(parser, processLanguageCharData);
+	XML_SetUserData(parser, &result);
+
+	bool success = true;
+	XML_Status status = XML_Parse(parser, pSource.c_str(), pSource.size(), true);
+	if (status == XML_STATUS_ERROR) {
+		printf(
+			"Import Parse Error: %s at line %u:%u\n",
+			XML_ErrorString(XML_GetErrorCode(parser)),
+			(UINT)XML_GetCurrentLineNumber(parser),
+			(UINT)XML_GetCurrentColumnNumber(parser));
+		printf(NEWLINE);
+		success = false;
+	}
+
+	XML_ParserFree(parser);
+	return success;
+}
+
+//****************************************************************************************************
+void CUtil3_0::startLanguageElement(
+//Consume a starting tag from xml
+//
+//Params:
+	void* userData, //[in/out] Pointer to a XMLLanguageParseData that holds information for processing
+	const char* tag,//[in] The xml tag that has been encountered
+	const char**    //[ignored] xml attributes, which we don't care about
+)
+{
+	XMLLanguageParseData* parseData = static_cast<XMLLanguageParseData*>(userData);
+	const string strTag(tag);
+	//Clean up any message data
+	parseData->currentMessage.clear();
+
+	if (strTag.rfind("MID_", 0) != 0) {
+		//We only care about a starting tag if it defines a message ID
+		return;
+	}
+
+	//Set the active message id. All processed messages will be assigned to it until a message end tag
+	//is encountered.
+	parseData->activeMID = strTag;
+	parseData->orderedMIDs.push_back(strTag);
+}
+
+//****************************************************************************************************
+void CUtil3_0::endLanguageElement(
+//Consume an ending tag from xml
+//
+//Params:
+	void* userData, //[in/out] Pointer to a XMLLanguageParseData that holds information for processing
+	const char* tag //[in] The xml tag that has been encountered
+)
+{
+	XMLLanguageParseData* parseData = static_cast<XMLLanguageParseData*>(userData);
+	const string strTag(tag);
+
+	if (strTag.rfind("MID_", 0) == 0) {
+		//End of message group. Clear the active id and clean up.
+		parseData->activeMID.clear();
+		parseData->currentMessage.clear();
+		return;
+	}
+
+	if (parseData->activeMID.empty()) {
+		//We don't have an active message ID.
+		parseData->currentMessage.clear();
+		return;
+	}
+
+	LANGUAGE language = Language::Get(strTag.c_str());
+	if (language == Language::Unknown) {
+		//This isn't an end tag for a message, or it isn't a supported language
+		parseData->currentMessage.clear();
+		return;
+	}
+
+	//Add a complete message.
+	string str = parseData->currentMessage;
+	parseData->currentMessage.clear();
+
+	str.erase(std::remove(str.begin(), str.end(), '\t'), str.end()); //remove tabs
+	size_t start = str.find_first_not_of(" \r\n");
+	if (start == string::npos) {
+		//all whitespace
+		parseData->parsedMessages[parseData->activeMID][language] = "";
+		return;
+	}
+
+	size_t end = str.find_last_not_of(" \r\n");
+	str = str.substr(start, end - start + 1); //remove leading/trailing whitespace
+
+	parseData->parsedMessages[parseData->activeMID][language] = str;
+}
+
+//****************************************************************************************************
+void CUtil3_0::processLanguageCharData(
+//Processes non-tag xml data.
+//
+//Params:
+	void* userData,     //[in/out] Pointer to a XMLLanguageParseData that holds information for processing
+	const XML_Char* str,//[in] Incoming character data. It is not null-terminated.
+	int length          //[in] Length of incoming character data
+)
+{
+	//Just add any text between tags to the current message. If it's not between language tags, it will
+	//be thrown away later.
+	XMLLanguageParseData* parseData = static_cast<XMLLanguageParseData*>(userData);
+	const string processedStr(str, length);
+	parseData->currentMessage += processedStr;
+}
+
+//****************************************************************************************************
+void CUtil3_0::WriteToXML(
+//Export a set of messages to an xml file. Nested elements are intented using tabs (\t).
+//If a file already exists at the given path, it will be overwritten.
+//
+//Params:
+	const WSTRING& filepath,          //[in] Path to write file to
+	const ParsedMessages messages,    //[in] Collection of messages, that can include multiple languages
+	const vector<string>& orderedMIDs //[in] Message ids in the order to write them out
+) const
+{
+	CStretchyBuffer outBuffer;
+
+	//xml prolog
+	outBuffer += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+	outBuffer += NEWLINE;
+	//Root node
+	outBuffer += "<DRODMessages>";
+	outBuffer += NEWLINE;
+
+	auto toStartTag = [](const string& str) {
+		return "<" + str + ">";
+	};
+	auto toEndTag = [](const string& str) {
+		return "</" + str + ">";
+	};
+
+	//Replace &, < and > characters with equivalent xml entities
+	//Ampersand needs to be first, as the entities contain it
+	auto sanitize = [](const string& inStr) {
+		string outStr = strReplace(inStr, "&", "&amp;");
+		outStr = strReplace(outStr, "<", "&lt;");
+		outStr = strReplace(outStr, ">", "&gt;");
+		return outStr;
+	};
+
+	for (const auto& MID : orderedMIDs) {
+		outBuffer += "\t";
+		outBuffer += toStartTag(MID);
+		outBuffer += NEWLINE;
+
+		auto& messageGroup = messages.at(MID);
+		for (const auto& languageMessage : messageGroup) {
+			outBuffer += "\t\t";
+			string langCode(Language::GetCode(languageMessage.first));
+			outBuffer += toStartTag(langCode);
+
+			string message = languageMessage.second;
+			message = sanitize(message);
+			if (message.find("\n") == string::npos) {
+				//Single line string
+				if (!message.empty()) {
+					outBuffer += message;
+				}
+				outBuffer += toEndTag(langCode);
+				outBuffer += NEWLINE;
+				continue;
+			}
+
+			//Put multi-line messages in their own indented block
+			outBuffer += NEWLINE;
+			outBuffer += "\t\t\t";
+			//Put three tabs after each line end. Doesn't work if using CR-only line ends but we don't
+			//support those anywhere else anyway.
+			message = strReplace(message, "\n", "\n\t\t\t");
+			outBuffer += message;
+			outBuffer += NEWLINE;
+			outBuffer += "\t\t";
+			outBuffer += toEndTag(langCode);
+		}
+
+		outBuffer += "\t";
+		outBuffer += toEndTag(MID);
+		outBuffer += NEWLINE;
+	}
+
+	outBuffer += "</DRODMessages>";
+	outBuffer += NEWLINE;
+	CFiles::WriteBufferToFile(filepath.c_str(), outBuffer);
 }
 
 //****************************************************************************************************
@@ -907,13 +1526,26 @@ void CUtil3_0::AddMessageText(
 	 const Language::LANGUAGE eLanguage,  //(in)
 	 const WCHAR *pwszText)    //(in)
 {
+	// We need crlf line ends. Otherwise Windows builds are sad.
+	// This ensures we get them if the file has lf line ends.
+	WSTRING wstrText(pwszText);
+	WSTRING::size_type pos = 0;
+	while ((pos = wstrText.find(L"\n", pos)) != string::npos)
+	{
+		if (wstrText.at(pos - 1) != L'\r')
+			wstrText.insert(pos, L"\r");
+
+		pos++;
+	}
+
 	//Get next MessageTextID.
 	c4_View IncrementedIDsView = TextStorage.View("IncrementedIDs");
 	UINT dwMessageTextID = p_MessageTextID(IncrementedIDsView[0]);
 	p_MessageTextID(IncrementedIDsView[0]) = ++dwMessageTextID;
 
 	//Add record.
-	c4_Bytes TextBytes(pwszText, (WCSlen(pwszText) + 1)*sizeof(WCHAR));
+	const WCHAR* text = wstrText.c_str();
+	c4_Bytes TextBytes(text, (WCSlen(text) + 1)*sizeof(WCHAR));
 	c4_View MessageTextsView = TextStorage.View("MessageTexts");
 	MessageTextsView.Add(
 		p_MessageTextID[ dwMessageTextID ] +
@@ -923,21 +1555,37 @@ void CUtil3_0::AddMessageText(
 }
 
 //****************************************************************************************************
+//Delete any existing basic messages from the database.  (basic means "MIDs < uFirstNonSimpleMessageID").
+void CUtil3_0::RemoveBasicMessages(c4_Storage& TextStorage) const
+{
+	c4_View MessageTextsView = TextStorage.View("MessageTexts");
+	long lMessageTextCount = MessageTextsView.GetSize();
+	while (lMessageTextCount--)
+	{
+		if (p_MessageID(MessageTextsView[lMessageTextCount]) < int(uFirstNonSimpleMessageID))
+			MessageTextsView.RemoveAt(lMessageTextCount);
+	}
+}
+
+//****************************************************************************************************
 void CUtil3_0::GetAssignedMIDs(
 //Populate map of MID names-to-values from existing MIDs.h file.
 //
 //Params:
 	 const WCHAR *pwzMIDFilepath,        //(in)  Path to mids.h.
 	 ASSIGNEDMIDS &AssignedMIDs,         //(out) Receives name/value elements.
-	 UINT &dwMaxMessageID)             //(out) Receives largest MID value found.
+	 UINT &dwLastMessageID)             //(out) Receives largest MID value found.
 const
 {
-	 dwMaxMessageID = 0;
+	 dwLastMessageID = 0;
 
 	 //Read file into buffer.
+	 std::set<UINT> usedMids;
 	 CStretchyBuffer buf;
 	 CFiles files;
-	 if (!files.ReadFileIntoBuffer(pwzMIDFilepath, buf)) {ASSERTP(false, "Read file failed."); return;}
+	 if (!files.ReadFileIntoBuffer(pwzMIDFilepath, buf)) {
+		 ASSERT(!"Read file failed."); return;
+	}
 
 	 //Skip to first "{" which indicates start of enum values.
 	 const BYTE *pszSeek = (const BYTE *)buf;
@@ -987,12 +1635,50 @@ const
 		  //Add element.
 		  string strName = szName;
 		  UINT dwValue = convertToUINT(szValue);
+		  if (usedMids.find(dwValue) != usedMids.end()) {
+			  printf("Duplicate MID value found in key '%s' (value %u)", strName.c_str(), dwValue);
+			  throw false;
+		  }
+		  usedMids.insert(dwValue);
 		  AssignedMIDs[strName] = dwValue;
 
 		  //If this is the largest MID value, remember it.
-		  if (dwValue > dwMaxMessageID)
-			  dwMaxMessageID = dwValue;
+		  if (dwValue > dwLastMessageID) dwLastMessageID = dwValue;
 
 	 } //...keep looping forever.  Exit condition inside of loop.
 }
 
+//****************************************************************************************************
+void CUtil3_0::TransferMessages(
+//Create a set of messages for a given output language from a set of inputs.
+//
+//Params:
+	ParsedMessages& srcMessages,          //[in]     Base messages to transfer
+	ParsedMessages& destMessages,         //[in/out] Transfered messages, and any pre-existing messages
+	const Language::LANGUAGE destLanguage //[in]     Language to transfer to.
+) const
+{
+	for (const auto& entry : srcMessages) {
+		const string& MID = entry.first;
+		ParsedMessages::const_iterator destEntry = destMessages.find(MID);
+		if (destEntry != destMessages.cend()) {
+			if (destEntry->second.count(destLanguage)) {
+				//The message already exists in the destination.
+				continue;
+			}
+		}
+
+		//Try to find message in target language fist
+		string message = "";
+		auto messageIt = entry.second.find(destLanguage);
+		if (messageIt == entry.second.cend()) {
+			//Try English
+			messageIt = entry.second.find(Language::English);
+		}
+		if (messageIt != entry.second.cend()) {
+			message = messageIt->second;
+		}
+
+		destMessages[MID][destLanguage] = message;
+	}
+}
