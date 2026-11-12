@@ -6,6 +6,7 @@
 namespace INISection
 {
 	DEF(Customizing);
+	DEF(Fonts);
 	DEF(Graphics);
 	DEF(Localization);
 	DEF(Songs);
@@ -21,6 +22,8 @@ namespace INIKey
 	DEF(CrossfadeDuration);
 	DEF(ExportSpeech);
 	DEF(ExportText);
+	DEF(Font1);
+	DEF(Font2);
 	DEF(FullScoreUpload);
 	DEF(FullScreenMinimize);
 	DEF(FullScreenMode);
