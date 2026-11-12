@@ -558,7 +558,7 @@ void CEntranceSelectDialogWidget::PopulateListBoxFromGlobalVars(const PlayerStat
 	for (UINT i=0; i<ScriptVars::numGlobals; ++i)
 	{
 		WCHAR temp[16];
-		WSTRING wstr = g_pTheDB->GetMessageText(ScriptVars::globalVarMIDs[i]);
+		WSTRING wstr = ScriptVars::getVarNameW(ScriptVars::globals[i]);
 		wstr += wszSpace;
 		wstr += wszEqual;
 		wstr += wszSpace;

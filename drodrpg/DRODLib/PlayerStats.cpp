@@ -54,52 +54,130 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 	"_Color", "_Hue", "_Saturation"
 };
 
-//Message texts corresponding to the above short var texts.
-const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
-	MID_VarHP, MID_VarAtk, MID_VarDef, MID_VarGold,
-	MID_VarYKey, MID_VarGKey, MID_VarBKey,
-	MID_VarSword, MID_VarShield, 0,
-	MID_VarMonsterHP, MID_VarMonsterAtk, MID_VarMonsterDef, MID_VarMonsterGold, MID_VarMonsterColor,
-	MID_VarXP,
-	MID_VarMonsterHPMult, MID_VarMonsterATKMult, MID_VarMonsterDEFMult, MID_VarMonsterGRMult,
-	MID_VarItemMult, MID_VarMonsterSword, MID_VarSKey,
-	MID_VarX, MID_VarY, MID_VarO,
-	MID_VarMonsterX, MID_VarMonsterY, MID_VarMonsterO,
-	MID_VarAccessory, MID_VarMonsterXP, MID_VarMonsterXPMult,
-	MID_VarItemHPMult, MID_VarItemATKMult, MID_VarItemDEFMult, MID_VarItemGRMult,
-	MID_TotalMoves, MID_TotalTime,
-	MID_VarMonsterParamX, MID_VarMonsterParamY, MID_VarMonsterParamW, MID_VarMonsterParamH, MID_VarMonsterParamF,
-	MID_VarHotTile, MID_VarExplosion,
-	0, 0, 0, 0,
-	MID_VarEnemyHP, MID_VarEnemyAtk, MID_VarEnemyDef, MID_VarEnemyGold, MID_VarEnemyXP,
-	MID_VarWeaponATK, MID_VarWeaponDEF, MID_VarWeaponGR,
-	MID_VarArmorATK, MID_VarArmorDEF, MID_VarArmorGR,
-	MID_VarAccessoryATK, MID_VarAccessoryDEF, MID_VarAccessoryGR,
-	MID_VarMyMonsterHPMult, MID_VarMyMonsterATKMult, MID_VarMyMonsterDEFMult, MID_VarMyMonsterGRMult, MID_VarMyMonsterXPMult,
-	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult,
-	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn,
-	MID_VarMonsterName, MID_VarMySpawn,
-	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreSKey, MID_VarScoreGold, MID_VarScoreXP,
-	MID_VarMyWeakness,
-	MID_VarLevelMultiplier, MID_VarRoomX, MID_VarRoomY,
-	MID_VarMyDescription,
-	MID_VarShovels, MID_VarScoreShovels, MID_VarItemShovelMult, MID_VarMyItemShovelMult,
-	MID_VarBeam, MID_VarFiretrap,
-	MID_VarTotalAtk, MID_VarTotalDef,
-	MID_VarMudSwap, MID_VarTarSwap, MID_VarGelSwap,
-	MID_VarMonsterHue, MID_VarMonsterSaturation,
-	MID_VarReturnX, MID_VarReturnY,
-	MID_VarColor, MID_VarHue, MID_VarSaturation
+//Names of predefined variables. Do not change names.
+const string ScriptVars::varNames[PredefinedVarCount] = {
+	"_HP",
+	"_ATK",
+	"_DEF",
+	"_GR",
+	"_YellowKeys",
+	"_GreenKeys",
+	"_BlueKeys",
+	"_Sword",
+	"_Shield",
+	"", //unused speed stat
+	"_MyHP",
+	"_MyATK",
+	"_MyDEF",
+	"_MyGR",
+	"_MyColor",
+	"_REP",
+	"_MonsterHPMult",
+	"_MonsterATKMult",
+	"_MonsterDEFMult",
+	"_MonsterGRMult",
+	"_ItemMult",
+	"_MySword",
+	"_SkeletonKeys",
+	"_X",
+	"_Y",
+	"_O",
+	"_MyX",
+	"_MyY",
+	"_MyO",
+	"_Accessory",
+	"_MyREP",
+	"_MonsterREPMult",
+	"_ItemHPMult",
+	"_ItemATKMult",
+	"_ItemDEFMult",
+	"_ItemGRMult",
+	"_TotalMoves",
+	"_TotalTime",
+	"_MyScriptX",
+	"_MyScriptY",
+	"_MyScriptW",
+	"_MyScriptH",
+	"_MyScriptF",
+	"_HotTile",
+	"_Explosion",
+	"", //hidden prior room id
+	"", //hidden prior x position
+	"", //hidden prior y position
+	"", //hidden prior orietation
+	"_EnemyHP",
+	"_EnemyATK",
+	"_EnemyDEF",
+	"_EnemyGR",
+	"_EnemyREP",
+	"_WeaponATK",
+	"_WeaponDEF",
+	"_WeaponGR",
+	"_ArmorATK",
+	"_ArmorDEF",
+	"_ArmorGR",
+	"_AccessoryATK",
+	"_AccessoryDEF",
+	"_AccessoryGR",
+	"_MyMonsterHPMult",
+	"_MyMonsterATKMult",
+	"_MyMonsterDEFMult",
+	"_MyMonsterGRMult",
+	"_MyMonsterREPMult",
+	"_MyItemMult",
+	"_MyItemHPMult",
+	"_MyItemATKMult",
+	"_MyItemDEFMult",
+	"_MyItemGRMult",
+	"_MudSpawn",
+	"_TarSpawn",
+	"_GelSpawn",
+	"_QueenSpawn",
+	"_MyName",
+	"_MySpawn",
+	"_ScoreHP",
+	"_ScoreATK",
+	"_ScoreDEF",
+	"_ScoreYellowKeys",
+	"_ScoreGreenKeys",
+	"_ScoreBlueKeys",
+	"_ScoreSkeletonKeys",
+	"_ScoreGR",
+	"_ScoreREP",
+	"_MyWeakness",
+	"_LevelMultiplier",
+	"_RoomX",
+	"_RoomY",
+	"_MyDescription",
+	"_Shovels",
+	"_ScoreShovels",
+	"_ItemShovelMult",
+	"_MyItemShovelMult",
+	"_Beam",
+	"_Firetrap",
+	"_TotalATK",
+	"_TotalDEF",
+	"_MudSwap",
+	"_TarSwap",
+	"_GelSwap",
+	"_MyHue",
+	"_MySaturation",
+	"_ReturnX",
+	"_ReturnY",
+	"_Color",
+	"_Hue",
+	"_Saturation",
 };
 
-const UINT ScriptVars::predefinedArrayVarMIDs[PredefinedArrayVarCount] = {
-	MID_ArrayVarXY, MID_ArrayVarMonsterXY,
-	MID_ArrayVarStats, MID_ArrayVarMonsterStats,
-	MID_ArrayVarMyScript, MID_ArrayVarMonsterSpeechColor
+//Names of predefined array variables. Do not change names.
+const string ScriptVars::arrayVarNames[PredefinedArrayVarCount] = {
+	":XY",
+	":MyXY",
+	":Stats",
+	":MyStats",
+	":MyScript",
+	":MySpeechColor",
 };
-
-string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
-string ScriptVars::midArrayTexts[PredefinedArrayVarCount]; //inited on first call
 
 //*****************************************************************************
 //Global game vars.  A subset of the predefined vars.
@@ -151,66 +229,6 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_SCORE_GOLD,
 	P_SCORE_XP,
 	P_SCORE_SHOVEL
-};
-
-//The MIDs for the global var subset.
-const UINT ScriptVars::globalVarMIDs[numGlobals] = {
-	predefinedVarMIDs[0],  //basic stats
-	predefinedVarMIDs[1],
-	predefinedVarMIDs[2],
-	predefinedVarMIDs[3],
-	predefinedVarMIDs[15],
-
-	predefinedVarMIDs[4],  //keys
-	predefinedVarMIDs[5],
-	predefinedVarMIDs[6],
-	predefinedVarMIDs[22],
-
-	predefinedVarMIDs[93], //shovels
-
-	predefinedVarMIDs[7],  //equipment
-	predefinedVarMIDs[8],
-	predefinedVarMIDs[29],
-
-	predefinedVarMIDs[20], //game multipliers
-	predefinedVarMIDs[32],
-	predefinedVarMIDs[33],
-	predefinedVarMIDs[34],
-	predefinedVarMIDs[35],
-	predefinedVarMIDs[95],
-
-	predefinedVarMIDs[16], //monster stat multipliers
-	predefinedVarMIDs[17],
-	predefinedVarMIDs[18],
-	predefinedVarMIDs[19],
-	predefinedVarMIDs[31],
-
-	predefinedVarMIDs[43], //damage modifiers
-	predefinedVarMIDs[44],
-	predefinedVarMIDs[97],
-	predefinedVarMIDs[98],
-
-	predefinedVarMIDs[36], //tally stats
-	predefinedVarMIDs[37],
-
-	predefinedVarMIDs[73], //monster spawn IDs
-	predefinedVarMIDs[74],
-	predefinedVarMIDs[75],
-	predefinedVarMIDs[76],
-	predefinedVarMIDs[101], //swap IDs
-	predefinedVarMIDs[102],
-	predefinedVarMIDs[103],
-
-	predefinedVarMIDs[79], //score values
-	predefinedVarMIDs[80],
-	predefinedVarMIDs[81],
-	predefinedVarMIDs[82],
-	predefinedVarMIDs[83],
-	predefinedVarMIDs[84],
-	predefinedVarMIDs[85],
-	predefinedVarMIDs[86],
-	predefinedVarMIDs[87],
-	predefinedVarMIDs[94]
 };
 
 //Match the global var texts in 'globalVarMIDs' to their short form texts in
@@ -306,11 +324,9 @@ string ScriptVars::getVarName(const Predefined var)
 	if (var < FirstPredefinedVar || var >= 0)
 		return string();
 
-	init(); //ensure texts are populated
-
 	const UINT index = -var - 1;
 	ASSERT(index < PredefinedVarCount);
-	return midTexts[index];
+	return varNames[index];
 }
 
 //*****************************************************************************
@@ -322,38 +338,6 @@ WSTRING ScriptVars::getVarNameW(const Predefined var)
 	WSTRING wstr;
 	UTF8ToUnicode(varName, wstr);
 	return wstr;
-}
-
-//*****************************************************************************
-void ScriptVars::init()
-//Init 'midTexts' on first call.
-//Much faster than repeated multiple DB queries.
-{
-	UINT index=0;
-	if (midTexts[0].empty())
-	{
-		for (int i=-1; i>=FirstPredefinedVar; --i, ++index)
-		{
-			//Get user-readable form of var.
-			ASSERT(index < PredefinedVarCount);
-			const WCHAR *pText = g_pTheDB->GetMessageText(predefinedVarMIDs[index]);
-			midTexts[index] = UnicodeToUTF8(pText);
-		}
-		ASSERT(!midTexts[0].empty());
-	}
-
-	index = 0;
-	if (midArrayTexts[0].empty())
-	{
-		for (int i = -1; i >= FirstPredefinedArrayVar; --i, ++index)
-		{
-			//Get user-readable form of var.
-			ASSERT(index < FirstPredefinedArrayVar);
-			const WCHAR* pText = g_pTheDB->GetMessageText(predefinedArrayVarMIDs[index]);
-			midArrayTexts[index] = UnicodeToUTF8(pText);
-		}
-		ASSERT(!midArrayTexts[0].empty());
-	}
 }
 
 //*****************************************************************************
@@ -418,10 +402,29 @@ Predefined ScriptVars::parsePredefinedVar(const WSTRING& wstr)
 }
 
 //*****************************************************************************
+string ScriptVars::getArrayVarName(const PredefinedArray var)
+{
+	if (var < FirstPredefinedArrayVar || var >= 0)
+		return string();
+
+	const UINT index = -var - 1;
+	ASSERT(index < FirstPredefinedArrayVar);
+	return arrayVarNames[index];
+}
+
+//*****************************************************************************
+WSTRING ScriptVars::getArrayVarNameW(const PredefinedArray var)
+{
+	const string arrayVarName = getArrayVarName(var);
+
+	WSTRING wstr;
+	UTF8ToUnicode(arrayVarName, wstr);
+	return wstr;
+}
+
+//*****************************************************************************
 Predefined ScriptVars::parsePredefinedVar(const string& str)
 {
-	init();
-
 	const char *pText = str.c_str();
 	UINT index=0;
 	for (int i=-1; i>=FirstPredefinedVar; --i, ++index)
@@ -432,7 +435,7 @@ Predefined ScriptVars::parsePredefinedVar(const string& str)
 */
 
 		//Compare against user-readable form of var.
-		if (!_stricmp(pText, midTexts[index].c_str()))
+		if (!_stricmp(pText, varNames[index].c_str()))
 			return Predefined(i);
 	}
 	return P_NoVar;
@@ -450,13 +453,11 @@ PredefinedArray ScriptVars::parsePredefinedArrayVar(const WSTRING& wstr)
 PredefinedArray ScriptVars::parsePredefinedArrayVar(const string& str)
 //Returns: the enumeration for this array variable name, or PA_NoVar if not recognized
 {
-	init();
-
 	const char* pText = str.c_str();
 	UINT index = 0;
 	for (int i = -1; i >= FirstPredefinedArrayVar; --i, ++index)
 	{
-		if (!_stricmp(pText, midArrayTexts[index].c_str())) {
+		if (!_stricmp(pText, arrayVarNames[index].c_str())) {
 			return PredefinedArray(i);
 		}
 	}

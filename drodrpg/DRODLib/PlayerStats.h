@@ -242,13 +242,14 @@ namespace ScriptVars
 		MIS_Sepia = 3
 	};
 
-	void init();
 	UINT getVarDefault(const ScriptVars::Predefined var);
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
 	bool IsStringVar(Predefined val);
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
+	string getArrayVarName(const PredefinedArray var);
+	WSTRING getArrayVarNameW(const PredefinedArray var);
 	PredefinedArray parsePredefinedArrayVar(const string& str);
 	PredefinedArray parsePredefinedArrayVar(const WSTRING& wstr);
 
@@ -266,16 +267,13 @@ namespace ScriptVars
 
 	//All predefined vars.
 	extern const char predefinedVarTexts[PredefinedVarCount][16];
-	extern const UINT predefinedVarMIDs[PredefinedVarCount];
-	extern const UINT predefinedArrayVarMIDs[PredefinedArrayVarCount];
-	extern string midTexts[PredefinedVarCount];
-	extern string midArrayTexts[PredefinedArrayVarCount];
+	extern const string varNames[PredefinedVarCount];
+	extern const string arrayVarNames[PredefinedArrayVarCount];
 	extern const char primitiveNames[PrimitiveCount][15]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
 	static const UINT numGlobals=47;
 	extern const Predefined globals[numGlobals];
-	extern const UINT globalVarMIDs[numGlobals];
 	extern const char* globalVarShortNames[numGlobals];
 };
 
