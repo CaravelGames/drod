@@ -36,6 +36,7 @@
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
+#include <DRODLib/SettingsKeys.h>
 
 //Holds the only instance of CDrodFontManager for the app.
 CDrodFontManager *g_pTheDFM = NULL;
@@ -81,17 +82,38 @@ UINT CDrodFontManager::Init()
 bool CDrodFontManager::LoadFonts()
 {
 	static const WCHAR pwzFonts[] = { We('F'),We('o'),We('n'),We('t'),We('s'),We(0) };
-	static const WCHAR pwzTomnr[] = { We('t'),We('o'),We('m'),We('n'),We('r'),We('.'),We('t'),We('t'),We('f'),We(0) };
-	static const WCHAR pwzEpilog[] = { We('e'),We('p'),We('i'),We('l'),We('o'),We('g'),We('.'),We('t'),We('t'),We('f'),We(0) };
+	static const WSTRING wstrFont1 = WS("tomnr.ttf");
+	static const WSTRING wstrFont2 = WS("epilog.ttf");
 
 	CFiles Files;
-	WSTRING wstrFontFilepath = Files.GetResPath();
-	wstrFontFilepath += wszSlash;
-	wstrFontFilepath += pwzFonts;
-	wstrFontFilepath += wszSlash;
-	WSTRING wstrFont2Filepath = wstrFontFilepath;
-	wstrFontFilepath += pwzTomnr;
-	wstrFont2Filepath += pwzEpilog;
+	WSTRING wstrFontDirectoryPath = Files.GetResPath();
+	wstrFontDirectoryPath += wszSlash;
+	wstrFontDirectoryPath += pwzFonts;
+	wstrFontDirectoryPath += wszSlash;
+	WSTRING wstrFontFilepath = wstrFontDirectoryPath;
+	WSTRING wstrFont2Filepath = wstrFontDirectoryPath;
+
+	string customFontName;
+	if (CFiles::GetGameProfileString(INISection::Fonts, INIKey::Font1, customFontName)) {
+		WSTRING wstrCustomFontName = UTF8ToUnicode(customFontName);
+		wstrFontFilepath += wstrCustomFontName;
+		if (!CFiles::DoesFileExist(wstrFontFilepath.c_str())) {
+			wstrFontFilepath = wstrFontDirectoryPath + wstrFont1;
+		} else if (wstrCustomFontName != wstrFont1) {
+			bApplyFontOffset = false;
+		}
+	} else {
+		wstrFontFilepath += wstrFont1;
+	}
+	string customFont2Name;
+	if (CFiles::GetGameProfileString(INISection::Fonts, INIKey::Font2, customFont2Name)) {
+		wstrFont2Filepath += UTF8ToUnicode(customFont2Name);
+		if (!CFiles::DoesFileExist(wstrFontFilepath.c_str())) {
+			wstrFontFilepath = wstrFontDirectoryPath + wstrFont2;
+		}
+	} else {
+		wstrFont2Filepath += wstrFont2;
+	}
 
 	//Note: The entire loaded font array has been zeroed, so it is not necessary
 	//to set every member of LOADEDFONT.

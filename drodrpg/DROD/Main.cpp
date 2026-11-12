@@ -1841,6 +1841,9 @@ void RepairMissingINIKeys(const bool bFullVersion)
 //	AddIfMissing(INISection::Customizing, INIKey::ValidateSavesOnImport, "1");
 	AddIfMissing(INISection::Customizing, INIKey::Windib, "1");
 
+	AddIfMissing(INISection::Fonts, INIKey::Font1, "tomnr.ttf");
+	AddIfMissing(INISection::Fonts, INIKey::Font2, "epilog.ttf");
+
 // AddIfMissing(INISection::Graphics, "Clock", "Clock");
 
 	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");
