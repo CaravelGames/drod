@@ -136,7 +136,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CaravelRelease|Win32'">
     <OutDir>$(Configuration)\</OutDir>
-    <IntDir>$(Configuration)\</IntDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
