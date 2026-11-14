@@ -1080,7 +1080,6 @@ bool CUtil3_0::ExtractUNI(
 			if (pSeek >= pStop) return true;
 			pTagStart = pSeek;
 			while (*pSeek != ']' && pSeek < pStop) ++pSeek;
-			if (pSeek + 5 >= pStop) { ASSERTP(false, "Find next language tag error."); return false; }
 			UINT wTagLen = pSeek - pTagStart + 1;
 			if (WCSncmp(pTagStart + 1, wszNameTagStart, (sizeof(wszNameTagStart) - 1) / 2) == 0)
 			{
@@ -1098,7 +1097,12 @@ bool CUtil3_0::ExtractUNI(
 			//Find start of text.
 			pSeek = pTagStart + wTagLen;
 			while (pSeek < pStop && IS_WHITESPACE(*pSeek)) ++pSeek;
-			if (pSeek + 1 >= pStop) return true;
+			if (pSeek + 1 >= pStop)
+			{
+				//ran out of file
+				messages[szNameTag][eLanguage] = "";
+				return true;
+			}
 			if (*pSeek == '[' && pSeek[1] != '[') //An unescaped left bracket was found before any text.
 			{
 				//This is an empty string.
