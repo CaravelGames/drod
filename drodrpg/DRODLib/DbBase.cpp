@@ -80,6 +80,8 @@ c4_Storage *m_pPlayerStorage = NULL;
 c4_Storage *m_pSaveStorage = NULL;
 c4_Storage *m_pSaveMoveStorage = NULL; //auxiliary to pSaveStorage
 c4_Storage *m_pTextStorage = NULL;
+//Localization content, containing strings for the active language. Might not be loaded.
+c4_Storage* m_pLocalizationStorage = NULL;
 
 const WCHAR pwszDrod[] = { We('d'),We('r'),We('o'),We('d'),We(0) };
 const WCHAR pwszDataFileExtension[] = { We('d'),We('a'),We('t'),We(0) };
@@ -91,9 +93,12 @@ const WCHAR pwszSave[] = { We('s'),We('a'),We('v'),We('e'),We('.'),We('d'),We('a
 const WCHAR pwszSaveMoves[] = { We('s'),We('a'),We('v'),We('e'),We('m'),We('o'),We('v'),We('e'),We('s'),We('.'),We('d'),We('a'),We('t'),We(0) };
 const WCHAR pwszText[] = { We('t'),We('e'),We('x'),We('t'),We('.'),We('d'),We('a'),We('t'),We(0) };
 
+const WSTRING wstrLanguages = WS("Languages");
+
 //Accelerated lookup index.
 typedef map<UINT,CIDSet> messageIDsMap;
 messageIDsMap messageIndex; //message -> global rows in DB
+map<UINT, UINT> localizationMessageIndex; //message -> row in localization DB
 CIDSet messageIDsMarkedForDeletion;
 
 //Used for checking the reference count at application exit.
@@ -508,6 +513,7 @@ MESSAGE_ID CDbBase::Open(
 		ASSERT(!m_pSaveStorage);
 		ASSERT(!m_pSaveMoveStorage);
 		ASSERT(!m_pTextStorage);
+		ASSERT(!m_pLocalizationStorage);
 
 		//Concatenate paths to stock and player databases.
 		CFiles Files;
@@ -631,6 +637,18 @@ MESSAGE_ID CDbBase::Open(
 
 #endif
 
+		//Try to load localization dat for non-English language
+		if (Language::GetLanguage() != Language::English) {
+			WSTRING wstrLocalizationDathPath =
+				wstrResPath + wszSlash + wstrLanguages + wszSlash;
+			wstrLocalizationDathPath += LocalizationResourceFilename();
+			if (CFiles::DoesFileExist(wstrLocalizationDathPath.c_str()))
+			{
+				UnicodeToUTF8(wstrLocalizationDathPath, filename);
+				m_pLocalizationStorage = new c4_Storage(filename.c_str(), 0);
+			}
+		}
+
 		buildIndex();
 	}
 	catch (MESSAGE_ID dwSetRetMessageID)
@@ -645,6 +663,16 @@ MESSAGE_ID CDbBase::Open(
 WSTRING CDbBase::BaseResourceFilename()
 {
 	return CFiles::wGameName + CFiles::wGameVer; 
+}
+
+WSTRING CDbBase::LocalizationResourceFilename()
+{
+	WSTRING wstr = CFiles::wGameName + CFiles::wGameVer;
+	wstr += wszHyphen;
+	string code = Language::GetCode(Language::GetLanguage());
+	wstr += UTF8ToUnicode(code);
+	wstr += pwszDotDat;
+	return wstr;
 }
 
 //*****************************************************************************
@@ -735,6 +763,9 @@ void CDbBase::ResetStorage()
 	delete m_pSaveStorage; m_pSaveStorage = NULL;
 	delete m_pSaveMoveStorage; m_pSaveMoveStorage = NULL;
 	delete m_pTextStorage; m_pTextStorage = NULL;
+
+	//Close localization database
+	delete m_pLocalizationStorage; m_pLocalizationStorage = NULL;
 }
 
 //**************************************************************************************
@@ -928,6 +959,15 @@ const WCHAR* CDbBase::GetMessageText(
 
 	ASSERT(IsOpen());
 
+	//Try the localization DB if it's loaded
+	if (m_pLocalizationStorage)
+	{
+		const WCHAR* pwszText = GetLocalizedMessageText(eMessageID, pdwLen);
+		if (pwszText) {
+			return pwszText;
+		}
+	}
+
 	//Find message text.
 	const UINT dwFoundRowI = FindMessageText(eMessageID);
 	if (dwFoundRowI == ROW_NO_MATCH)
@@ -940,6 +980,32 @@ const WCHAR* CDbBase::GetMessageText(
 	//Set last message to retrieved message and return.
 	c4_Bytes MessageTextBytes = p_MessageText(GetRowRef(V_MessageTexts, dwFoundRowI));
 	return GetMessageText(MessageTextBytes, pdwLen);
+}
+
+//*****************************************************************************
+const WCHAR* CDbBase::GetLocalizedMessageText(
+	//Get a message text from the localization database.
+	//Prerequisite: m_pLocalizationStorage is non-null.
+	//
+	//Params:
+	const MESSAGE_ID eMessageID,
+	UINT* pdwLen) //(in) If not NULL (default), will be set to length of text.
+{
+	ASSERT(m_pLocalizationStorage);
+	map<UINT, UINT>::const_iterator indexIt =
+		localizationMessageIndex.find(eMessageID);
+	if (indexIt == localizationMessageIndex.cend())
+	{
+		//No message with the request id exists in the db.
+		return NULL;
+	}
+
+	c4_View LocalizationView =
+		m_pLocalizationStorage->View(ViewTypeStr(V_MessageTexts));
+	c4_RowRef messageRow = LocalizationView[indexIt->second];
+
+	ASSERT(p_LanguageCode(messageRow) == Language::GetLanguage());
+	return GetMessageText(p_MessageText(messageRow), pdwLen);
 }
 
 //*****************************************************************************
@@ -1649,6 +1715,7 @@ CIDSet CDbBase::getMessageRows(const UINT messageID)
 void CDbBase::resetIndex()
 {
 	messageIndex.clear();
+	localizationMessageIndex.clear();
 }
 
 //*****************************************************************************
@@ -1660,5 +1727,17 @@ void CDbBase::buildIndex()
 	{
 		c4_RowRef row = GetRowRef(V_MessageTexts, messageI);
 		addMessage(UINT(p_MessageID(row)), messageI);
+	}
+
+	//Build row index for localization dat, if it's been loaded.
+	if (m_pLocalizationStorage) {
+		c4_View LocalizationView =
+			m_pLocalizationStorage->View(ViewTypeStr(V_MessageTexts));
+		const UINT localizationCount = LocalizationView.GetSize();
+		for (UINT messageI = 0; messageI < localizationCount; ++messageI)
+		{
+			c4_RowRef row = LocalizationView[messageI];
+			localizationMessageIndex[p_MessageID(row)] = messageI;
+		}
 	}
 }
