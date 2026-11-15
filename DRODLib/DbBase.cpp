@@ -588,7 +588,6 @@ MESSAGE_ID CDbBase::Open(
 			WSTRING wstrLocalizationDathPath =
 				wstrResPath + wszSlash + wstrLanguages + wszSlash;
 			wstrLocalizationDathPath += LocalizationResourceFilename();
-			string wuh = UnicodeToUTF8(wstrLocalizationDathPath);
 			if (CFiles::DoesFileExist(wstrLocalizationDathPath.c_str()))
 			{
 				UnicodeToUTF8(wstrLocalizationDathPath, filename);
