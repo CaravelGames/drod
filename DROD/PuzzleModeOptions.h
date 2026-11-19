@@ -47,7 +47,7 @@ struct PuzzleModeOptions {
 		, bHideLighting(false)
 		, bHideWeather(false) {}
 
-	PuzzleModeOptions(CDbPackedVars& playerSettings) {
+	PuzzleModeOptions(const CDbPackedVars& playerSettings) {
 		this->bIsEnabled = false;
 
 		this->wGridStyle = playerSettings.GetVar(Settings::PuzzleMode_GridStyle, 1);
