@@ -158,6 +158,8 @@ bool CDemoScreen::SetForActivate()
 	this->pRoomWidget->DescribeCitizenColor(
 		settings.GetVar(Settings::DescribeCitizenColor, false));
 
+	this->pRoomWidget->SetPuzzleModeOptions(PuzzleModeOptions(settings));
+
 	SetShowVoicedSubtitle(settings.GetVar(Settings::ShowSubtitlesWithVoices, true));
 	SetShowHalphEffects(settings.GetVar(Settings::ShowHalphEffects, false));
 	SetShowPlaceDoubleSwirl(settings.GetVar(Settings::ShowDoublePlacementEffect, false));
